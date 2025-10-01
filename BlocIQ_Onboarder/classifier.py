@@ -1,16 +1,32 @@
 """
 BlocIQ Onboarder - Document Classifier
 Intelligently classifies parsed files into categories based on content and filename
+Enhanced with UK block management taxonomy
 """
 
 import re
 from typing import Dict, List, Optional, Tuple
+import yaml
+from pathlib import Path
 
 
 class DocumentClassifier:
-    """Classifies documents into BlocIQ categories"""
+    """Classifies documents into BlocIQ categories using UK taxonomy"""
 
-    # Category patterns based on Pimlico Place data structure
+    def __init__(self, taxonomy_path: str = None):
+        """Initialize classifier with taxonomy"""
+        if taxonomy_path is None:
+            taxonomy_path = Path(__file__).parent / "config" / "block_taxonomy.yml"
+
+        # Load taxonomy if exists, otherwise use hardcoded categories
+        self.taxonomy = None
+        try:
+            with open(taxonomy_path, 'r') as f:
+                self.taxonomy = yaml.safe_load(f)
+        except FileNotFoundError:
+            pass  # Fall back to hardcoded categories
+
+    # Category patterns based on Pimlico Place data structure (fallback)
     CATEGORIES = {
         'units_leaseholders': {
             'keywords': ['leaseholder', 'unit', 'tenant', 'flat', 'owner', 'lease list'],
@@ -126,6 +142,14 @@ class DocumentClassifier:
             Tuple of (category, confidence_score)
         """
         filename = parsed_data.get('file_name', '').lower()
+        content = self._extract_content(parsed_data)
+        search_text = f"{filename} {content}".lower()
+
+        # Use taxonomy if available
+        if self.taxonomy and 'document_types' in self.taxonomy:
+            return self._classify_with_taxonomy(filename, content, search_text)
+
+        # Fall back to hardcoded categories
         scores = {}
 
         # Score each category
@@ -143,9 +167,6 @@ class DocumentClassifier:
                 if keyword.lower() in filename:
                     score += 0.2
                     break
-
-            # Check content if available
-            content = self._extract_content(parsed_data)
 
             # Check content patterns (weight: 0.3)
             for pattern in patterns.get('content_patterns', []):
@@ -170,6 +191,57 @@ class DocumentClassifier:
         confidence = scores[best_category]
 
         return best_category, confidence
+
+    def _classify_with_taxonomy(self, filename: str, content: str, search_text: str) -> Tuple[str, float]:
+        """Classify using UK block taxonomy"""
+        scores = {}
+        doc_types = self.taxonomy['document_types']
+
+        for doc_type, config in doc_types.items():
+            score = 0.0
+            keywords = config.get('keywords', [])
+
+            # Check keywords in combined text
+            keyword_matches = sum(1 for k in keywords if k.lower() in search_text)
+            if keyword_matches > 0:
+                # Base score from keyword density
+                score = min(0.5 + (keyword_matches * 0.2), 1.0)
+
+                # Apply confidence boost from taxonomy
+                confidence_boost = config.get('confidence_boost', 1.0)
+                score *= confidence_boost
+                score = min(score, 1.0)  # Cap at 1.0
+
+            scores[doc_type] = score
+
+        # Map taxonomy types to BlocIQ categories
+        taxonomy_to_category = {
+            'lease': 'units_leaseholders',
+            'budget': 'budgets',
+            'accounts': 'budgets',
+            'section20_noi': 'major_works',
+            'section20_soe': 'major_works',
+            'insurance_policy': 'insurance',
+            'compliance_fra': 'compliance',
+            'compliance_eicr': 'compliance',
+            'compliance_gas': 'compliance',
+            'compliance_legionella': 'compliance',
+            'compliance_asbestos': 'compliance',
+            'lift_report': 'compliance',
+            'management_agreement': 'contracts',
+            'contract': 'contracts',
+            'major_works': 'major_works',
+            'minutes': 'uncategorized'
+        }
+
+        if not scores or max(scores.values()) < 0.3:
+            return 'uncategorized', 0.0
+
+        best_doc_type = max(scores, key=scores.get)
+        confidence = scores[best_doc_type]
+        category = taxonomy_to_category.get(best_doc_type, best_doc_type)
+
+        return category, confidence
 
     def _extract_content(self, parsed_data: Dict) -> str:
         """Extract text content from parsed data"""

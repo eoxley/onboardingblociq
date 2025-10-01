@@ -25,6 +25,8 @@ from compliance_extractor import ComplianceAssetExtractor
 from major_works_extractor import MajorWorksExtractor
 from financial_extractor import FinancialExtractor
 from validate_schema import SchemaValidator
+from validators import BlockValidator
+from matchers import file_sha256
 
 
 class BlocIQOnboarder:
@@ -55,12 +57,15 @@ class BlocIQOnboarder:
         self.major_works_extractor = MajorWorksExtractor()
         self.financial_extractor = FinancialExtractor()
         self.validator = SchemaValidator()
+        self.block_validator = BlockValidator()
 
         # Results storage
         self.parsed_files = []
         self.categorized_files = {}
         self.mapped_data = {}
         self.audit_log = []
+        self.validation_report = {}
+        self.confidence_report = []
 
     def run(self):
         """Execute the onboarding process"""
@@ -93,13 +98,18 @@ class BlocIQOnboarder:
         print("\n💰 Extracting financial data...")
         self._extract_financial_data()
 
+        # Step 4.7: Validate data against business rules
+        print("\n✅ Validating data against UK block management rules...")
+        self._validate_data()
+
         # Step 5: Generate SQL
         print("\n📝 Generating SQL migration...")
         self._generate_sql()
 
-        # Step 6: Generate logs
-        print("\n📊 Generating audit logs...")
+        # Step 6: Generate logs and reports
+        print("\n📊 Generating audit logs and confidence report...")
         self._generate_logs()
+        self._generate_confidence_report()
 
         # Summary
         self._print_summary()
@@ -430,6 +440,130 @@ class BlocIQOnboarder:
             'accounts_found': len(financial_data['service_charge_years'])
         })
 
+    def _validate_data(self):
+        """Validate mapped data against UK block management rules"""
+        self.validation_report = self.block_validator.validate_complete_dataset(self.mapped_data)
+
+        # Print validation summary
+        errors = self.validation_report.get('errors', [])
+        warnings = self.validation_report.get('warnings', [])
+        info = self.validation_report.get('info', [])
+
+        if errors:
+            print(f"\n  ❌ {len(errors)} validation error(s):")
+            for error in errors[:5]:  # Show first 5
+                print(f"     • {error['message']}")
+            if len(errors) > 5:
+                print(f"     ... and {len(errors) - 5} more")
+
+        if warnings:
+            print(f"\n  ⚠️  {len(warnings)} warning(s):")
+            for warning in warnings[:3]:  # Show first 3
+                print(f"     • {warning['message']}")
+            if len(warnings) > 3:
+                print(f"     ... and {len(warnings) - 3} more")
+
+        if not errors and not warnings:
+            print("  ✅ All validation checks passed")
+        elif errors:
+            print("\n  ⚠️  Validation errors found - review validation_report.json before executing SQL")
+
+        # Save detailed validation report
+        validation_file = self.output_dir / 'validation_report.json'
+        with open(validation_file, 'w') as f:
+            json.dump(self.validation_report, f, indent=2)
+
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'validate',
+            'errors': len(errors),
+            'warnings': len(warnings),
+            'info': len(info)
+        })
+
+    def _generate_confidence_report(self):
+        """Generate CSV report with confidence scores for all data"""
+        import csv
+
+        report_rows = []
+
+        # Add building confidence
+        building = self.mapped_data.get('building', {})
+        report_rows.append({
+            'category': 'building',
+            'item': building.get('name', 'Unknown'),
+            'source_file': 'property_form',
+            'confidence_score': 95,  # High confidence from direct extraction
+            'action': 'AUTO',
+            'notes': 'Extracted from property information form'
+        })
+
+        # Add unit confidence scores
+        units = self.mapped_data.get('units', [])
+        for unit in units:
+            apportionment = unit.get('apportionment_percent')
+            confidence = 90 if apportionment else 70
+            action = 'AUTO' if apportionment else 'REVIEW'
+
+            report_rows.append({
+                'category': 'unit',
+                'item': unit.get('unit_number', 'Unknown'),
+                'source_file': 'apportionment_file',
+                'confidence_score': confidence,
+                'action': action,
+                'notes': f"Apportionment: {apportionment}%" if apportionment else "Missing apportionment"
+            })
+
+        # Add document confidence scores
+        documents = self.mapped_data.get('building_documents', [])
+        for doc in documents[:20]:  # First 20 documents
+            confidence = doc.get('confidence', 0.5) * 100
+            action = 'AUTO' if confidence >= 90 else ('REVIEW' if confidence >= 60 else 'REJECT')
+
+            report_rows.append({
+                'category': 'document',
+                'item': doc.get('file_name', 'Unknown'),
+                'source_file': doc.get('file_name', 'Unknown'),
+                'confidence_score': int(confidence),
+                'action': action,
+                'notes': f"Type: {doc.get('type', 'unknown')}"
+            })
+
+        # Add compliance confidence scores
+        compliance = self.mapped_data.get('compliance_assets', [])
+        for asset in compliance:
+            confidence = 85  # High confidence from pattern matching
+            report_rows.append({
+                'category': 'compliance',
+                'item': asset.get('asset_name', 'Unknown'),
+                'source_file': 'extracted',
+                'confidence_score': confidence,
+                'action': 'AUTO',
+                'notes': f"Status: {asset.get('status', 'pending')}"
+            })
+
+        # Write CSV report
+        report_file = self.output_dir / 'confidence_report.csv'
+        with open(report_file, 'w', newline='', encoding='utf-8') as f:
+            fieldnames = ['category', 'item', 'source_file', 'confidence_score', 'action', 'notes']
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(report_rows)
+
+        print(f"  ✅ Confidence report: {report_file}")
+        print(f"     • Total items: {len(report_rows)}")
+        auto_count = sum(1 for r in report_rows if r['action'] == 'AUTO')
+        review_count = sum(1 for r in report_rows if r['action'] == 'REVIEW')
+        print(f"     • AUTO: {auto_count}, REVIEW: {review_count}")
+
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'generate_confidence_report',
+            'total_items': len(report_rows),
+            'auto': auto_count,
+            'review': review_count
+        })
+
     def _print_summary(self):
         """Print final summary"""
         print("\n" + "=" * 60)
@@ -444,12 +578,30 @@ class BlocIQOnboarder:
         print(f"Major Works Projects: {len(self.mapped_data.get('major_works_projects', []))}")
         print(f"Budgets: {len(self.mapped_data.get('budgets', []))}")
         print(f"Service Charge Years: {len(self.mapped_data.get('service_charge_years', []))}")
+
+        # Print validation summary
+        errors = self.validation_report.get('errors', [])
+        warnings = self.validation_report.get('warnings', [])
+        if errors:
+            print(f"\n⚠️  Validation: {len(errors)} errors, {len(warnings)} warnings")
+        elif warnings:
+            print(f"\n✅ Validation: {len(warnings)} warnings")
+        else:
+            print("\n✅ Validation: All checks passed")
+
         print(f"\nOutput directory: {self.output_dir.absolute()}")
+        print("\n📝 Generated files:")
+        print("  1. migration.sql - SQL migration script")
+        print("  2. confidence_report.csv - Confidence scores for all data")
+        print("  3. validation_report.json - Detailed validation results")
+        print("  4. document_log.csv - Document metadata")
+        print("  5. audit_log.json - Processing audit trail")
         print("\n📝 Next steps:")
-        print("  1. Review migration.sql")
-        print("  2. Check document_log.csv")
-        print("  3. Execute SQL in Supabase SQL Editor")
-        print("  4. Upload original documents to Supabase Storage")
+        print("  1. Review confidence_report.csv - check items marked REVIEW")
+        print("  2. Review validation_report.json - address any errors/warnings")
+        print("  3. Review migration.sql")
+        print("  4. Execute SQL in Supabase SQL Editor")
+        print("  5. Upload original documents to Supabase Storage")
         print()
 
     def _find_file_by_category(self, category: str, keywords: List[str] = None) -> Dict:

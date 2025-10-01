@@ -193,16 +193,17 @@ class SQLWriter:
 
         self.sql_statements.append("")
 
-    def _create_insert_statement(self, table: str, data: Dict) -> str:
+    def _create_insert_statement(self, table: str, data: Dict, use_upsert: bool = True) -> str:
         """
-        Create a single INSERT statement with schema validation
+        Create an INSERT or UPSERT statement with schema validation
 
         Args:
             table: Table name
             data: Dictionary of column: value pairs
+            use_upsert: If True, generate UPSERT (INSERT ... ON CONFLICT DO UPDATE)
 
         Returns:
-            SQL INSERT statement
+            SQL INSERT/UPSERT statement
         """
         # Validate data against schema and filter out None values
         validated_data = self.schema_mapper.validate_data(table, data)
@@ -214,7 +215,53 @@ class SQLWriter:
         columns = ', '.join(filtered_data.keys())
         values = ', '.join(self._format_value(v) for v in filtered_data.values())
 
-        return f"INSERT INTO {table} ({columns}) VALUES ({values});"
+        # Basic INSERT statement
+        insert_sql = f"INSERT INTO {table} ({columns}) VALUES ({values})"
+
+        # Add UPSERT clause if requested and we have a unique constraint
+        if use_upsert and table == 'building_documents':
+            # For documents, use content_hash for idempotency
+            # Requires: CREATE UNIQUE INDEX ON building_documents(content_hash);
+            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'content_hash', 'created_at']]
+            if update_cols:
+                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
+                insert_sql += f"\nON CONFLICT (content_hash) DO UPDATE SET {updates}"
+            else:
+                insert_sql += "\nON CONFLICT (content_hash) DO NOTHING"
+
+        elif use_upsert and table == 'buildings':
+            # For buildings, update on ID conflict (re-running onboarding)
+            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'created_at', 'agency_id']]
+            if update_cols:
+                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
+                insert_sql += f"\nON CONFLICT (id) DO UPDATE SET {updates}"
+            else:
+                insert_sql += "\nON CONFLICT (id) DO NOTHING"
+
+        elif use_upsert and table == 'units':
+            # For units, update on building_id + unit_number
+            # Requires: CREATE UNIQUE INDEX ON units(building_id, unit_number);
+            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'building_id', 'unit_number', 'created_at']]
+            if update_cols:
+                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
+                insert_sql += f"\nON CONFLICT (building_id, unit_number) DO UPDATE SET {updates}"
+            else:
+                insert_sql += "\nON CONFLICT (building_id, unit_number) DO NOTHING"
+
+        elif use_upsert and table == 'compliance_assets':
+            # For compliance assets, update on building_id + compliance_asset_id
+            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'building_id', 'created_at']]
+            if update_cols:
+                # Update next_due_date to earliest date
+                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols if col != 'next_due_date')
+                if 'next_due_date' in update_cols:
+                    updates += ", next_due_date = LEAST(COALESCE(compliance_assets.next_due_date, '9999-12-31'), COALESCE(EXCLUDED.next_due_date, '9999-12-31'))"
+                insert_sql += f"\nON CONFLICT (id) DO UPDATE SET {updates}"
+            else:
+                insert_sql += "\nON CONFLICT (id) DO NOTHING"
+
+        insert_sql += ";"
+        return insert_sql
 
     def _format_value(self, value: Any) -> str:
         """Format a value for SQL with proper type handling"""
