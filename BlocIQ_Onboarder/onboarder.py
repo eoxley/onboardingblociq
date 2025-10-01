@@ -405,7 +405,7 @@ class BlocIQOnboarder:
         print(f"  ✅ Found {len(financial_data['service_charge_years'])} service charge accounts")
 
         # Log years covered
-        if financial_data['financial_summary']['years_covered']:
+        if financial_data.get('financial_summary', {}).get('years_covered'):
             print(f"\n  📋 Financial Years: {', '.join(financial_data['financial_summary']['years_covered'])}")
 
         self.audit_log.append({
