@@ -109,7 +109,9 @@ class MajorWorksExtractor:
 
             if project:
                 # Use project name + year as unique identifier
-                project_key = f"{project.get('title', 'Unknown')}_{project.get('start_date', '')[:4]}"
+                start_date = project.get('start_date', '')
+                year = start_date[:4] if start_date else 'unknown'
+                project_key = f"{project.get('title', 'Unknown')}_{year}"
 
                 if project_key not in seen_projects:
                     major_works_projects.append(project)
