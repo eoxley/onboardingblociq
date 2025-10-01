@@ -220,14 +220,13 @@ class SQLWriter:
 
         # Add UPSERT clause if requested and we have a unique constraint
         if use_upsert and table == 'building_documents':
-            # For documents, use content_hash for idempotency
-            # Requires: CREATE UNIQUE INDEX ON building_documents(content_hash);
-            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'content_hash', 'created_at']]
+            # For documents, use id for idempotency (content_hash not yet in schema)
+            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'created_at']]
             if update_cols:
                 updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
-                insert_sql += f"\nON CONFLICT (content_hash) DO UPDATE SET {updates}"
+                insert_sql += f"\nON CONFLICT (id) DO UPDATE SET {updates}"
             else:
-                insert_sql += "\nON CONFLICT (content_hash) DO NOTHING"
+                insert_sql += "\nON CONFLICT (id) DO NOTHING"
 
         elif use_upsert and table == 'buildings':
             # For buildings, update on ID conflict (re-running onboarding)
