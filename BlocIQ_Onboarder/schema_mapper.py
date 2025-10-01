@@ -269,14 +269,20 @@ class SupabaseSchemaMapper:
             }
 
             # Extract apportionment percentage (critical for service charge calculations)
-            apportionment = self._extract_field_from_row(row, ['apportionment', 'apportionment %', 'percentage', '%', 'rate', 'share'])
+            # Try multiple column name variations
+            apportionment = self._extract_field_from_row(row, ['rate', 'apportionment', 'apportionment %', 'percentage', '%', 'share'])
             if apportionment:
                 import re
-                # Extract numeric value, remove % sign
+                # Extract numeric value, remove % sign and whitespace
                 cleaned = re.sub(r'[%\s]', '', str(apportionment))
                 match = re.search(r'[\d.]+', cleaned)
                 if match:
-                    unit['apportionment_percent'] = float(match.group())
+                    percent_value = float(match.group())
+                    # If value is > 1, it's likely already a percentage (e.g., 14.285)
+                    # If value is < 1, it might be a decimal (e.g., 0.14285) so convert to percentage
+                    if percent_value < 1:
+                        percent_value = percent_value * 100
+                    unit['apportionment_percent'] = percent_value
 
             units.append(unit)
 
@@ -391,7 +397,13 @@ class SupabaseSchemaMapper:
     
     def _extract_unit_number(self, row: Dict) -> Optional[str]:
         """Extract unit number from row data"""
-        unit_field = self._extract_field_from_row(row, ['unit', 'flat', 'property', 'description', 'unit description'])
+        # First try 'Unit description' column (priority for apportionment files)
+        unit_field = self._extract_field_from_row(row, ['unit description', 'unit_description', 'description', 'unit', 'flat', 'property'])
+
+        # If not found, try 'Unit reference' column
+        if not unit_field:
+            unit_field = self._extract_field_from_row(row, ['unit reference', 'unit_reference', 'reference', 'ref'])
+
         if not unit_field:
             return None
 
@@ -411,7 +423,7 @@ class SupabaseSchemaMapper:
         if match:
             return match.group(1).upper()
 
-        # Try reference number pattern: "219-01-001" -> extract number
+        # Try reference number pattern: "219-01-001" -> extract number and format as Flat X
         match = re.search(r'\d+-\d+-(\d+)', unit_field)
         if match:
             unit_num = int(match.group(1))
