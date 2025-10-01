@@ -27,6 +27,7 @@ from financial_extractor import FinancialExtractor
 from validate_schema import SchemaValidator
 from validators import BlockValidator
 from matchers import file_sha256
+from data_collator import DataCollator
 
 
 class BlocIQOnboarder:
@@ -166,25 +167,20 @@ class BlocIQOnboarder:
                 })
 
     def _map_to_schema(self):
-        """Map classified files to Supabase schema"""
-        # Find property form and leaseholder list
+        """Map classified files to Supabase schema with multi-source collation"""
+        # Find property form for building address
         property_form = self._find_file_by_category('units_leaseholders', keywords=['property', 'form', 'setup', 'information'])
 
-        # Try to find apportionment file first (best source for units)
-        apportionment_file = self._find_file_by_category('apportionments', keywords=['apportionment', 'matrix'])
-        leaseholder_list = self._find_file_by_category('units_leaseholders', keywords=['leaseholder', 'list', 'tenant'])
+        # Initialize collator for multi-source data merging
+        collator = DataCollator()
 
-        # Use apportionment file if found, otherwise use leaseholder list
-        units_source = apportionment_file or leaseholder_list
+        # Map building first
+        units_source = None
+        if self.categorized_files.get('apportionments'):
+            units_source = self.categorized_files['apportionments'][0]
+        elif self.categorized_files.get('units_leaseholders'):
+            units_source = self.categorized_files['units_leaseholders'][0]
 
-        if not units_source:
-            print("  ⚠️  No unit/apportionment data found - using first units_leaseholders file")
-            if self.categorized_files.get('units_leaseholders'):
-                units_source = self.categorized_files['units_leaseholders'][0]
-            elif self.categorized_files.get('apportionments'):
-                units_source = self.categorized_files['apportionments'][0]
-
-        # Map building - use property_form for address extraction
         building = self.mapper.map_building(
             property_form if property_form else {},
             units_source if units_source else {}
@@ -203,22 +199,82 @@ class BlocIQOnboarder:
         self.mapped_data['building'] = building
         building_id = building['id']
 
-        print(f"  Building: {building.get('name', 'Unknown')}")
-        print(f"  Address: {building.get('address', 'Not found')}")
+        print(f"\n  🏢 Building: {building.get('name', 'Unknown')}")
+        print(f"  📍 Address: {building.get('address', 'Not found')}")
 
-        # Map units from best available source
-        if units_source:
-            units = self.mapper.map_units(units_source, building_id)
-            self.mapped_data['units'] = units
-            print(f"  Units: {len(units)}")
+        # MULTI-SOURCE EXTRACTION: Extract units from ALL relevant files
+        print(f"\n  🔍 Extracting data from multiple sources...")
+        sources_found = 0
 
-            # Create unit_id map for leaseholder mapping
+        # Extract from apportionment files (high confidence for apportionment %)
+        if self.categorized_files.get('apportionments'):
+            for file_data in self.categorized_files['apportionments']:
+                units = self.mapper.map_units(file_data, building_id)
+                if units:
+                    collator.add_units_source(
+                        units,
+                        file_data['file_name'],
+                        'apportionment',
+                        confidence=0.95  # High confidence for apportionment data
+                    )
+                    sources_found += 1
+                    print(f"     ✓ {file_data['file_name']} - {len(units)} units (apportionment)")
+
+        # Extract from units_leaseholders files (high confidence for names/contact)
+        if self.categorized_files.get('units_leaseholders'):
+            for file_data in self.categorized_files['units_leaseholders']:
+                units = self.mapper.map_units(file_data, building_id)
+                if units:
+                    collator.add_units_source(
+                        units,
+                        file_data['file_name'],
+                        'leaseholder_list',
+                        confidence=0.90
+                    )
+                    sources_found += 1
+                    print(f"     ✓ {file_data['file_name']} - {len(units)} units (leaseholder data)")
+
+        # Extract from budget files (medium confidence)
+        if self.categorized_files.get('budgets'):
+            for file_data in self.categorized_files['budgets']:
+                units = self.mapper.map_units(file_data, building_id)
+                if units:
+                    collator.add_units_source(
+                        units,
+                        file_data['file_name'],
+                        'budget',
+                        confidence=0.75
+                    )
+                    sources_found += 1
+                    print(f"     ✓ {file_data['file_name']} - {len(units)} units (budget)")
+
+        # Get merged units
+        units = collator.get_merged_units()
+        self.mapped_data['units'] = units
+
+        if sources_found > 0:
+            print(f"\n  ✅ Merged data from {sources_found} sources")
+            print(f"  📊 Total units: {len(units)}")
+
+            # Now extract leaseholders from all sources
             unit_map = {unit['unit_number']: unit['id'] for unit in units}
 
-            # Map leaseholders (try leaseholder_list first, fall back to units_source)
-            leaseholders = self.mapper.map_leaseholders(leaseholder_list or units_source, unit_map)
+            # Extract leaseholders from all units_leaseholders files
+            if self.categorized_files.get('units_leaseholders'):
+                for file_data in self.categorized_files['units_leaseholders']:
+                    leaseholders = self.mapper.map_leaseholders(file_data, unit_map)
+                    if leaseholders:
+                        collator.add_leaseholders_source(
+                            leaseholders,
+                            file_data['file_name'],
+                            'leaseholder_list',
+                            confidence=0.90
+                        )
+
+            # Get merged leaseholders
+            leaseholders = collator.get_merged_leaseholders()
             self.mapped_data['leaseholders'] = leaseholders
-            print(f"  Leaseholders: {len(leaseholders)}")
+            print(f"  👥 Total leaseholders: {len(leaseholders)}")
 
             # Create unit-leaseholder links
             links = []
@@ -230,6 +286,19 @@ class BlocIQOnboarder:
                             'leaseholder_id': leaseholder['id']
                         })
             self.mapped_data['unit_leaseholder_links'] = links
+
+            # Store collation report
+            self.collation_report = collator.generate_collation_report()
+
+            # Show conflicts if any
+            if self.collation_report['summary']['total_conflicts'] > 0:
+                print(f"\n  ⚠️  {self.collation_report['summary']['total_conflicts']} conflicts detected and resolved")
+        else:
+            print("  ⚠️  No unit data found in any files")
+            self.mapped_data['units'] = []
+            self.mapped_data['leaseholders'] = []
+            self.mapped_data['unit_leaseholder_links'] = []
+            self.collation_report = None
 
         # Map building documents
         documents = []
@@ -309,6 +378,22 @@ class BlocIQOnboarder:
             f.write(csv_content)
 
         print(f"  ✅ Document log: {csv_file}")
+
+        # Collation report (JSON) - NEW
+        if hasattr(self, 'collation_report') and self.collation_report:
+            collation_file = self.output_dir / 'collation_report.json'
+            with open(collation_file, 'w') as f:
+                json.dump(self.collation_report, f, indent=2)
+
+            print(f"  ✅ Collation report: {collation_file}")
+
+            # Show summary
+            summary = self.collation_report['summary']
+            print(f"\n  📊 Data Collation Summary:")
+            print(f"     • Sources used: {summary['sources_used']}")
+            print(f"     • Units merged: {summary['total_units']}")
+            print(f"     • Leaseholders merged: {summary['total_leaseholders']}")
+            print(f"     • Conflicts resolved: {summary['total_conflicts']}")
 
         # Summary JSON
         summary = {
