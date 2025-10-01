@@ -269,7 +269,7 @@ class SupabaseSchemaMapper:
             }
 
             # Extract apportionment percentage (critical for service charge calculations)
-            apportionment = self._extract_field_from_row(row, ['apportionment', 'apportionment %', 'percentage', '%'])
+            apportionment = self._extract_field_from_row(row, ['apportionment', 'apportionment %', 'percentage', '%', 'rate', 'share'])
             if apportionment:
                 import re
                 # Extract numeric value, remove % sign
@@ -371,22 +371,52 @@ class SupabaseSchemaMapper:
                     postcode = postcode_match.group(0) if postcode_match else ''
                     return f"{street}, London, {postcode}".strip()
         return ''
+
+    def _extract_building_address_from_property_form(self, property_form_data: Dict) -> Optional[str]:
+        """Extract building address from property information form"""
+        # Try to extract from 'Client Name & Address' field
+        address = self._extract_field(property_form_data, ['client name & address', 'address', 'property address'])
+        if address:
+            import re
+            # Clean up the address - remove company name, keep actual address
+            lines = address.split('\n')
+            if len(lines) >= 2:
+                # Second line is usually the actual address
+                return lines[1].strip()
+            # Try to extract address pattern
+            match = re.search(r'(\d+[-/]?\d*\s+[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?[^,\n]*(?:,\s*[^,\n]+)?(?:,\s*London)?(?:,?\s*[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})?)', address, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+        return None
     
     def _extract_unit_number(self, row: Dict) -> Optional[str]:
         """Extract unit number from row data"""
-        unit_field = self._extract_field_from_row(row, ['unit', 'flat', 'property'])
+        unit_field = self._extract_field_from_row(row, ['unit', 'flat', 'property', 'description', 'unit description'])
         if not unit_field:
             return None
-        
+
         import re
+        # Try pattern: "Flat 1", "Flat 2", etc.
+        match = re.search(r'Flat\s+(\d+)', unit_field, re.IGNORECASE)
+        if match:
+            return f"Flat {match.group(1)}"
+
+        # Try pattern: "Flat A1", "Flat B2", etc.
         match = re.search(r'Flat\s+([A-Z]\d+)', unit_field, re.IGNORECASE)
         if match:
             return match.group(1).upper()
-        
+
+        # Try pattern: "A1", "B2", etc.
         match = re.search(r'\b([A-Z]\d+)\b', unit_field)
         if match:
             return match.group(1).upper()
-        
+
+        # Try reference number pattern: "219-01-001" -> extract number
+        match = re.search(r'\d+-\d+-(\d+)', unit_field)
+        if match:
+            unit_num = int(match.group(1))
+            return f"Flat {unit_num}"
+
         return None
     
     def _is_special_unit(self, unit_number: str) -> bool:

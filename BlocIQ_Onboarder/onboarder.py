@@ -158,40 +158,55 @@ class BlocIQOnboarder:
     def _map_to_schema(self):
         """Map classified files to Supabase schema"""
         # Find property form and leaseholder list
-        property_form = self._find_file_by_category('units_leaseholders', keywords=['property', 'form', 'setup'])
-        leaseholder_list = self._find_file_by_category('units_leaseholders', keywords=['leaseholder', 'list'])
+        property_form = self._find_file_by_category('units_leaseholders', keywords=['property', 'form', 'setup', 'information'])
 
-        if not leaseholder_list:
-            print("  ⚠️  No leaseholder list found - using first units_leaseholders file")
-            if self.categorized_files['units_leaseholders']:
-                leaseholder_list = self.categorized_files['units_leaseholders'][0]
+        # Try to find apportionment file first (best source for units)
+        apportionment_file = self._find_file_by_category('apportionments', keywords=['apportionment', 'matrix'])
+        leaseholder_list = self._find_file_by_category('units_leaseholders', keywords=['leaseholder', 'list', 'tenant'])
 
-        # Map building
+        # Use apportionment file if found, otherwise use leaseholder list
+        units_source = apportionment_file or leaseholder_list
+
+        if not units_source:
+            print("  ⚠️  No unit/apportionment data found - using first units_leaseholders file")
+            if self.categorized_files.get('units_leaseholders'):
+                units_source = self.categorized_files['units_leaseholders'][0]
+            elif self.categorized_files.get('apportionments'):
+                units_source = self.categorized_files['apportionments'][0]
+
+        # Map building - use property_form for address extraction
         building = self.mapper.map_building(
             property_form if property_form else {},
-            leaseholder_list if leaseholder_list else {}
+            units_source if units_source else {}
         )
 
         # Override building name if provided
         if self.building_name:
             building['name'] = self.building_name
 
+        # Extract address from property form if available
+        if property_form:
+            address = self.mapper.schema_mapper._extract_building_address_from_property_form(property_form)
+            if address:
+                building['address'] = address
+
         self.mapped_data['building'] = building
         building_id = building['id']
 
         print(f"  Building: {building.get('name', 'Unknown')}")
+        print(f"  Address: {building.get('address', 'Not found')}")
 
-        # Map units
-        if leaseholder_list:
-            units = self.mapper.map_units(leaseholder_list, building_id)
+        # Map units from best available source
+        if units_source:
+            units = self.mapper.map_units(units_source, building_id)
             self.mapped_data['units'] = units
             print(f"  Units: {len(units)}")
 
             # Create unit_id map for leaseholder mapping
             unit_map = {unit['unit_number']: unit['id'] for unit in units}
 
-            # Map leaseholders
-            leaseholders = self.mapper.map_leaseholders(leaseholder_list, unit_map)
+            # Map leaseholders (try leaseholder_list first, fall back to units_source)
+            leaseholders = self.mapper.map_leaseholders(leaseholder_list or units_source, unit_map)
             self.mapped_data['leaseholders'] = leaseholders
             print(f"  Leaseholders: {len(leaseholders)}")
 
