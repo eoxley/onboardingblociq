@@ -1,0 +1,127 @@
+# UK Block Management Taxonomy
+# Defines document types, extraction rules, and validation criteria
+
+document_types:
+  lease:
+    keywords: ["lease", "headlease", "underlease", "deed of variation", "tenancy agreement"]
+    extract_fields: ["unit_label", "leaseholder_names", "term_start", "term_end", "head_or_sub"]
+    confidence_boost: 1.2  # multiply base confidence
+
+  budget:
+    keywords: ["budget", "service charge budget", "estimate", "apportionment", "annual budget"]
+    extract_fields: ["year_start", "year_end", "total_budget", "reserve", "apportionments"]
+    confidence_boost: 1.1
+
+  accounts:
+    keywords: ["service charge accounts", "actual expenditure", "year end accounts", "certified accounts"]
+    extract_fields: ["year_start", "year_end", "total_actual", "expenditure_items"]
+    confidence_boost: 1.1
+
+  section20_noi:
+    keywords: ["notice of intention", "section 20", "s20", "consultation - stage 1", "NOI"]
+    extract_fields: ["project_name", "issue_date", "consultation_deadline", "estimated_cost"]
+    confidence_boost: 1.3
+
+  section20_soe:
+    keywords: ["statement of estimates", "section 20", "s20", "consultation - stage 2", "SOE"]
+    extract_fields: ["issue_date", "estimates", "contractor_quotes"]
+    confidence_boost: 1.3
+
+  insurance_policy:
+    keywords: ["policy schedule", "certificate of insurance", "insurer", "sum insured", "buildings insurance"]
+    extract_fields: ["policy_number", "insurer", "period_start", "period_end", "sum_insured"]
+    confidence_boost: 1.0
+
+  compliance_fra:
+    keywords: ["fire risk assessment", "FRA", "PAS 79", "fire safety assessment", "type 1", "type 2", "type 3", "type 4"]
+    extract_fields: ["inspection_date", "assessor", "next_due_date", "priority_actions", "risk_rating"]
+    confidence_boost: 1.2
+
+  compliance_eicr:
+    keywords: ["EICR", "electrical installation condition report", "electrical test", "periodic inspection"]
+    extract_fields: ["inspection_date", "engineer", "next_due_date", "outcome", "code_ratings"]
+    confidence_boost: 1.2
+
+  compliance_gas:
+    keywords: ["gas safety certificate", "CP12", "landlord gas safety", "gas safe"]
+    extract_fields: ["inspection_date", "engineer", "next_due_date", "appliances_tested"]
+    confidence_boost: 1.2
+
+  compliance_legionella:
+    keywords: ["legionella", "water risk assessment", "L8", "legionella risk"]
+    extract_fields: ["inspection_date", "assessor", "next_due_date", "risk_level"]
+    confidence_boost: 1.2
+
+  compliance_asbestos:
+    keywords: ["asbestos", "asbestos survey", "asbestos register", "ACM"]
+    extract_fields: ["survey_date", "surveyor", "next_review_date", "materials_found"]
+    confidence_boost: 1.2
+
+  lift_report:
+    keywords: ["thorough examination", "LOLER", "PUWER", "lift inspection", "elevator inspection"]
+    extract_fields: ["inspection_date", "next_due_date", "defects", "engineer"]
+    confidence_boost: 1.1
+
+  management_agreement:
+    keywords: ["management agreement", "managing agent", "appointment", "terms of engagement"]
+    extract_fields: ["start_date", "end_date", "agent_name", "fees"]
+    confidence_boost: 1.0
+
+  minutes:
+    keywords: ["minutes", "agm", "egm", "meeting", "board meeting", "directors meeting"]
+    extract_fields: ["meeting_date", "attendees", "resolutions"]
+    confidence_boost: 0.9
+
+  contract:
+    keywords: ["contract", "service agreement", "maintenance contract", "cleaning contract"]
+    extract_fields: ["contractor_name", "start_date", "end_date", "contract_value"]
+    confidence_boost: 0.9
+
+  major_works:
+    keywords: ["major works", "capital works", "improvement works", "project specification"]
+    extract_fields: ["project_name", "contractor", "start_date", "completion_date", "cost"]
+    confidence_boost: 1.0
+
+address_patterns:
+  unit_labels: ["flat", "apt", "apartment", "unit", "suite", "penthouse"]
+  separators: ["-", "/", " ", ","]
+  floor_indicators: ["ground", "first", "second", "third", "fourth", "fifth", "lower", "upper", "basement"]
+
+renewal_rules:
+  # UK statutory and best practice intervals
+  compliance_fra: { months: 12, strict: false }     # Annual recommended, varies by building risk
+  compliance_eicr: { years: 5, strict: true }       # 5 years for residential (statutory)
+  compliance_gas: { years: 1, strict: true }        # Annual (statutory)
+  compliance_legionella: { years: 2, strict: false } # 2 years typical
+  compliance_asbestos: { years: 1, strict: false }   # Annual review recommended
+  lift_report: { months: 6, strict: true }          # 6 months (LOLER requirement)
+  insurance_policy: { years: 1, strict: true }      # Annual renewal
+
+validation_rules:
+  apportionment:
+    min_sum: 99.9
+    max_sum: 100.1
+    tolerance: 0.2
+
+  budget_period:
+    max_duration_months: 13  # Allow for overlap
+    min_duration_months: 11
+
+  section20:
+    noi_to_soe_min_days: 30  # Minimum consultation period
+    noi_to_soe_max_days: 365
+
+  compliance:
+    max_overdue_months: 3  # Flag if more than 3 months overdue
+    advance_booking_months: 2  # Book inspections 2 months before due
+
+matching_thresholds:
+  auto_link: 90      # ≥ 90: automatically link
+  review: 60         # 60-89: stage for review
+  reject: 60         # < 60: do not link, create new or flag
+
+confidence_levels:
+  high: 0.8    # 80%+
+  medium: 0.6  # 60-79%
+  low: 0.4     # 40-59%
+  poor: 0.0    # < 40%
