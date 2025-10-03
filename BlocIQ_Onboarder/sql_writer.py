@@ -14,6 +14,7 @@ class SQLWriter:
     def __init__(self):
         self.sql_statements = []
         self.schema_mapper = SupabaseSchemaMapper()
+        self.portfolio_id = None  # Will be generated per migration
 
     def generate_migration(self, mapped_data: Dict) -> str:
         """
@@ -25,9 +26,13 @@ class SQLWriter:
         Returns:
             SQL migration script as string
         """
-        self.sql_statements = []
+        import uuid
 
-        # Header
+        self.sql_statements = []
+        # Generate unique portfolio ID for this migration
+        self.portfolio_id = str(uuid.uuid4())
+
+        # Header (includes agency placeholder)
         self._add_header()
 
         # Generate INSERTs in dependency order
@@ -86,11 +91,24 @@ class SQLWriter:
         return '\n'.join(self.sql_statements)
 
     def _add_header(self):
-        """Add migration header"""
+        """Add migration header with agency placeholder block"""
         self.sql_statements.extend([
             "-- BlocIQ Onboarder - Auto-generated Migration",
             f"-- Generated at: {self._now()}",
             "-- Review this script before executing!",
+            "",
+            "-- =====================================",
+            "-- REQUIRED: Replace <AGENCY_ID> with your agency UUID",
+            "-- =====================================",
+            "",
+            "-- Example (run once manually if needed):",
+            "-- INSERT INTO agencies (id, name) VALUES ('<AGENCY_ID>', 'My Agency')",
+            "-- ON CONFLICT (id) DO NOTHING;",
+            "",
+            "-- Ensure Portfolio exists for this agency",
+            f"INSERT INTO portfolios (id, agency_id, name)",
+            f"VALUES ('{self.portfolio_id}', '<AGENCY_ID>', 'Default Portfolio')",
+            "ON CONFLICT (id) DO NOTHING;",
             "",
             "BEGIN;",
             ""
@@ -108,10 +126,14 @@ class SQLWriter:
         ])
 
     def _generate_building_insert(self, building: Dict):
-        """Generate INSERT for buildings table"""
+        """Generate INSERT for buildings table with portfolio_id"""
+        # Add portfolio_id to building data
+        building_with_portfolio = building.copy()
+        building_with_portfolio['portfolio_id'] = self.portfolio_id
+
         self.sql_statements.append("-- Insert building")
         self.sql_statements.append(
-            self._create_insert_statement('buildings', building, use_upsert=False)
+            self._create_insert_statement('buildings', building_with_portfolio, use_upsert=False)
         )
         self.sql_statements.append("")
 
