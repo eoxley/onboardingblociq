@@ -43,58 +43,74 @@ class SupabaseMapper:
         return self.schema_mapper.map_building_documents(file_metadata, building_id, category,
                                                           linked_entity_id, entity_type)
 
-    def map_document_with_entities(self, file_metadata: Dict, building_id: str, category: str) -> List[Dict]:
+    def map_document_with_entities(self, file_metadata: Dict, building_id: str, category: str) -> List[tuple]:
         """
-        DUAL-WRITE PATTERN: Map document to both specialized table AND building_documents
-        Returns list of records to insert: [specialized_record, document_record]
+        BlocIQ V2 DUAL-WRITE PATTERN
+        Always inserts original document into building_documents with proper category
+        Inserts structured data into specialist tables where applicable
+        Returns: [(table_name, record_dict), ...]
         """
         records = []
 
+        # Step 1: ALWAYS create building_documents record first
+        doc_record = self.schema_mapper.map_building_documents(
+            file_metadata, building_id, category
+        )
+        doc_id = doc_record['id']
+
         if category == 'compliance':
-            # Create compliance asset record
+            # Compliance: document + compliance_asset + building_compliance_asset link
             compliance_asset = self.schema_mapper.map_compliance_asset(file_metadata, building_id, category)
             records.append(('compliance_assets', compliance_asset))
 
-            # Create linked building_documents record
-            doc_record = self.schema_mapper.map_building_documents(
-                file_metadata, building_id, category,
-                linked_entity_id=compliance_asset['id'],
-                entity_type='compliance_asset'
+            # Link building to compliance asset with document reference
+            compliance_link = self.schema_mapper.map_building_compliance_asset(
+                building_id=building_id,
+                compliance_asset_id=compliance_asset['id'],
+                document_id=doc_id,
+                last_test_date=compliance_asset.get('last_inspection_date'),
+                next_due_date=compliance_asset.get('next_due_date'),
+                status=compliance_asset.get('status', 'pending'),
+                frequency=compliance_asset.get('inspection_frequency', 'annual')
             )
-            records.append(('building_documents', doc_record))
+            records.append(('building_compliance_assets', compliance_link))
+
+            # Update document with linkage
+            doc_record['linked_entity_id'] = compliance_asset['id']
+            doc_record['entity_type'] = 'compliance_asset'
+            doc_record['document_id'] = compliance_asset['id']
 
         elif category == 'major_works':
-            # Create major works project record
-            major_works = self.schema_mapper.map_major_works(file_metadata, building_id)
-            records.append(('major_works_projects', major_works))
+            # Major works: document + project + notice link
+            major_works_data, notice_type = self.schema_mapper.map_major_works(file_metadata, building_id)
+            records.append(('major_works_projects', major_works_data))
 
-            # Create linked building_documents record
-            doc_record = self.schema_mapper.map_building_documents(
-                file_metadata, building_id, category,
-                linked_entity_id=major_works['id'],
-                entity_type='major_works'
-            )
-            records.append(('building_documents', doc_record))
+            # Create notice linking project to document
+            if notice_type:
+                notice = self.schema_mapper.map_major_works_notice(
+                    project_id=major_works_data['id'],
+                    document_id=doc_id,
+                    notice_type=notice_type
+                )
+                records.append(('major_works_notices', notice))
 
-        elif category == 'budgets':
-            # Create finance record
-            finance = self.schema_mapper.map_finance(file_metadata, building_id)
-            records.append(('finances', finance))
+            # Update document with linkage
+            doc_record['linked_entity_id'] = major_works_data['id']
+            doc_record['entity_type'] = 'major_works_project'
+            doc_record['document_id'] = major_works_data['id']
 
-            # Create linked building_documents record
-            doc_record = self.schema_mapper.map_building_documents(
-                file_metadata, building_id, category,
-                linked_entity_id=finance['id'],
-                entity_type='finance'
-            )
-            records.append(('building_documents', doc_record))
+        elif category == 'budgets' or category == 'finance':
+            # Finance: document + budget (apportionments handled separately)
+            budget = self.schema_mapper.map_budget(file_metadata, building_id, doc_id)
+            records.append(('budgets', budget))
 
-        else:
-            # For other categories, just create building_documents record
-            doc_record = self.schema_mapper.map_building_documents(
-                file_metadata, building_id, category
-            )
-            records.append(('building_documents', doc_record))
+            # Update document with linkage
+            doc_record['linked_entity_id'] = budget['id']
+            doc_record['entity_type'] = 'budget'
+            doc_record['document_id'] = budget['id']
+
+        # All categories get a building_documents record
+        records.append(('building_documents', doc_record))
 
         return records
 

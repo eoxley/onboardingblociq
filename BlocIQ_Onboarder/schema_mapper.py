@@ -86,21 +86,23 @@ class SupabaseSchemaMapper:
             'building_documents': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'file_name': 'text NOT NULL',  # NOT document_name
-                'file_type': 'text',  # NOT document_type
-                'storage_path': 'text',  # NOT file_path
+                'file_name': 'text NOT NULL',
+                'file_type': 'text',
+                'storage_path': 'text NOT NULL',
                 'file_size': 'bigint',
-                'type': 'text',  # category/classification
+                'category': 'text NOT NULL',  # compliance, finance, major_works, lease, contracts, correspondence, uncategorised
+                'linked_entity_id': 'uuid',
+                'entity_type': 'text',  # compliance_asset, budget, major_works_project, unit, leaseholder
+                'document_id': 'text',  # FK to linked record
+                'uploaded_at': 'timestamp with time zone DEFAULT now()',
+                'uploaded_by': 'uuid REFERENCES users(id)',
                 'confidence': 'numeric',
                 'confidence_level': 'text',
+                'type': 'text',  # DEPRECATED: use category instead
                 'is_unlinked': 'boolean DEFAULT false',
                 'auto_linked_building_id': 'uuid REFERENCES buildings(id)',
                 'unit_id': 'uuid REFERENCES units(id)',
-                'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
-                'uploaded_by': 'uuid REFERENCES users(id)',
-                'category': 'text NOT NULL DEFAULT \'uncategorized\'',
-                'linked_entity_id': 'uuid',
-                'entity_type': 'text'  # 'unit', 'leaseholder', 'compliance_asset', 'major_works', 'finance'
+                'leaseholder_id': 'uuid REFERENCES leaseholders(id)'
             },
             'compliance_assets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -172,23 +174,89 @@ class SupabaseSchemaMapper:
                 'is_active': 'boolean DEFAULT true',
                 'notes': 'text'
             },
-            'finances': {
+            'budgets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'building_id': 'uuid REFERENCES buildings(id)',
-                'unit_id': 'uuid REFERENCES units(id)',
-                'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
-                'financial_year': 'varchar',
-                'service_charge_budget': 'decimal',
-                'service_charge_actual': 'decimal',
-                'reserve_fund_contribution': 'decimal',
-                'ground_rent': 'decimal',
-                'balance': 'decimal',
-                'arrears': 'decimal',
-                'last_updated': 'timestamp with time zone',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'period': 'varchar NOT NULL',  # e.g., '2024-2025', 'YE2024'
+                'total_amount': 'decimal',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'status': 'varchar DEFAULT \'draft\'',  # draft, approved, archived
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'notes': 'text'
+            },
+            'apportionments': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'unit_id': 'uuid NOT NULL REFERENCES units(id)',
+                'budget_id': 'uuid NOT NULL REFERENCES budgets(id)',
+                'amount': 'decimal NOT NULL',
+                'percentage': 'decimal',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'major_works_notices': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'project_id': 'uuid NOT NULL REFERENCES major_works_projects(id)',
+                'type': 'varchar NOT NULL',  # NOI, SOE, contractor_quote, final_account
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notice_date': 'date',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_compliance_assets': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'compliance_asset_id': 'uuid REFERENCES compliance_assets(id)',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'last_test_date': 'date',
+                'next_due_date': 'date',
+                'status': 'varchar',  # compliant, overdue, due_soon, pending
+                'frequency': 'varchar',  # annual, biennial, quinquennial
+                'created_at': 'timestamp with time zone DEFAULT now()',
                 'notes': 'text'
             }
         }
     
+    def _normalize_category(self, raw_category: str) -> str:
+        """
+        Normalize category to BlocIQ V2 standard categories.
+        Returns one of: compliance, finance, major_works, lease, contracts, correspondence, uncategorised
+        """
+        if not raw_category:
+            return 'uncategorised'
+
+        raw_lower = raw_category.lower()
+
+        # Map classifier categories to V2 schema categories
+        category_map = {
+            'compliance': 'compliance',
+            'budgets': 'finance',
+            'apportionments': 'finance',
+            'major_works': 'major_works',
+            'units_leaseholders': 'lease',
+            'contracts': 'contracts',
+            'insurance': 'compliance',
+            'correspondence': 'correspondence',
+            'uncategorized': 'uncategorised'
+        }
+
+        # Direct mapping
+        if raw_lower in category_map:
+            return category_map[raw_lower]
+
+        # Fuzzy matching
+        if 'compliance' in raw_lower or 'eicr' in raw_lower or 'fra' in raw_lower:
+            return 'compliance'
+        elif 'budget' in raw_lower or 'finance' in raw_lower or 'apport' in raw_lower:
+            return 'finance'
+        elif 'major' in raw_lower or 'works' in raw_lower or 'section' in raw_lower:
+            return 'major_works'
+        elif 'lease' in raw_lower or 'leaseholder' in raw_lower or 'unit' in raw_lower:
+            return 'lease'
+        elif 'contract' in raw_lower:
+            return 'contracts'
+        elif 'letter' in raw_lower or 'correspondence' in raw_lower:
+            return 'correspondence'
+
+        return 'uncategorised'
+
     def map_building(self, property_form_data: Dict, leaseholder_data: Dict = None) -> Dict:
         """Map to buildings table with exact column names - ENHANCED to capture all available fields"""
         building = {
@@ -352,26 +420,36 @@ class SupabaseSchemaMapper:
         
         return leaseholders
     
-    def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = 'uncategorized',
-                               linked_entity_id: str = None, entity_type: str = None) -> Dict:
-        """Map to building_documents table with exact column names - ENHANCED with linkage"""
-        storage_path = f"/building_documents/{building_id}/{category}/{file_metadata['file_name']}"
+    def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = None,
+                               linked_entity_id: str = None, entity_type: str = None, document_id: str = None) -> Dict:
+        """
+        Map to building_documents table - BlocIQ V2 compliant
+        ALWAYS sets a valid category (compliance, finance, major_works, lease, contracts, correspondence, uncategorised)
+        """
+        # Normalize category to V2 standards - NEVER None
+        normalized_category = self._normalize_category(category) if category else 'uncategorised'
 
-        return {
+        # Build structured storage path
+        storage_path = f"/building_documents/{building_id}/{normalized_category}/{file_metadata['file_name']}"
+
+        doc_record = {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
-            'file_name': file_metadata['file_name'],  # NOT document_name
-            'file_type': self._get_file_extension(file_metadata['file_name']),  # NOT document_type
-            'storage_path': storage_path,  # Structured path by category
+            'file_name': file_metadata['file_name'],
+            'file_type': self._get_file_extension(file_metadata['file_name']),
+            'storage_path': storage_path,
             'file_size': file_metadata.get('file_size', 0),
-            'type': category,  # classification/category
+            'category': normalized_category,  # REQUIRED - never NULL
+            'linked_entity_id': linked_entity_id,
+            'entity_type': entity_type,
+            'document_id': document_id,
             'confidence': file_metadata.get('confidence', 0.0),
             'confidence_level': self._get_confidence_level(file_metadata.get('confidence', 0.0)),
-            'is_unlinked': False,
-            'category': category,  # NEW: explicit category field
-            'linked_entity_id': linked_entity_id,  # NEW: link to related record
-            'entity_type': entity_type  # NEW: type of linked entity
+            'type': category,  # DEPRECATED: keep for backward compat
+            'is_unlinked': False
         }
+
+        return doc_record
     
     def get_table_columns(self, table_name: str) -> List[str]:
         """Get list of column names for a table"""
@@ -739,20 +817,64 @@ class SupabaseSchemaMapper:
             'notes': f"Auto-imported from document: {file_metadata['file_name']}"
         }
 
+    def map_budget(self, file_metadata: Dict, building_id: str, document_id: str) -> Dict:
+        """Map budget document to budgets table - BlocIQ V2"""
+        import re
+
+        file_name = file_metadata['file_name']
+
+        # Extract period from filename (YE24, 2024-2025, etc.)
+        period = 'Unknown'
+
+        # Try YE format (YE24, YE 2024, etc.)
+        ye_match = re.search(r'YE\s*(\d{2,4})', file_name, re.IGNORECASE)
+        if ye_match:
+            year = ye_match.group(1)
+            if len(year) == 2:
+                year = f"20{year}"
+            period = f"YE{year}"
+        else:
+            # Try year range (2024-2025, 2024/2025)
+            range_match = re.search(r'(\d{4})[-/](\d{4})', file_name)
+            if range_match:
+                period = f"{range_match.group(1)}-{range_match.group(2)}"
+            else:
+                # Try single year
+                year_match = re.search(r'20(\d{2})', file_name)
+                if year_match:
+                    period = f"20{year_match.group(1)}"
+
+        return {
+            'id': str(uuid.uuid4()),
+            'building_id': building_id,
+            'period': period,
+            'document_id': document_id,
+            'status': 'draft',
+            'notes': f"Auto-imported from {file_name}"
+        }
+
     def map_major_works(self, file_metadata: Dict, building_id: str) -> Dict:
-        """Map major works document to major_works_projects table - DUAL-WRITE PATTERN"""
+        """Map major works document to major_works_projects table - BlocIQ V2"""
         import re
 
         file_name = file_metadata['file_name']
 
         # Determine project type from filename
         project_type = 'general'
+        notice_type = None
+
         if 'section 20' in file_name.lower() or 's20' in file_name.lower():
-            project_type = 'section_20'
-        elif 'statement of estimate' in file_name.lower() or 'soe' in file_name.lower():
-            project_type = 'statement_of_estimates'
+            if 'noi' in file_name.lower() or 'notice of intention' in file_name.lower():
+                project_type = 'section_20'
+                notice_type = 'NOI'
+            elif 'soe' in file_name.lower() or 'statement of estimate' in file_name.lower():
+                project_type = 'section_20'
+                notice_type = 'SOE'
+            else:
+                project_type = 'section_20'
+                notice_type = 'NOI'  # Default to NOI
         elif 'contractor' in file_name.lower() or 'quote' in file_name.lower():
-            project_type = 'contractor_quote'
+            notice_type = 'contractor_quote'
 
         # Extract year if present
         year_match = re.search(r'20(\d{2})', file_name)
@@ -774,23 +896,30 @@ class SupabaseSchemaMapper:
             'start_date': f"{year}-01-01",
             'is_active': True,
             'notes': f"Auto-imported from document: {file_name}"
+        }, notice_type
+
+    def map_major_works_notice(self, project_id: str, document_id: str, notice_type: str = 'NOI') -> Dict:
+        """Map major works notice - links project to document"""
+        return {
+            'id': str(uuid.uuid4()),
+            'project_id': project_id,
+            'document_id': document_id,
+            'type': notice_type,
+            'notice_date': datetime.now().date().isoformat()
         }
 
-    def map_finance(self, file_metadata: Dict, building_id: str, unit_id: str = None) -> Dict:
-        """Map finance document to finances table - DUAL-WRITE PATTERN"""
-        import re
-
-        file_name = file_metadata['file_name']
-
-        # Extract financial year from filename
-        year_match = re.search(r'20(\d{2})', file_name)
-        financial_year = f"20{year_match.group(1)}" if year_match else str(datetime.now().year)
-
+    def map_building_compliance_asset(self, building_id: str, compliance_asset_id: str, document_id: str,
+                                      last_test_date: str = None, next_due_date: str = None,
+                                      status: str = 'pending', frequency: str = 'annual') -> Dict:
+        """Map building compliance asset - links compliance to building and document"""
         return {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
-            'unit_id': unit_id,
-            'financial_year': financial_year,
-            'last_updated': datetime.now().isoformat(),
-            'notes': f"Auto-imported from document: {file_name}"
+            'compliance_asset_id': compliance_asset_id,
+            'document_id': document_id,
+            'last_test_date': last_test_date,
+            'next_due_date': next_due_date,
+            'status': status,
+            'frequency': frequency,
+            'notes': 'Auto-imported from onboarding'
         }

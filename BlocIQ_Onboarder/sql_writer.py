@@ -40,24 +40,37 @@ class SQLWriter:
         if 'leaseholders' in mapped_data:
             self._generate_leaseholders_inserts(mapped_data['leaseholders'])
 
-        if 'building_documents' in mapped_data:
-            self._generate_documents_inserts(mapped_data['building_documents'])
-
-        # NEW: Compliance assets (depends on building)
+        # BlocIQ V2: Compliance assets (must be before building_compliance_assets)
         if 'compliance_assets' in mapped_data:
             self._generate_compliance_assets_inserts(mapped_data['compliance_assets'])
 
-        # NEW: Compliance inspections (depends on compliance_assets)
-        if 'compliance_inspections' in mapped_data:
-            self._generate_compliance_inspections_inserts(mapped_data['compliance_inspections'])
-
-        # NEW: Major works projects (depends on building)
+        # BlocIQ V2: Major works projects (must be before notices)
         if 'major_works_projects' in mapped_data:
             self._generate_major_works_inserts(mapped_data['major_works_projects'])
 
-        # NEW: Finance records (depends on building/units)
-        if 'finances' in mapped_data:
-            self._generate_finances_inserts(mapped_data['finances'])
+        # BlocIQ V2: Budgets (must be before documents)
+        if 'budgets' in mapped_data:
+            self._generate_budgets_inserts(mapped_data['budgets'])
+
+        # BlocIQ V2: Building documents (includes all original files with category)
+        if 'building_documents' in mapped_data:
+            self._generate_documents_inserts(mapped_data['building_documents'])
+
+        # BlocIQ V2: Building compliance assets (links building to compliance + document)
+        if 'building_compliance_assets' in mapped_data:
+            self._generate_building_compliance_assets_inserts(mapped_data['building_compliance_assets'])
+
+        # BlocIQ V2: Major works notices (links project to document)
+        if 'major_works_notices' in mapped_data:
+            self._generate_major_works_notices_inserts(mapped_data['major_works_notices'])
+
+        # BlocIQ V2: Apportionments (links units to budgets)
+        if 'apportionments' in mapped_data:
+            self._generate_apportionments_inserts(mapped_data['apportionments'])
+
+        # Compliance inspections (legacy)
+        if 'compliance_inspections' in mapped_data:
+            self._generate_compliance_inspections_inserts(mapped_data['compliance_inspections'])
 
         # Update units with leaseholder_ids
         if 'unit_leaseholder_links' in mapped_data:
@@ -197,16 +210,58 @@ class SQLWriter:
 
         self.sql_statements.append("")
 
-    def _generate_finances_inserts(self, finances: List[Dict]):
-        """Generate INSERTs for finances table"""
-        if not finances:
+    def _generate_budgets_inserts(self, budgets: List[Dict]):
+        """Generate INSERTs for budgets table"""
+        if not budgets:
             return
 
-        self.sql_statements.append(f"-- Insert {len(finances)} finance records")
+        self.sql_statements.append(f"-- Insert {len(budgets)} budgets")
 
-        for finance in finances:
+        for budget in budgets:
             self.sql_statements.append(
-                self._create_insert_statement('finances', finance, use_upsert=False)
+                self._create_insert_statement('budgets', budget, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_apportionments_inserts(self, apportionments: List[Dict]):
+        """Generate INSERTs for apportionments table"""
+        if not apportionments:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(apportionments)} apportionments")
+
+        for apportionment in apportionments:
+            self.sql_statements.append(
+                self._create_insert_statement('apportionments', apportionment, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_compliance_assets_inserts(self, assets: List[Dict]):
+        """Generate INSERTs for building_compliance_assets table"""
+        if not assets:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(assets)} building compliance asset links")
+
+        for asset in assets:
+            self.sql_statements.append(
+                self._create_insert_statement('building_compliance_assets', asset, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_major_works_notices_inserts(self, notices: List[Dict]):
+        """Generate INSERTs for major_works_notices table"""
+        if not notices:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(notices)} major works notices")
+
+        for notice in notices:
+            self.sql_statements.append(
+                self._create_insert_statement('major_works_notices', notice, use_upsert=False)
             )
 
         self.sql_statements.append("")
