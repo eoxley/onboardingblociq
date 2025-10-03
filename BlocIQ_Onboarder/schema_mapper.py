@@ -242,16 +242,29 @@ class SupabaseSchemaMapper:
 
         # PRIORITY 1: Filename-based detection (most accurate)
         if filename:
-            # Compliance keywords
-            if any(kw in filename_lower for kw in ['eicr', 'electrical', 'fire risk', 'fra', 'fire door',
-                                                     'legionella', 'insurance', 'pat test', 'gas safety',
-                                                     'emergency light', 'fire extinguish', 'loler', 'lift inspection']):
-                return 'compliance'
-
-            # Finance keywords
-            elif any(kw in filename_lower for kw in ['budget', 'account', 'invoice', 'apportionment',
-                                                       'demand', 'service charge', 'finance']):
+            # FALSE POSITIVE PREVENTION: Check finance keywords FIRST to prevent misclassification
+            # "Accounts.xlsx" should NOT be classified as compliance even if it contains "fra" substring
+            finance_keywords = ['budget', 'account', 'invoice', 'apportionment',
+                               'demand', 'service charge', 'finance', 'year end', 'ye']
+            if any(kw in filename_lower for kw in finance_keywords):
                 return 'finance'
+
+            # Compliance keywords - STRICT matching to prevent false positives
+            # Only match if file explicitly contains compliance-specific terms
+            compliance_keywords = {
+                'eicr', 'electrical inspection', 'electrical installation',
+                'fire risk assessment', 'fire risk', 'fra ',  # Note: "fra " with space to avoid "FRAming"
+                'fire door inspection', 'fire door',
+                'legionella risk', 'legionella assessment', 'legionella',
+                'insurance certificate', 'insurance policy', 'building insurance',
+                'pat test', 'portable appliance',
+                'gas safety certificate', 'gas safety',
+                'emergency light', 'emergency lighting',
+                'fire extinguish',
+                'loler', 'lift inspection', 'lift safety'
+            }
+            if any(kw in filename_lower for kw in compliance_keywords):
+                return 'compliance'
 
             # Major works keywords
             elif any(kw in filename_lower for kw in ['section 20', 's20', 'noi', 'soe', 'statement of estimate',
@@ -784,7 +797,13 @@ class SupabaseSchemaMapper:
     def map_compliance_asset(self, file_metadata: Dict, building_id: str, category: str) -> Dict:
         """
         Map compliance document to compliance_assets table - BlocIQ V2 DUAL-WRITE PATTERN
+
         Detects compliance subtype: EICR (5yr), FRA (annual), Fire Door (annual), LOLER (6mo), Insurance (annual)
+
+        IMPORTANT: Creates a NEW compliance_assets record for EACH document.
+        - Multiple FRAs across years (FRA 2022, FRA 2023, FRA 2024) are all stored
+        - Supports full historical compliance trail
+        - Only true duplicates (same building + asset + test_date) should be blocked at SQL level
         """
         import re
         from datetime import datetime, timedelta
@@ -792,6 +811,7 @@ class SupabaseSchemaMapper:
 
         # Extract compliance type from filename/category
         file_name = file_metadata['file_name'].lower()
+        original_filename = file_metadata['file_name']  # Keep original for better date parsing
 
         # BlocIQ V2 Compliance Subtype Detection with Frequencies
         # EICR: 5 years, FRA: annual, Fire Door: annual, LOLER: 6 months, Insurance: annual
@@ -827,24 +847,52 @@ class SupabaseSchemaMapper:
                 frequency_months = freq_months
                 break
 
-        # Try to extract dates from filename
-        # Patterns: 2023, 2023-2024, 01.23, DD.MM.YY, etc.
+        # ENHANCED DATE EXTRACTION: Try multiple patterns
+        # Patterns: 2023, 2023-2024, 01.23, DD.MM.YY, DD-MM-YYYY, etc.
         last_inspection_date = None
         next_due_date = None
 
-        # Try to find year in filename (prioritize 4-digit years)
-        year_match = re.search(r'20(\d{2})', file_name)
-        if year_match:
-            year = int(f"20{year_match.group(1)}")
-            # Assume inspection was in January of that year
-            try:
-                last_inspection_date = f"{year}-01-01"
-                # Calculate next due date using frequency_months
-                inspection_date = datetime(year, 1, 1)
-                next_due = inspection_date + relativedelta(months=frequency_months)
-                next_due_date = next_due.date().isoformat()
-            except:
-                pass
+        # Try full date patterns first (DD-MM-YYYY, DD.MM.YYYY, DD/MM/YYYY)
+        date_patterns = [
+            r'(\d{1,2})[-./](\d{1,2})[-./](20\d{2})',  # DD-MM-YYYY or DD.MM.YYYY
+            r'(20\d{2})[-./](\d{1,2})[-./](\d{1,2})',  # YYYY-MM-DD
+        ]
+
+        for pattern in date_patterns:
+            match = re.search(pattern, original_filename)
+            if match:
+                try:
+                    groups = match.groups()
+                    if len(groups) == 3:
+                        # Check if first group is year (YYYY-MM-DD format)
+                        if len(groups[0]) == 4:
+                            year, month, day = int(groups[0]), int(groups[1]), int(groups[2])
+                        else:
+                            # DD-MM-YYYY format
+                            day, month, year = int(groups[0]), int(groups[1]), int(groups[2])
+
+                        date_obj = datetime(year, month, day)
+                        last_inspection_date = date_obj.date().isoformat()
+                        next_due = date_obj + relativedelta(months=frequency_months)
+                        next_due_date = next_due.date().isoformat()
+                        break
+                except (ValueError, IndexError):
+                    continue
+
+        # If no full date found, try year-only extraction
+        if not last_inspection_date:
+            year_match = re.search(r'20(\d{2})', file_name)
+            if year_match:
+                year = int(f"20{year_match.group(1)}")
+                # Assume inspection was in January of that year
+                try:
+                    last_inspection_date = f"{year}-01-01"
+                    # Calculate next due date using frequency_months
+                    inspection_date = datetime(year, 1, 1)
+                    next_due = inspection_date + relativedelta(months=frequency_months)
+                    next_due_date = next_due.date().isoformat()
+                except:
+                    pass
 
         # Determine status based on next_due_date
         status = 'pending'
@@ -880,20 +928,34 @@ class SupabaseSchemaMapper:
 
     def map_budget(self, file_metadata: Dict, building_id: str, document_id: str) -> Dict:
         """
-        Map budget document to budgets table - BlocIQ V2
-        Detects finance subtype: Budget, Service Charge Account, Invoice
+        Map finance document to budgets table - BlocIQ V2
+
+        Detects finance subtype: Budget, Service Charge Account, Invoice, Apportionment
+
+        IMPORTANT: Creates a NEW budgets record for EACH document.
+        - Multiple years of budgets (2022, 2023, 2024) are all stored
+        - Multiple years of accounts are all stored
+        - Supports full historical financial trail
+        - Only true duplicates (same building + period + subtype + document) should be blocked at SQL level
         """
         import re
 
         file_name = file_metadata['file_name']
         file_name_lower = file_name.lower()
 
-        # Detect finance subtype
+        # Detect finance subtype - PRIORITY ORDER MATTERS
         finance_subtype = 'budget'  # Default
-        if 'account' in file_name_lower or 'year end' in file_name_lower:
+
+        # Check for apportionment first (most specific)
+        if 'apportionment' in file_name_lower or 'apportion' in file_name_lower:
+            finance_subtype = 'apportionment'
+        # Then check for accounts
+        elif ('account' in file_name_lower and 'service charge' in file_name_lower) or 'year end' in file_name_lower:
             finance_subtype = 'service_charge_account'
+        # Then invoices/demands
         elif 'invoice' in file_name_lower or 'demand' in file_name_lower:
             finance_subtype = 'invoice'
+        # Finally budgets
         elif 'budget' in file_name_lower:
             finance_subtype = 'budget'
 
@@ -938,7 +1000,14 @@ class SupabaseSchemaMapper:
     def map_major_works(self, file_metadata: Dict, building_id: str) -> Dict:
         """
         Map major works document to major_works_projects table - BlocIQ V2
-        Detects notice type: NOI (Notice of Intention), SOE (Statement of Estimates), Final Notice
+
+        Detects notice type: NOI (Notice of Intention), SOE (Statement of Estimates), Final Notice, Quotes
+
+        IMPORTANT: Creates a NEW major_works_projects record for EACH Section 20 document set.
+        - Multiple projects per building (Roof 2022, External Decorations 2023, etc.)
+        - Supports full historical major works trail
+        - Multiple notices per project (NOI → SOE → Final Notice)
+        - Only true duplicates (same building + project_name + year) should be blocked at SQL level
         """
         import re
         from datetime import datetime
@@ -946,12 +1015,12 @@ class SupabaseSchemaMapper:
         file_name = file_metadata['file_name']
         file_name_lower = file_name.lower()
 
-        # BlocIQ V2: Determine notice type from filename
+        # BlocIQ V2: Determine notice type from filename - STRICT matching
         project_type = 'general'
         notice_type = None
 
-        # Priority detection for notice types
-        if 'final notice' in file_name_lower or 'final account' in file_name_lower:
+        # Priority detection for notice types (most specific first)
+        if 'final notice' in file_name_lower or 'final account' in file_name_lower or 'award of contract' in file_name_lower:
             project_type = 'section_20'
             notice_type = 'final_notice'
         elif 'soe' in file_name_lower or 'statement of estimate' in file_name_lower:
@@ -960,27 +1029,50 @@ class SupabaseSchemaMapper:
         elif 'noi' in file_name_lower or 'notice of intention' in file_name_lower:
             project_type = 'section_20'
             notice_type = 'NOI'
-        elif 'section 20' in file_name_lower or 's20' in file_name_lower:
+        elif 'section 20' in file_name_lower or 's20' in file_name_lower or 's.20' in file_name_lower:
             project_type = 'section_20'
             notice_type = 'NOI'  # Default Section 20 to NOI
-        elif 'contractor' in file_name_lower or 'quote' in file_name_lower or 'quotation' in file_name_lower:
+        elif 'contractor' in file_name_lower or 'tender' in file_name_lower:
             notice_type = 'contractor_quote'
+        elif 'quote' in file_name_lower or 'quotation' in file_name_lower:
+            # Only classify as major works quote if clearly related to major works
+            if any(kw in file_name_lower for kw in ['roof', 'external', 'decoration', 'repair', 'works']):
+                notice_type = 'contractor_quote'
 
         # Extract year if present
         year_match = re.search(r'20(\d{2})', file_name)
         year = f"20{year_match.group(1)}" if year_match else datetime.now().year
 
-        # Create descriptive title based on notice type
-        if notice_type == 'NOI':
-            title = f"Section 20 Consultation (NOI) - {year}"
-        elif notice_type == 'SOE':
-            title = f"Section 20 Consultation (SOE) - {year}"
-        elif notice_type == 'final_notice':
-            title = f"Section 20 Consultation (Final) - {year}"
-        elif 'section 20' in file_name_lower:
-            title = f"Section 20 Consultation - {year}"
+        # Try to extract project name from filename (e.g. "Roof", "External Decorations")
+        project_name = None
+        project_keywords = ['roof', 'external decoration', 'decoration', 'painting', 'window', 'door',
+                           'balcony', 'lift', 'elevator', 'communal', 'fire safety', 'cladding']
+        for keyword in project_keywords:
+            if keyword in file_name_lower:
+                project_name = keyword.title()
+                break
+
+        # Create descriptive title based on notice type and project name
+        if project_name:
+            if notice_type == 'NOI':
+                title = f"{project_name} - Section 20 (NOI) - {year}"
+            elif notice_type == 'SOE':
+                title = f"{project_name} - Section 20 (SOE) - {year}"
+            elif notice_type == 'final_notice':
+                title = f"{project_name} - Section 20 (Final) - {year}"
+            else:
+                title = f"{project_name} - {year}"
         else:
-            title = f"Major Works Project - {year}"
+            if notice_type == 'NOI':
+                title = f"Section 20 Consultation (NOI) - {year}"
+            elif notice_type == 'SOE':
+                title = f"Section 20 Consultation (SOE) - {year}"
+            elif notice_type == 'final_notice':
+                title = f"Section 20 Consultation (Final) - {year}"
+            elif 'section 20' in file_name_lower:
+                title = f"Section 20 Consultation - {year}"
+            else:
+                title = f"Major Works Project - {year}"
 
         return {
             'id': str(uuid.uuid4()),
