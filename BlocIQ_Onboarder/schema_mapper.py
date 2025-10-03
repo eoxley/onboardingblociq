@@ -30,7 +30,7 @@ class SupabaseSchemaMapper:
                 'unit_count': 'integer',
                 'total_floors': 'varchar',
                 'lift_available': 'varchar',
-                'agency_id': 'uuid REFERENCES agencies(id)',
+                'portfolio_id': 'uuid REFERENCES portfolios(id)',  # BlocIQ V2: portfolio_id instead of agency_id
                 'council_borough': 'varchar',
                 'building_manager_name': 'varchar',
                 'building_manager_email': 'varchar',
@@ -317,10 +317,14 @@ class SupabaseSchemaMapper:
         return 'uncategorised'
 
     def map_building(self, property_form_data: Dict, leaseholder_data: Dict = None) -> Dict:
-        """Map to buildings table with exact column names - ENHANCED to capture all available fields"""
+        """
+        Map to buildings table with exact column names - ENHANCED to capture all available fields
+
+        Note: portfolio_id is added by SQL writer, not here
+        """
         building = {
             'id': str(uuid.uuid4()),
-            'agency_id': self.agency_id,
+            # portfolio_id will be added by SQL writer (BlocIQ V2)
             'building_type': 'residential'
         }
 
