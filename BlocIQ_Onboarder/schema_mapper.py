@@ -214,17 +214,50 @@ class SupabaseSchemaMapper:
             }
         }
     
-    def _normalize_category(self, raw_category: str) -> str:
+    def _normalize_category(self, raw_category: str, filename: str = None) -> str:
         """
         Normalize category to BlocIQ V2 standard categories.
         Returns one of: compliance, finance, major_works, lease, contracts, correspondence, uncategorised
+
+        Uses both classifier category AND filename for accurate mapping
         """
         if not raw_category:
-            return 'uncategorised'
+            raw_category = 'uncategorised'
 
         raw_lower = raw_category.lower()
+        filename_lower = filename.lower() if filename else ''
 
-        # Map classifier categories to V2 schema categories
+        # PRIORITY 1: Filename-based detection (most accurate)
+        if filename:
+            # Compliance keywords
+            if any(kw in filename_lower for kw in ['eicr', 'electrical', 'fire risk', 'fra', 'fire door',
+                                                     'legionella', 'insurance', 'pat test', 'gas safety',
+                                                     'emergency light', 'fire extinguish', 'loler', 'lift inspection']):
+                return 'compliance'
+
+            # Finance keywords
+            elif any(kw in filename_lower for kw in ['budget', 'account', 'invoice', 'apportionment',
+                                                       'demand', 'service charge', 'finance']):
+                return 'finance'
+
+            # Major works keywords
+            elif any(kw in filename_lower for kw in ['section 20', 's20', 'noi', 'soe', 'statement of estimate',
+                                                       'notice of intention', 'major works', 'contractor quote']):
+                return 'major_works'
+
+            # Lease keywords
+            elif any(kw in filename_lower for kw in ['lease', 'deed', 'covenant', 'lpe1', 'official copy']):
+                return 'lease'
+
+            # Contract keywords
+            elif any(kw in filename_lower for kw in ['contract', 'agreement', 'proposal', 'quotation', 'quote']):
+                return 'contracts'
+
+            # Correspondence keywords
+            elif any(kw in filename_lower for kw in ['letter', 'memo', 'notice', 'correspondence']):
+                return 'correspondence'
+
+        # PRIORITY 2: Classifier category mapping
         category_map = {
             'compliance': 'compliance',
             'budgets': 'finance',
@@ -241,14 +274,14 @@ class SupabaseSchemaMapper:
         if raw_lower in category_map:
             return category_map[raw_lower]
 
-        # Fuzzy matching
+        # PRIORITY 3: Fuzzy matching on category name
         if 'compliance' in raw_lower or 'eicr' in raw_lower or 'fra' in raw_lower:
             return 'compliance'
         elif 'budget' in raw_lower or 'finance' in raw_lower or 'apport' in raw_lower:
             return 'finance'
         elif 'major' in raw_lower or 'works' in raw_lower or 'section' in raw_lower:
             return 'major_works'
-        elif 'lease' in raw_lower or 'leaseholder' in raw_lower or 'unit' in raw_lower:
+        elif 'lease' in raw_lower or 'leaseholder' in raw_lower:
             return 'lease'
         elif 'contract' in raw_lower:
             return 'contracts'
@@ -425,21 +458,24 @@ class SupabaseSchemaMapper:
         """
         Map to building_documents table - BlocIQ V2 compliant
         ALWAYS sets a valid category (compliance, finance, major_works, lease, contracts, correspondence, uncategorised)
+        Uses filename-based detection for accurate categorization
         """
-        # Normalize category to V2 standards - NEVER None
-        normalized_category = self._normalize_category(category) if category else 'uncategorised'
+        filename = file_metadata['file_name']
+
+        # Normalize category to V2 standards using both category and filename - NEVER None
+        normalized_category = self._normalize_category(category, filename)
 
         # Build structured storage path
-        storage_path = f"/building_documents/{building_id}/{normalized_category}/{file_metadata['file_name']}"
+        storage_path = f"/building_documents/{building_id}/{normalized_category}/{filename}"
 
         doc_record = {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
-            'file_name': file_metadata['file_name'],
-            'file_type': self._get_file_extension(file_metadata['file_name']),
+            'file_name': filename,
+            'file_type': self._get_file_extension(filename),
             'storage_path': storage_path,
             'file_size': file_metadata.get('file_size', 0),
-            'category': normalized_category,  # REQUIRED - never NULL
+            'category': normalized_category,  # REQUIRED - never NULL, filename-aware
             'linked_entity_id': linked_entity_id,
             'entity_type': entity_type,
             'document_id': document_id,
