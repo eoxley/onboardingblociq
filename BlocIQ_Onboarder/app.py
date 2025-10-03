@@ -45,6 +45,7 @@ class BlocIQOnboarderApp:
         self.building_name = tk.StringVar()
         self.client_folder = tk.StringVar()
         self.is_processing = False
+        self.clear_timer = None  # Timer for auto-clearing SQL
         
         # Debug: Print to console
         print("Initializing BlocIQ Onboarder App...")
@@ -172,6 +173,23 @@ class BlocIQOnboarderApp:
             messagebox.showinfo("Copied!", "SQL copied to clipboard!\n\nYou can now paste it into Supabase SQL Editor.")
         else:
             messagebox.showwarning("Nothing to copy", "No SQL generated yet. Run the onboarder first.")
+
+    def clear_sql_and_memory(self):
+        """Clear SQL output and free memory after 20 minutes"""
+        self.results_text.delete(1.0, tk.END)
+        self.results_text.insert(1.0, "SQL has been cleared after 20 minutes to free memory.\n\nRun the onboarder again if you need to regenerate.")
+        self.status_var.set("SQL cleared - memory freed")
+        self.log("✅ SQL cleared and memory freed after 20 minutes")
+        self.clear_timer = None
+
+    def schedule_auto_clear(self):
+        """Schedule auto-clear after 20 minutes"""
+        # Cancel existing timer if any
+        if self.clear_timer:
+            self.root.after_cancel(self.clear_timer)
+
+        # Schedule new timer (20 minutes = 1,200,000 milliseconds)
+        self.clear_timer = self.root.after(1200000, self.clear_sql_and_memory)
     
     def log(self, message):
         """Add message to results area"""
@@ -254,7 +272,7 @@ class BlocIQOnboarderApp:
             try:
                 # Run the onboarder
                 onboarder.run()
-                
+
                 self.log("✅ Onboarding completed successfully!")
 
                 # Get output location
@@ -272,10 +290,22 @@ class BlocIQOnboarderApp:
                     self.log(f"✅ SQL generated! ({len(sql_content)} characters)")
                     self.status_var.set(f"✅ Complete! SQL ready to copy from Results tab")
 
+                    # Clean up large data structures from memory
+                    onboarder.parsed_files = None
+                    onboarder.mapped_data = None
+                    onboarder = None
+                    import gc
+                    gc.collect()
+                    self.log("🧹 Cleaned up processing data from memory")
+
+                    # Schedule auto-clear after 20 minutes
+                    self.schedule_auto_clear()
+                    self.log("⏱️ SQL will auto-clear in 20 minutes to free memory")
+
                     # Show completion message
                     self.root.after(0, lambda: messagebox.showinfo(
                         "Success",
-                        f"✅ SQL Generated!\n\nClick 'COPY SQL' button to copy.\n\nAlso saved to:\n{sql_file}"
+                        f"✅ SQL Generated!\n\nClick 'COPY SQL' button to copy.\n\nAlso saved to:\n{sql_file}\n\n⏱️ SQL will auto-clear in 20 minutes to free memory."
                     ))
                 else:
                     self.log("⚠️ SQL file not found")

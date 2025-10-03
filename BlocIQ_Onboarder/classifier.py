@@ -34,7 +34,8 @@ class DocumentClassifier:
                 r'.*leaseholder.*list.*',
                 r'.*unit.*list.*',
                 r'.*tenant.*list.*',
-                r'.*property.*form.*'
+                r'.*property.*form.*',
+                r'.*tenancy.*schedule.*'
             ],
             'column_patterns': ['unit', 'flat', 'leaseholder', 'owner', 'tenant', 'name', 'address']
         },

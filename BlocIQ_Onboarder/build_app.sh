@@ -19,6 +19,7 @@ rm -rf dist/BlocIQOnboarder.app build/BlocIQOnboarder BlocIQOnboarder.spec
 echo "🔨 Building application..."
 python3 -m PyInstaller --onedir --windowed \
     --add-data "icon.png:." \
+    --add-data "config:config" \
     --icon "icon.png" \
     app.py --name BlocIQOnboarder --clean
 

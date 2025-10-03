@@ -52,7 +52,8 @@ class BlocIQOnboarder:
 
         # Initialize components
         self.classifier = DocumentClassifier()
-        self.mapper = SupabaseMapper()
+        # Pass folder name to mapper for building name extraction
+        self.mapper = SupabaseMapper(folder_name=self.client_folder.name)
         self.sql_writer = SQLWriter()
         self.compliance_extractor = ComplianceAssetExtractor()
         self.major_works_extractor = MajorWorksExtractor()
@@ -168,6 +169,27 @@ class BlocIQOnboarder:
 
     def _map_to_schema(self):
         """Map classified files to Supabase schema with multi-source collation"""
+        # DEBUG: Write categorized_files state to log immediately
+        import json
+        debug_log_path = f"{self.output_dir}/categorized_files_debug.json"
+        with open(debug_log_path, 'w') as f:
+            debug_state = {}
+            for cat, files in self.categorized_files.items():
+                if files:
+                    debug_state[cat] = {
+                        'count': len(files),
+                        'files': [{'file_name': f.get('file_name', 'unknown'),
+                                   'has_data_key': 'data' in f,
+                                   'has_raw_data_key': 'raw_data' in f,
+                                   'top_level_keys': list(f.keys())} for f in files]
+                    }
+            json.dump(debug_state, f, indent=2)
+
+        print("\n  🔍 DEBUG: Categorized files state saved to:", debug_log_path)
+        print("  Categories with files:")
+        for cat, info in debug_state.items():
+            print(f"    {cat}: {info['count']} files")
+
         # Find property form for building address
         property_form = self._find_file_by_category('units_leaseholders', keywords=['property', 'form', 'setup', 'information'])
 
@@ -235,9 +257,20 @@ class BlocIQOnboarder:
                     print(f"     ✓ {file_data['file_name']} - {len(units)} units (leaseholder data)")
 
         # Extract from budget files (medium confidence)
+        budget_debug_log = []
         if self.categorized_files.get('budgets'):
+            print(f"  → Found {len(self.categorized_files['budgets'])} budget files")
+            budget_debug_log.append(f"Found {len(self.categorized_files['budgets'])} budget files")
             for file_data in self.categorized_files['budgets']:
+                fname = file_data.get('file_name', 'unknown')
+                has_data = 'data' in file_data
+                print(f"     Processing: {fname}")
+                print(f"     Has 'data' key: {has_data}")
+                budget_debug_log.append(f"Processing: {fname}, has_data: {has_data}")
+
                 units = self.mapper.map_units(file_data, building_id)
+                print(f"     → Extracted {len(units)} units")
+                budget_debug_log.append(f"  Extracted: {len(units)} units from {fname}")
                 if units:
                     collator.add_units_source(
                         units,
@@ -247,6 +280,12 @@ class BlocIQOnboarder:
                     )
                     sources_found += 1
                     print(f"     ✓ {file_data['file_name']} - {len(units)} units (budget)")
+
+        # Save budget debug log
+        if budget_debug_log:
+            debug_file = self.output_dir / 'budget_extraction_debug.log'
+            with open(debug_file, 'w') as f:
+                f.write('\n'.join(budget_debug_log))
 
         # Get merged units
         units = collator.get_merged_units()
@@ -288,11 +327,11 @@ class BlocIQOnboarder:
             self.mapped_data['unit_leaseholder_links'] = links
 
             # Store collation report
-            self.collation_report = collator.generate_collation_report()
+            self.collation_report = collator.generate_data_quality_report()
 
             # Show conflicts if any
-            if self.collation_report['summary']['total_conflicts'] > 0:
-                print(f"\n  ⚠️  {self.collation_report['summary']['total_conflicts']} conflicts detected and resolved")
+            if self.collation_report.get('conflicts_count', 0) > 0:
+                print(f"\n  ⚠️  {self.collation_report['conflicts_count']} conflicts detected and resolved")
         else:
             print("  ⚠️  No unit data found in any files")
             self.mapped_data['units'] = []
@@ -300,15 +339,46 @@ class BlocIQOnboarder:
             self.mapped_data['unit_leaseholder_links'] = []
             self.collation_report = None
 
-        # Map building documents
+        # Map building documents - DUAL-WRITE PATTERN
         documents = []
+        compliance_assets = []
+        major_works = []
+        finances = []
+
         for category, files in self.categorized_files.items():
             for file_data in files:
-                doc = self.mapper.map_building_documents(file_data, building_id, category)
-                documents.append(doc)
+                # Use dual-write pattern for compliance, major_works, and budgets
+                if category in ['compliance', 'major_works', 'budgets']:
+                    records = self.mapper.map_document_with_entities(file_data, building_id, category)
+                    for table_name, record in records:
+                        if table_name == 'building_documents':
+                            documents.append(record)
+                        elif table_name == 'compliance_assets':
+                            compliance_assets.append(record)
+                        elif table_name == 'major_works_projects':
+                            major_works.append(record)
+                        elif table_name == 'finances':
+                            finances.append(record)
+                else:
+                    # Regular document mapping for other categories
+                    doc = self.mapper.map_building_documents(file_data, building_id, category)
+                    documents.append(doc)
 
         self.mapped_data['building_documents'] = documents
+        if compliance_assets:
+            self.mapped_data['compliance_assets'] = self.mapped_data.get('compliance_assets', []) + compliance_assets
+        if major_works:
+            self.mapped_data['major_works_projects'] = self.mapped_data.get('major_works_projects', []) + major_works
+        if finances:
+            self.mapped_data['finances'] = self.mapped_data.get('finances', []) + finances
+
         print(f"  Documents: {len(documents)}")
+        if compliance_assets:
+            print(f"  Compliance Assets (from docs): {len(compliance_assets)}")
+        if major_works:
+            print(f"  Major Works Projects (from docs): {len(major_works)}")
+        if finances:
+            print(f"  Finance Records (from docs): {len(finances)}")
 
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),
@@ -388,12 +458,11 @@ class BlocIQOnboarder:
             print(f"  ✅ Collation report: {collation_file}")
 
             # Show summary
-            summary = self.collation_report['summary']
             print(f"\n  📊 Data Collation Summary:")
-            print(f"     • Sources used: {summary['sources_used']}")
-            print(f"     • Units merged: {summary['total_units']}")
-            print(f"     • Leaseholders merged: {summary['total_leaseholders']}")
-            print(f"     • Conflicts resolved: {summary['total_conflicts']}")
+            print(f"     • Units: {len(self.mapped_data.get('units', []))}")
+            print(f"     • Leaseholders: {len(self.mapped_data.get('leaseholders', []))}")
+            print(f"     • Conflicts resolved: {self.collation_report.get('conflicts_count', 0)}")
+            print(f"     • Merges performed: {self.collation_report.get('merges_count', 0)}")
 
         # Summary JSON
         summary = {

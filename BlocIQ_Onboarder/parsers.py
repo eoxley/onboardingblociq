@@ -62,8 +62,29 @@ class ExcelParser(FileParser):
             return result
 
         except Exception as e:
-            # Fallback to openpyxl for complex formatted sheets
-            return self._parse_with_openpyxl()
+            # Try with xlrd engine for old .xls format files
+            try:
+                df = pd.read_excel(self.file_path, sheet_name=None, engine='xlrd')
+
+                result = {
+                    **self.get_file_metadata(),
+                    'sheets': list(df.keys()),
+                    'total_rows': sum(len(sheet) for sheet in df.values()),
+                    'data': {}
+                }
+
+                for sheet_name, sheet_df in df.items():
+                    result['data'][sheet_name] = {
+                        'rows': len(sheet_df),
+                        'columns': list(sheet_df.columns),
+                        'sample': sheet_df.head(5).to_dict('records') if not sheet_df.empty else [],
+                        'raw_data': sheet_df.to_dict('records')
+                    }
+
+                return result
+            except:
+                # Final fallback to openpyxl for complex formatted sheets
+                return self._parse_with_openpyxl()
 
     def _parse_with_openpyxl(self) -> Dict[str, Any]:
         """Parse complex Excel files with formatting"""

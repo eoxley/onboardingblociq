@@ -55,6 +55,10 @@ class SQLWriter:
         if 'major_works_projects' in mapped_data:
             self._generate_major_works_inserts(mapped_data['major_works_projects'])
 
+        # NEW: Finance records (depends on building/units)
+        if 'finances' in mapped_data:
+            self._generate_finances_inserts(mapped_data['finances'])
+
         # Update units with leaseholder_ids
         if 'unit_leaseholder_links' in mapped_data:
             self._generate_unit_updates(mapped_data['unit_leaseholder_links'])
@@ -90,7 +94,7 @@ class SQLWriter:
         """Generate INSERT for buildings table"""
         self.sql_statements.append("-- Insert building")
         self.sql_statements.append(
-            self._create_insert_statement('buildings', building)
+            self._create_insert_statement('buildings', building, use_upsert=False)
         )
         self.sql_statements.append("")
 
@@ -103,7 +107,7 @@ class SQLWriter:
 
         for unit in units:
             self.sql_statements.append(
-                self._create_insert_statement('units', unit)
+                self._create_insert_statement('units', unit, use_upsert=False)
             )
 
         self.sql_statements.append("")
@@ -117,7 +121,7 @@ class SQLWriter:
 
         for leaseholder in leaseholders:
             self.sql_statements.append(
-                self._create_insert_statement('leaseholders', leaseholder)
+                self._create_insert_statement('leaseholders', leaseholder, use_upsert=False)
             )
 
         self.sql_statements.append("")
@@ -131,7 +135,7 @@ class SQLWriter:
 
         for doc in documents:
             self.sql_statements.append(
-                self._create_insert_statement('building_documents', doc)
+                self._create_insert_statement('building_documents', doc, use_upsert=False)
             )
 
         self.sql_statements.append("")
@@ -160,7 +164,7 @@ class SQLWriter:
 
         for asset in assets:
             self.sql_statements.append(
-                self._create_insert_statement('compliance_assets', asset)
+                self._create_insert_statement('compliance_assets', asset, use_upsert=False)
             )
 
         self.sql_statements.append("")
@@ -174,7 +178,7 @@ class SQLWriter:
 
         for inspection in inspections:
             self.sql_statements.append(
-                self._create_insert_statement('compliance_inspections', inspection)
+                self._create_insert_statement('compliance_inspections', inspection, use_upsert=False)
             )
 
         self.sql_statements.append("")
@@ -188,7 +192,21 @@ class SQLWriter:
 
         for project in projects:
             self.sql_statements.append(
-                self._create_insert_statement('major_works_projects', project)
+                self._create_insert_statement('major_works_projects', project, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_finances_inserts(self, finances: List[Dict]):
+        """Generate INSERTs for finances table"""
+        if not finances:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(finances)} finance records")
+
+        for finance in finances:
+            self.sql_statements.append(
+                self._create_insert_statement('finances', finance, use_upsert=False)
             )
 
         self.sql_statements.append("")

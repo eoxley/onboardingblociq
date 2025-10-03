@@ -11,9 +11,10 @@ import uuid
 
 class SupabaseSchemaMapper:
     """Maps data to exact Supabase table schemas"""
-    
-    def __init__(self, agency_id: str = '00000000-0000-0000-0000-000000000001'):
+
+    def __init__(self, agency_id: str = '00000000-0000-0000-0000-000000000001', folder_name: str = None):
         self.agency_id = agency_id
+        self.folder_name = folder_name
         
         # Define exact column mappings for each table - COMPLETE SCHEMA
         self.table_schemas = {
@@ -69,9 +70,7 @@ class SupabaseSchemaMapper:
                 'type': 'varchar',  # 'flat', 'commercial', etc.
                 'floor': 'varchar',
                 'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
-                'apportionment_percent': 'numeric',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'apportionment_percent': 'decimal(5,2)'
             },
             'leaseholders': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -82,9 +81,7 @@ class SupabaseSchemaMapper:
                 'phone_number': 'text',
                 'email': 'text',
                 'correspondence_address': 'text',
-                'is_director': 'boolean DEFAULT false',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'is_director': 'boolean DEFAULT false'
             },
             'building_documents': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -101,8 +98,9 @@ class SupabaseSchemaMapper:
                 'unit_id': 'uuid REFERENCES units(id)',
                 'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
                 'uploaded_by': 'uuid REFERENCES users(id)',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'category': 'text NOT NULL DEFAULT \'uncategorized\'',
+                'linked_entity_id': 'uuid',
+                'entity_type': 'text'  # 'unit', 'leaseholder', 'compliance_asset', 'major_works', 'finance'
             },
             'compliance_assets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -126,9 +124,7 @@ class SupabaseSchemaMapper:
                 'certificate_url': 'text',
                 'notes': 'text',
                 'compliance_reference': 'varchar',
-                'custom_asset': 'boolean DEFAULT false',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'custom_asset': 'boolean DEFAULT false'
             },
             'compliance_inspections': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -150,9 +146,7 @@ class SupabaseSchemaMapper:
                 'actions_required': 'text',
                 'next_inspection_due': 'date',
                 'follow_up_required': 'boolean DEFAULT false',
-                'compliance_notes': 'text',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'compliance_notes': 'text'
             },
             'major_works_projects': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -176,9 +170,22 @@ class SupabaseSchemaMapper:
                 'statement_of_estimates_date': 'date',
                 'contractor_appointed_date': 'date',
                 'is_active': 'boolean DEFAULT true',
-                'notes': 'text',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'notes': 'text'
+            },
+            'finances': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid REFERENCES buildings(id)',
+                'unit_id': 'uuid REFERENCES units(id)',
+                'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
+                'financial_year': 'varchar',
+                'service_charge_budget': 'decimal',
+                'service_charge_actual': 'decimal',
+                'reserve_fund_contribution': 'decimal',
+                'ground_rent': 'decimal',
+                'balance': 'decimal',
+                'arrears': 'decimal',
+                'last_updated': 'timestamp with time zone',
+                'notes': 'text'
             }
         }
     
@@ -187,9 +194,7 @@ class SupabaseSchemaMapper:
         building = {
             'id': str(uuid.uuid4()),
             'agency_id': self.agency_id,
-            'building_type': 'residential',
-            'created_at': datetime.now().isoformat(),
-            'updated_at': datetime.now().isoformat()
+            'building_type': 'residential'
         }
 
         # Extract from property form
@@ -242,16 +247,37 @@ class SupabaseSchemaMapper:
             building['entry_code'] = self._extract_field(property_form_data, ['entry code', 'door code', 'access code'])
             building['fire_panel_location'] = self._extract_field(property_form_data, ['fire panel', 'fire alarm panel', 'fire control'])
 
-        # Extract address from leaseholder data
-        if leaseholder_data:
-            building['address'] = self._extract_building_address(leaseholder_data)
+        # Extract address - try property form first, then leaseholder data, then folder name
+        address = None
+        if property_form_data:
+            address = self._extract_building_address_from_property_form(property_form_data)
+        if not address and leaseholder_data:
+            address = self._extract_building_address(leaseholder_data)
+        if not address and self.folder_name:
+            # Extract from folder name like "219.01 CONNAUGHT SQUARE"
+            import re
+            match = re.search(r'([A-Z][A-Za-z\s]+SQUARE|[A-Z][A-Za-z\s]+ROAD|[A-Z][A-Za-z\s]+STREET)', self.folder_name)
+            if match:
+                address = match.group(1).strip()
+        building['address'] = address or ''
 
         return building
     
     def map_units(self, leaseholder_data: Dict, building_id: str) -> List[Dict]:
         """Map to units table with exact column names - ENHANCED to capture apportionment"""
         units = []
+
+        # Handle Excel sheet structure: extract raw_data from first sheet if nested
         raw_data = leaseholder_data.get('raw_data', [])
+
+        if not raw_data and 'data' in leaseholder_data:
+            # Excel files have nested structure: data -> {sheet_name} -> raw_data
+            data_value = leaseholder_data['data']
+            if isinstance(data_value, dict):
+                for sheet_name, sheet_data in data_value.items():
+                    if isinstance(sheet_data, dict) and 'raw_data' in sheet_data:
+                        raw_data = sheet_data['raw_data']
+                        break  # Use first sheet with data
 
         for row in raw_data:
             unit_number = self._extract_unit_number(row)
@@ -263,26 +289,18 @@ class SupabaseSchemaMapper:
                 'building_id': building_id,
                 'unit_number': unit_number,
                 'type': 'flat',
-                'floor': self._calculate_floor(unit_number),
-                'created_at': datetime.now().isoformat(),
-                'updated_at': datetime.now().isoformat()
+                'floor': self._calculate_floor(unit_number)
             }
 
-            # Extract apportionment percentage (critical for service charge calculations)
-            # Try multiple column name variations
-            apportionment = self._extract_field_from_row(row, ['rate', 'apportionment', 'apportionment %', 'percentage', '%', 'share'])
+            # Extract apportionment percentage if available
+            apportionment = self._extract_field_from_row(row, ['rate', 'percentage', 'apportionment', '%', 'percent'])
             if apportionment:
-                import re
-                # Extract numeric value, remove % sign and whitespace
-                cleaned = re.sub(r'[%\s]', '', str(apportionment))
-                match = re.search(r'[\d.]+', cleaned)
-                if match:
-                    percent_value = float(match.group())
-                    # If value is > 1, it's likely already a percentage (e.g., 14.285)
-                    # If value is < 1, it might be a decimal (e.g., 0.14285) so convert to percentage
-                    if percent_value < 1:
-                        percent_value = percent_value * 100
-                    unit['apportionment_percent'] = percent_value
+                # Clean the value - remove % sign and convert to decimal
+                try:
+                    apportionment_clean = str(apportionment).replace('%', '').strip()
+                    unit['apportionment_percent'] = float(apportionment_clean)
+                except (ValueError, AttributeError):
+                    pass
 
             units.append(unit)
 
@@ -291,8 +309,21 @@ class SupabaseSchemaMapper:
     def map_leaseholders(self, leaseholder_data: Dict, unit_map: Dict[str, str]) -> List[Dict]:
         """Map to leaseholders table with exact column names"""
         leaseholders = []
+
+        # Check if this is a Tenancy Schedule PDF (text-based extraction)
+        file_name = leaseholder_data.get('file_name', '')
+        if 'tenancy schedule' in file_name.lower() and 'full_text' in leaseholder_data:
+            return self._extract_leaseholders_from_tenancy_schedule(leaseholder_data, unit_map)
+
+        # Handle Excel sheet structure: extract raw_data from first sheet if nested
         raw_data = leaseholder_data.get('raw_data', [])
-        
+        if not raw_data and 'data' in leaseholder_data:
+            # Excel files have nested structure: data -> {sheet_name} -> raw_data
+            for sheet_name, sheet_data in leaseholder_data['data'].items():
+                if 'raw_data' in sheet_data:
+                    raw_data = sheet_data['raw_data']
+                    break  # Use first sheet with data
+
         for row in raw_data:
             unit_number = self._extract_unit_number(row)
             if not unit_number or self._is_special_unit(unit_number):
@@ -315,29 +346,31 @@ class SupabaseSchemaMapper:
                 'phone_number': self._extract_field_from_row(row, ['telephone', 'phone', 'mobile']),
                 'email': self._extract_field_from_row(row, ['email', 'email address']),
                 'correspondence_address': self._extract_field_from_row(row, ['address', 'correspondence address']),
-                'is_director': False,
-                'created_at': datetime.now().isoformat(),
-                'updated_at': datetime.now().isoformat()
+                'is_director': False
             }
             leaseholders.append(leaseholder)
         
         return leaseholders
     
-    def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = 'uncategorized') -> Dict:
-        """Map to building_documents table with exact column names"""
+    def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = 'uncategorized',
+                               linked_entity_id: str = None, entity_type: str = None) -> Dict:
+        """Map to building_documents table with exact column names - ENHANCED with linkage"""
+        storage_path = f"/building_documents/{building_id}/{category}/{file_metadata['file_name']}"
+
         return {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
             'file_name': file_metadata['file_name'],  # NOT document_name
             'file_type': self._get_file_extension(file_metadata['file_name']),  # NOT document_type
-            'storage_path': file_metadata['file_path'],  # NOT file_path
+            'storage_path': storage_path,  # Structured path by category
             'file_size': file_metadata.get('file_size', 0),
             'type': category,  # classification/category
             'confidence': file_metadata.get('confidence', 0.0),
             'confidence_level': self._get_confidence_level(file_metadata.get('confidence', 0.0)),
             'is_unlinked': False,
-            'created_at': datetime.now().isoformat(),
-            'updated_at': datetime.now().isoformat()
+            'category': category,  # NEW: explicit category field
+            'linked_entity_id': linked_entity_id,  # NEW: link to related record
+            'entity_type': entity_type  # NEW: type of linked entity
         }
     
     def get_table_columns(self, table_name: str) -> List[str]:
@@ -351,17 +384,33 @@ class SupabaseSchemaMapper:
     
     # Helper methods (same as before)
     def _extract_building_name(self, data: Dict) -> str:
-        """Extract building name from various sources"""
+        """Extract building name from various sources with priority order"""
+        import re
+
+        # Priority 1: Extract from folder name (e.g., "219.01 CONNAUGHT SQUARE" -> "Connaught Square")
+        if self.folder_name:
+            # Remove common prefixes like numbers, dots, and clean up
+            folder_cleaned = re.sub(r'^\d+(\.\d+)?\s+', '', self.folder_name, flags=re.IGNORECASE)
+            folder_cleaned = folder_cleaned.strip()
+            if folder_cleaned and len(folder_cleaned) > 3:
+                return folder_cleaned.title()
+
+        # Priority 2: Extract from property form filename
         if 'file_name' in data:
             filename = data['file_name']
-            import re
             name = re.sub(r'\s*(property|form|setup|information).*', '', filename, flags=re.IGNORECASE)
             name = re.sub(r'\.(xlsx|xls|pdf|docx)$', '', name, flags=re.IGNORECASE)
-            if name and len(name) > 3:
+            # Only use filename if it's not a generic placeholder and doesn't contain "important"
+            if name and len(name) > 3 and 'important' not in name.lower():
                 return name.strip().title()
-        
+
+        # Priority 3: Extract from property form data fields
         name = self._extract_field(data, ['property', 'building', 'name', 'address'])
-        return name if name else 'Unknown Building'
+        if name and 'important' not in name.lower():
+            return name
+
+        # Fallback
+        return 'Unknown Building'
     
     def _extract_building_address(self, leaseholder_data: Dict) -> str:
         """Extract building address from leaseholder records"""
@@ -394,7 +443,42 @@ class SupabaseSchemaMapper:
             if match:
                 return match.group(1).strip()
         return None
-    
+
+    def _extract_leaseholders_from_tenancy_schedule(self, file_data: Dict, unit_map: Dict[str, str]) -> List[Dict]:
+        """Extract leaseholders from Tenancy Schedule PDF text"""
+        leaseholders = []
+        text = file_data.get('full_text', '')
+
+        # Parse lines like: "Flat 1, 32-34 Connaught Square Marmotte Holdings Limited n/a"
+        # Pattern: "Flat X, [address] [Name] n/a"
+        import re
+        # Match: Flat X, then skip address (number + street name), capture only the name before "n/a"
+        # The pattern skips "32-34 Connaught Square" and captures "Marmotte Holdings Limited"
+        pattern = r'(Flat\s+\d+),\s+[\d\-]+\s+[A-Za-z\s]+?Square\s+([^\n]+?)\s+n/a'
+
+        for match in re.finditer(pattern, text):
+            unit_number = match.group(1).strip()  # "Flat 1"
+            leaseholder_name = match.group(2).strip()  # "Marmotte Holdings Limited"
+
+            unit_id = unit_map.get(unit_number)
+            if not unit_id:
+                continue
+
+            leaseholder = {
+                'id': str(uuid.uuid4()),
+                'unit_id': unit_id,
+                'name': leaseholder_name,
+                'full_name': leaseholder_name,
+                'phone': None,
+                'phone_number': None,
+                'email': None,
+                'correspondence_address': None,
+                'is_director': False
+            }
+            leaseholders.append(leaseholder)
+
+        return leaseholders
+
     def _extract_unit_number(self, row: Dict) -> Optional[str]:
         """Extract unit number from row data"""
         # First try 'Unit description' column (priority for apportionment files)
@@ -448,7 +532,20 @@ class SupabaseSchemaMapper:
             for sheet_data in data['data'].values():
                 if 'raw_data' in sheet_data:
                     for row in sheet_data['raw_data']:
-                        if isinstance(row, list) and len(row) >= 2:
+                        # Handle dict rows (modern Excel format)
+                        if isinstance(row, dict):
+                            # Look for keywords in VALUES of first column
+                            row_values = list(row.values())
+                            if len(row_values) >= 2:
+                                first_col = str(row_values[0]).lower().strip() if row_values[0] is not None else ''
+                                for keyword in keywords:
+                                    if keyword.lower() in first_col:
+                                        # Return value from second column
+                                        if row_values[1] is not None and str(row_values[1]) != 'nan':
+                                            return str(row_values[1]).strip()
+                                        return None
+                        # Handle list rows (legacy format)
+                        elif isinstance(row, list) and len(row) >= 2:
                             for keyword in keywords:
                                 if keyword.lower() in str(row[0]).lower():
                                     return str(row[1]).strip()
@@ -556,3 +653,144 @@ class SupabaseSchemaMapper:
                     pass
 
         return None
+
+    def map_compliance_asset(self, file_metadata: Dict, building_id: str, category: str) -> Dict:
+        """Map compliance document to compliance_assets table - DUAL-WRITE PATTERN"""
+        import re
+        from datetime import datetime, timedelta
+
+        # Extract compliance type from filename/category
+        file_name = file_metadata['file_name'].lower()
+
+        # Determine asset type and inspection frequency
+        asset_type_map = {
+            'eicr': ('Electrical Installation Condition Report (EICR)', 'electrical', 60),
+            'electrical': ('Electrical Installation Condition Report (EICR)', 'electrical', 60),
+            'fra': ('Fire Risk Assessment (FRA)', 'fire_safety', 12),
+            'fire risk': ('Fire Risk Assessment (FRA)', 'fire_safety', 12),
+            'fire': ('Fire Risk Assessment (FRA)', 'fire_safety', 12),
+            'legionella': ('Legionella Risk Assessment', 'water_safety', 24),
+            'water': ('Legionella Risk Assessment', 'water_safety', 24),
+            'insurance': ('Building Insurance Policy', 'insurance', 12),
+            'gas': ('Gas Safety Certificate', 'gas_safety', 12),
+            'emergency light': ('Emergency Lighting Testing', 'electrical', 12),
+            'fire extinguisher': ('Fire Extinguisher Servicing', 'fire_safety', 12),
+            'pat': ('Portable Appliance Testing (PAT)', 'electrical', 12),
+            'fire door': ('Fire Door Inspection', 'fire_safety', 12)
+        }
+
+        asset_name = 'Compliance Asset'
+        asset_type = 'general'
+        frequency_months = 12
+
+        for key, (name, type_, freq) in asset_type_map.items():
+            if key in file_name:
+                asset_name = name
+                asset_type = type_
+                frequency_months = freq
+                break
+
+        # Try to extract dates from filename
+        # Patterns: 2023, 2023-2024, 01.23, etc.
+        last_inspection_date = None
+        next_due_date = None
+
+        # Try to find year in filename
+        year_match = re.search(r'20(\d{2})', file_name)
+        if year_match:
+            year = int(f"20{year_match.group(1)}")
+            # Assume inspection was in January of that year
+            try:
+                last_inspection_date = f"{year}-01-01"
+                # Calculate next due date
+                next_due = datetime(year, 1, 1) + timedelta(days=frequency_months * 30)
+                next_due_date = next_due.date().isoformat()
+            except:
+                pass
+
+        # Determine status
+        status = 'pending'
+        if next_due_date:
+            try:
+                due_date_obj = datetime.fromisoformat(next_due_date)
+                if due_date_obj < datetime.now():
+                    status = 'overdue'
+                elif (due_date_obj - datetime.now()).days < 30:
+                    status = 'due_soon'
+                else:
+                    status = 'compliant'
+            except:
+                pass
+
+        return {
+            'id': str(uuid.uuid4()),
+            'building_id': building_id,
+            'asset_name': asset_name,
+            'asset_type': asset_type,
+            'category': category if category == 'compliance' else 'compliance',
+            'description': f"Extracted from {file_metadata['file_name']}",
+            'is_required': True,
+            'is_active': True,
+            'inspection_frequency': f"{frequency_months} months",
+            'frequency_months': frequency_months,
+            'status': status,
+            'last_inspection_date': last_inspection_date,
+            'next_due_date': next_due_date,
+            'notes': f"Auto-imported from document: {file_metadata['file_name']}"
+        }
+
+    def map_major_works(self, file_metadata: Dict, building_id: str) -> Dict:
+        """Map major works document to major_works_projects table - DUAL-WRITE PATTERN"""
+        import re
+
+        file_name = file_metadata['file_name']
+
+        # Determine project type from filename
+        project_type = 'general'
+        if 'section 20' in file_name.lower() or 's20' in file_name.lower():
+            project_type = 'section_20'
+        elif 'statement of estimate' in file_name.lower() or 'soe' in file_name.lower():
+            project_type = 'statement_of_estimates'
+        elif 'contractor' in file_name.lower() or 'quote' in file_name.lower():
+            project_type = 'contractor_quote'
+
+        # Extract year if present
+        year_match = re.search(r'20(\d{2})', file_name)
+        year = f"20{year_match.group(1)}" if year_match else datetime.now().year
+
+        # Create descriptive title
+        title = f"Major Works Project - {year}"
+        if 'section 20' in file_name.lower():
+            title = f"Section 20 Consultation - {year}"
+
+        return {
+            'id': str(uuid.uuid4()),
+            'building_id': building_id,
+            'title': title,
+            'name': title,
+            'description': f"Extracted from {file_name}",
+            'project_type': project_type,
+            'status': 'planned',
+            'start_date': f"{year}-01-01",
+            'is_active': True,
+            'notes': f"Auto-imported from document: {file_name}"
+        }
+
+    def map_finance(self, file_metadata: Dict, building_id: str, unit_id: str = None) -> Dict:
+        """Map finance document to finances table - DUAL-WRITE PATTERN"""
+        import re
+
+        file_name = file_metadata['file_name']
+
+        # Extract financial year from filename
+        year_match = re.search(r'20(\d{2})', file_name)
+        financial_year = f"20{year_match.group(1)}" if year_match else str(datetime.now().year)
+
+        return {
+            'id': str(uuid.uuid4()),
+            'building_id': building_id,
+            'unit_id': unit_id,
+            'financial_year': financial_year,
+            'last_updated': datetime.now().isoformat(),
+            'notes': f"Auto-imported from document: {file_name}"
+        }
