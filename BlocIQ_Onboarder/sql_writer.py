@@ -68,6 +68,10 @@ class SQLWriter:
         if 'apportionments' in mapped_data:
             self._generate_apportionments_inserts(mapped_data['apportionments'])
 
+        # BlocIQ V2: Uncategorised documents (for manual review)
+        if 'uncategorised_docs' in mapped_data:
+            self._generate_uncategorised_docs_inserts(mapped_data['uncategorised_docs'])
+
         # Compliance inspections (legacy)
         if 'compliance_inspections' in mapped_data:
             self._generate_compliance_inspections_inserts(mapped_data['compliance_inspections'])
@@ -262,6 +266,20 @@ class SQLWriter:
         for notice in notices:
             self.sql_statements.append(
                 self._create_insert_statement('major_works_notices', notice, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_uncategorised_docs_inserts(self, docs: List[Dict]):
+        """Generate INSERTs for uncategorised_docs table - BlocIQ V2"""
+        if not docs:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(docs)} uncategorised documents for manual review")
+
+        for doc in docs:
+            self.sql_statements.append(
+                self._create_insert_statement('uncategorised_docs', doc, use_upsert=False)
             )
 
         self.sql_statements.append("")

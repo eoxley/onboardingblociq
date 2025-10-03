@@ -211,6 +211,19 @@ class SupabaseSchemaMapper:
                 'frequency': 'varchar',  # annual, biennial, quinquennial
                 'created_at': 'timestamp with time zone DEFAULT now()',
                 'notes': 'text'
+            },
+            'uncategorised_docs': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'file_name': 'text NOT NULL',
+                'storage_path': 'text',
+                'review_status': 'varchar DEFAULT \'pending\'',  # pending, reviewed, categorized
+                'suggested_category': 'text',
+                'manual_category': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'reviewed_at': 'timestamp with time zone',
+                'notes': 'text'
             }
         }
     
@@ -769,67 +782,79 @@ class SupabaseSchemaMapper:
         return None
 
     def map_compliance_asset(self, file_metadata: Dict, building_id: str, category: str) -> Dict:
-        """Map compliance document to compliance_assets table - DUAL-WRITE PATTERN"""
+        """
+        Map compliance document to compliance_assets table - BlocIQ V2 DUAL-WRITE PATTERN
+        Detects compliance subtype: EICR (5yr), FRA (annual), Fire Door (annual), LOLER (6mo), Insurance (annual)
+        """
         import re
         from datetime import datetime, timedelta
+        from dateutil.relativedelta import relativedelta
 
         # Extract compliance type from filename/category
         file_name = file_metadata['file_name'].lower()
 
-        # Determine asset type and inspection frequency
+        # BlocIQ V2 Compliance Subtype Detection with Frequencies
+        # EICR: 5 years, FRA: annual, Fire Door: annual, LOLER: 6 months, Insurance: annual
         asset_type_map = {
-            'eicr': ('Electrical Installation Condition Report (EICR)', 'electrical', 60),
-            'electrical': ('Electrical Installation Condition Report (EICR)', 'electrical', 60),
-            'fra': ('Fire Risk Assessment (FRA)', 'fire_safety', 12),
-            'fire risk': ('Fire Risk Assessment (FRA)', 'fire_safety', 12),
-            'fire': ('Fire Risk Assessment (FRA)', 'fire_safety', 12),
-            'legionella': ('Legionella Risk Assessment', 'water_safety', 24),
-            'water': ('Legionella Risk Assessment', 'water_safety', 24),
-            'insurance': ('Building Insurance Policy', 'insurance', 12),
-            'gas': ('Gas Safety Certificate', 'gas_safety', 12),
-            'emergency light': ('Emergency Lighting Testing', 'electrical', 12),
-            'fire extinguisher': ('Fire Extinguisher Servicing', 'fire_safety', 12),
-            'pat': ('Portable Appliance Testing (PAT)', 'electrical', 12),
-            'fire door': ('Fire Door Inspection', 'fire_safety', 12)
+            'loler': ('Lift Inspection (LOLER)', 'lift_safety', 'biannual', 6),
+            'lift inspection': ('Lift Inspection (LOLER)', 'lift_safety', 'biannual', 6),
+            'lift': ('Lift Inspection (LOLER)', 'lift_safety', 'biannual', 6),
+            'eicr': ('Electrical Installation Condition Report (EICR)', 'electrical', 'quinquennial', 60),
+            'electrical': ('Electrical Installation Condition Report (EICR)', 'electrical', 'quinquennial', 60),
+            'fire door': ('Fire Door Inspection', 'fire_safety', 'annual', 12),
+            'fra': ('Fire Risk Assessment (FRA)', 'fire_safety', 'annual', 12),
+            'fire risk': ('Fire Risk Assessment (FRA)', 'fire_safety', 'annual', 12),
+            'insurance': ('Building Insurance Policy', 'insurance', 'annual', 12),
+            'legionella': ('Legionella Risk Assessment', 'water_safety', 'biennial', 24),
+            'water': ('Legionella Risk Assessment', 'water_safety', 'biennial', 24),
+            'gas': ('Gas Safety Certificate', 'gas_safety', 'annual', 12),
+            'emergency light': ('Emergency Lighting Testing', 'electrical', 'annual', 12),
+            'fire extinguisher': ('Fire Extinguisher Servicing', 'fire_safety', 'annual', 12),
+            'pat': ('Portable Appliance Testing (PAT)', 'electrical', 'annual', 12)
         }
 
         asset_name = 'Compliance Asset'
         asset_type = 'general'
+        frequency = 'annual'
         frequency_months = 12
 
-        for key, (name, type_, freq) in asset_type_map.items():
+        # Priority order: most specific first (LOLER > lift, fire door > fire)
+        for key, (name, type_, freq, freq_months) in asset_type_map.items():
             if key in file_name:
                 asset_name = name
                 asset_type = type_
-                frequency_months = freq
+                frequency = freq
+                frequency_months = freq_months
                 break
 
         # Try to extract dates from filename
-        # Patterns: 2023, 2023-2024, 01.23, etc.
+        # Patterns: 2023, 2023-2024, 01.23, DD.MM.YY, etc.
         last_inspection_date = None
         next_due_date = None
 
-        # Try to find year in filename
+        # Try to find year in filename (prioritize 4-digit years)
         year_match = re.search(r'20(\d{2})', file_name)
         if year_match:
             year = int(f"20{year_match.group(1)}")
             # Assume inspection was in January of that year
             try:
                 last_inspection_date = f"{year}-01-01"
-                # Calculate next due date
-                next_due = datetime(year, 1, 1) + timedelta(days=frequency_months * 30)
+                # Calculate next due date using frequency_months
+                inspection_date = datetime(year, 1, 1)
+                next_due = inspection_date + relativedelta(months=frequency_months)
                 next_due_date = next_due.date().isoformat()
             except:
                 pass
 
-        # Determine status
+        # Determine status based on next_due_date
         status = 'pending'
         if next_due_date:
             try:
                 due_date_obj = datetime.fromisoformat(next_due_date)
-                if due_date_obj < datetime.now():
+                today = datetime.now()
+                if due_date_obj < today:
                     status = 'overdue'
-                elif (due_date_obj - datetime.now()).days < 30:
+                elif (due_date_obj - today).days < 30:
                     status = 'due_soon'
                 else:
                     status = 'compliant'
@@ -845,7 +870,7 @@ class SupabaseSchemaMapper:
             'description': f"Extracted from {file_metadata['file_name']}",
             'is_required': True,
             'is_active': True,
-            'inspection_frequency': f"{frequency_months} months",
+            'inspection_frequency': frequency,
             'frequency_months': frequency_months,
             'status': status,
             'last_inspection_date': last_inspection_date,
@@ -854,10 +879,23 @@ class SupabaseSchemaMapper:
         }
 
     def map_budget(self, file_metadata: Dict, building_id: str, document_id: str) -> Dict:
-        """Map budget document to budgets table - BlocIQ V2"""
+        """
+        Map budget document to budgets table - BlocIQ V2
+        Detects finance subtype: Budget, Service Charge Account, Invoice
+        """
         import re
 
         file_name = file_metadata['file_name']
+        file_name_lower = file_name.lower()
+
+        # Detect finance subtype
+        finance_subtype = 'budget'  # Default
+        if 'account' in file_name_lower or 'year end' in file_name_lower:
+            finance_subtype = 'service_charge_account'
+        elif 'invoice' in file_name_lower or 'demand' in file_name_lower:
+            finance_subtype = 'invoice'
+        elif 'budget' in file_name_lower:
+            finance_subtype = 'budget'
 
         # Extract period from filename (YE24, 2024-2025, etc.)
         period = 'Unknown'
@@ -880,46 +918,69 @@ class SupabaseSchemaMapper:
                 if year_match:
                     period = f"20{year_match.group(1)}"
 
+        # Determine status based on subtype
+        status = 'draft'
+        if finance_subtype == 'service_charge_account':
+            status = 'approved'  # Accounts are typically finalized
+        elif finance_subtype == 'invoice':
+            status = 'approved'  # Invoices are typically sent/approved
+
         return {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
             'period': period,
             'document_id': document_id,
-            'status': 'draft',
-            'notes': f"Auto-imported from {file_name}"
+            'status': status,
+            'finance_subtype': finance_subtype,  # budget, service_charge_account, invoice
+            'notes': f"Auto-imported from {file_name} (Type: {finance_subtype})"
         }
 
     def map_major_works(self, file_metadata: Dict, building_id: str) -> Dict:
-        """Map major works document to major_works_projects table - BlocIQ V2"""
+        """
+        Map major works document to major_works_projects table - BlocIQ V2
+        Detects notice type: NOI (Notice of Intention), SOE (Statement of Estimates), Final Notice
+        """
         import re
+        from datetime import datetime
 
         file_name = file_metadata['file_name']
+        file_name_lower = file_name.lower()
 
-        # Determine project type from filename
+        # BlocIQ V2: Determine notice type from filename
         project_type = 'general'
         notice_type = None
 
-        if 'section 20' in file_name.lower() or 's20' in file_name.lower():
-            if 'noi' in file_name.lower() or 'notice of intention' in file_name.lower():
-                project_type = 'section_20'
-                notice_type = 'NOI'
-            elif 'soe' in file_name.lower() or 'statement of estimate' in file_name.lower():
-                project_type = 'section_20'
-                notice_type = 'SOE'
-            else:
-                project_type = 'section_20'
-                notice_type = 'NOI'  # Default to NOI
-        elif 'contractor' in file_name.lower() or 'quote' in file_name.lower():
+        # Priority detection for notice types
+        if 'final notice' in file_name_lower or 'final account' in file_name_lower:
+            project_type = 'section_20'
+            notice_type = 'final_notice'
+        elif 'soe' in file_name_lower or 'statement of estimate' in file_name_lower:
+            project_type = 'section_20'
+            notice_type = 'SOE'
+        elif 'noi' in file_name_lower or 'notice of intention' in file_name_lower:
+            project_type = 'section_20'
+            notice_type = 'NOI'
+        elif 'section 20' in file_name_lower or 's20' in file_name_lower:
+            project_type = 'section_20'
+            notice_type = 'NOI'  # Default Section 20 to NOI
+        elif 'contractor' in file_name_lower or 'quote' in file_name_lower or 'quotation' in file_name_lower:
             notice_type = 'contractor_quote'
 
         # Extract year if present
         year_match = re.search(r'20(\d{2})', file_name)
         year = f"20{year_match.group(1)}" if year_match else datetime.now().year
 
-        # Create descriptive title
-        title = f"Major Works Project - {year}"
-        if 'section 20' in file_name.lower():
+        # Create descriptive title based on notice type
+        if notice_type == 'NOI':
+            title = f"Section 20 Consultation (NOI) - {year}"
+        elif notice_type == 'SOE':
+            title = f"Section 20 Consultation (SOE) - {year}"
+        elif notice_type == 'final_notice':
+            title = f"Section 20 Consultation (Final) - {year}"
+        elif 'section 20' in file_name_lower:
             title = f"Section 20 Consultation - {year}"
+        else:
+            title = f"Major Works Project - {year}"
 
         return {
             'id': str(uuid.uuid4()),
@@ -931,7 +992,8 @@ class SupabaseSchemaMapper:
             'status': 'planned',
             'start_date': f"{year}-01-01",
             'is_active': True,
-            'notes': f"Auto-imported from document: {file_name}"
+            'notice_type': notice_type,  # NOI, SOE, final_notice, contractor_quote
+            'notes': f"Auto-imported from document: {file_name} (Notice Type: {notice_type})"
         }, notice_type
 
     def map_major_works_notice(self, project_id: str, document_id: str, notice_type: str = 'NOI') -> Dict:
@@ -958,4 +1020,21 @@ class SupabaseSchemaMapper:
             'status': status,
             'frequency': frequency,
             'notes': 'Auto-imported from onboarding'
+        }
+
+    def map_uncategorised_doc(self, building_id: str, document_id: str, file_name: str,
+                             storage_path: str, raw_category: str = None) -> Dict:
+        """
+        Map uncategorised document for manual review - BlocIQ V2
+        Tracks documents that couldn't be automatically categorized
+        """
+        return {
+            'id': str(uuid.uuid4()),
+            'building_id': building_id,
+            'document_id': document_id,
+            'file_name': file_name,
+            'storage_path': storage_path,
+            'review_status': 'pending',
+            'suggested_category': raw_category,  # Original classifier category for reference
+            'notes': f"Auto-imported but could not be categorized. Original category: {raw_category}"
         }
