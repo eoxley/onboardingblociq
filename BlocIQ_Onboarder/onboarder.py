@@ -20,6 +20,7 @@ from typing import List, Dict
 from parsers import parse_file
 from classifier import DocumentClassifier
 from mapper import SupabaseMapper
+from schema_mapper import SupabaseSchemaMapper
 from sql_writer import SQLWriter, generate_document_log_csv
 from compliance_extractor import ComplianceAssetExtractor
 from major_works_extractor import MajorWorksExtractor
@@ -28,6 +29,7 @@ from validate_schema import SchemaValidator
 from validators import BlockValidator
 from matchers import file_sha256
 from data_collator import DataCollator
+from storage_uploader import SupabaseStorageUploader
 
 
 class BlocIQOnboarder:
@@ -54,6 +56,7 @@ class BlocIQOnboarder:
         self.classifier = DocumentClassifier()
         # Pass folder name to mapper for building name extraction
         self.mapper = SupabaseMapper(folder_name=self.client_folder.name)
+        self.schema_mapper = SupabaseSchemaMapper(folder_name=self.client_folder.name)
         self.sql_writer = SQLWriter()
         self.compliance_extractor = ComplianceAssetExtractor()
         self.major_works_extractor = MajorWorksExtractor()
@@ -103,6 +106,10 @@ class BlocIQOnboarder:
         # Step 4.7: Validate data against business rules
         print("\n✅ Validating data against UK block management rules...")
         self._validate_data()
+
+        # Step 4.8: Upload files to Supabase Storage
+        print("\n📤 Uploading files to Supabase Storage...")
+        self._upload_to_storage()
 
         # Step 5: Generate SQL
         print("\n📝 Generating SQL migration...")
@@ -223,6 +230,48 @@ class BlocIQOnboarder:
 
         print(f"\n  🏢 Building: {building.get('name', 'Unknown')}")
         print(f"  📍 Address: {building.get('address', 'Not found')}")
+
+        # Extract property form structured data (contractors, utilities, insurance, etc.)
+        if property_form:
+            print(f"\n  📋 Extracting property form structured data...")
+            property_form_data = self.schema_mapper.extract_property_form_data(property_form, building_id)
+
+            # Add extracted data to mapped_data
+            if property_form_data['contractors']:
+                self.mapped_data['building_contractors'] = property_form_data['contractors']
+                print(f"     ✓ {len(property_form_data['contractors'])} contractors")
+
+            if property_form_data['utilities']:
+                self.mapped_data['building_utilities'] = property_form_data['utilities']
+                print(f"     ✓ {len(property_form_data['utilities'])} utilities")
+
+            if property_form_data['insurance']:
+                self.mapped_data['building_insurance'] = property_form_data['insurance']
+                print(f"     ✓ {len(property_form_data['insurance'])} insurance records")
+
+            if property_form_data['legal']:
+                self.mapped_data['building_legal'] = property_form_data['legal']
+                print(f"     ✓ {len(property_form_data['legal'])} legal records")
+
+            if property_form_data['statutory_reports']:
+                self.mapped_data['building_statutory_reports'] = property_form_data['statutory_reports']
+                print(f"     ✓ {len(property_form_data['statutory_reports'])} statutory reports")
+
+            if property_form_data['keys_access']:
+                self.mapped_data['building_keys_access'] = property_form_data['keys_access']
+                print(f"     ✓ {len(property_form_data['keys_access'])} keys/access records")
+
+            if property_form_data['warranties']:
+                self.mapped_data['building_warranties'] = property_form_data['warranties']
+                print(f"     ✓ {len(property_form_data['warranties'])} warranties")
+
+            if property_form_data['company_secretary']:
+                self.mapped_data['company_secretary'] = property_form_data['company_secretary']
+                print(f"     ✓ Company secretary data")
+
+            if property_form_data['title_deeds']:
+                self.mapped_data['building_title_deeds'] = property_form_data['title_deeds']
+                print(f"     ✓ {len(property_form_data['title_deeds'])} title deed records")
 
         # MULTI-SOURCE EXTRACTION: Extract units from ALL relevant files
         print(f"\n  🔍 Extracting data from multiple sources...")
@@ -392,6 +441,65 @@ class BlocIQOnboarder:
             }
         })
 
+    def _upload_to_storage(self):
+        """Upload files to Supabase Storage"""
+        try:
+            # Load Supabase credentials from environment
+            from dotenv import load_dotenv
+            from supabase import create_client
+
+            # Load .env.local
+            env_path = Path(__file__).parent / '.env.local'
+            load_dotenv(env_path)
+
+            supabase_url = os.getenv('SUPABASE_URL')
+            supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+
+            if not supabase_url or not supabase_key:
+                print("  ⚠️  Supabase credentials not found in .env.local")
+                print("  ℹ️  Files will not be uploaded. Storage paths will be placeholders.")
+                self.upload_map = {}
+                return
+
+            # Initialize Supabase client
+            supabase = create_client(supabase_url, supabase_key)
+
+            # Initialize uploader
+            uploader = SupabaseStorageUploader(supabase)
+
+            # Get building ID from mapped data
+            building_id = self.mapped_data.get('building', {}).get('id')
+            if not building_id:
+                print("  ⚠️  No building ID found, skipping upload")
+                self.upload_map = {}
+                return
+
+            # Upload all files
+            self.upload_map = uploader.upload_building_documents(
+                client_folder=str(self.client_folder),
+                building_id=building_id,
+                categorized_files=self.categorized_files
+            )
+
+            # Update storage paths in building_documents with actual uploaded paths
+            if 'building_documents' in self.mapped_data:
+                for doc in self.mapped_data['building_documents']:
+                    file_name = doc.get('file_name')
+                    # Find matching upload
+                    for file_path, upload_info in self.upload_map.items():
+                        if upload_info['file_name'] == file_name:
+                            doc['storage_path'] = upload_info['storage_path']
+                            break
+
+            # Print summary
+            summary = uploader.get_upload_summary()
+            print(f"\n  ✅ Uploaded {summary['total_files']} files ({summary['total_size_mb']} MB)")
+
+        except Exception as e:
+            print(f"  ⚠️  Error uploading to Supabase Storage: {e}")
+            print("  ℹ️  Continuing with local file paths...")
+            self.upload_map = {}
+
     def _generate_sql(self):
         """Generate SQL migration script"""
         # Validate schema before generating SQL
@@ -491,28 +599,23 @@ class BlocIQOnboarder:
 
     def _extract_compliance_data(self):
         """Extract compliance assets and inspections from parsed files"""
-        building_id = self.mapped_data.get('building', {}).get('id')
-        if not building_id:
-            print("  ⚠️  No building ID found - skipping compliance extraction")
-            return
+        # NOTE: Compliance assets are now extracted via the new mapper.process_file()
+        # This legacy extractor is disabled as it uses the old schema
+        print("  ℹ️  Compliance extraction now handled by document mapper (BlocIQ V2)")
 
-        # Extract compliance data
-        assets, inspections = self.compliance_extractor.detect_compliance_assets(
-            self.parsed_files,
-            building_id
-        )
-
-        self.mapped_data['compliance_assets'] = assets
-        self.mapped_data['compliance_inspections'] = inspections
+        # Get compliance assets that were already extracted by the mapper
+        assets = self.mapped_data.get('compliance_assets', [])
+        inspections = self.mapped_data.get('compliance_inspections', [])
 
         print(f"  ✅ Found {len(assets)} compliance assets")
-        print(f"  ✅ Found {len(inspections)} inspection records")
+        if inspections:
+            print(f"  ✅ Found {len(inspections)} inspection records")
 
         # Log compliance asset types
         if assets:
             asset_types = {}
             for asset in assets:
-                asset_type = asset.get('asset_name', 'Unknown')
+                asset_type = asset.get('name', 'Unknown')  # Changed from asset_name to name
                 asset_types[asset_type] = asset_types.get(asset_type, 0) + 1
 
             print("\n  📋 Compliance Assets Detected:")
@@ -528,18 +631,12 @@ class BlocIQOnboarder:
 
     def _extract_major_works(self):
         """Extract major works projects from parsed files"""
-        building_id = self.mapped_data.get('building', {}).get('id')
-        if not building_id:
-            print("  ⚠️  No building ID found - skipping major works extraction")
-            return
+        # NOTE: Major works are now extracted via the new mapper.process_file()
+        # This legacy extractor is disabled as it uses the old schema
+        print("  ℹ️  Major works extraction now handled by document mapper (BlocIQ V2)")
 
-        # Extract major works
-        projects = self.major_works_extractor.detect_major_works(
-            self.parsed_files,
-            building_id
-        )
-
-        self.mapped_data['major_works_projects'] = projects
+        # Get major works that were already extracted by the mapper
+        projects = self.mapped_data.get('major_works_projects', [])
 
         print(f"  ✅ Found {len(projects)} major works projects")
 
@@ -547,12 +644,14 @@ class BlocIQOnboarder:
         if projects:
             project_types = {}
             for project in projects:
-                proj_type = project.get('project_type', 'Unknown')
+                proj_name = project.get('project_name', 'Unknown')
+                # Extract first word as type
+                proj_type = proj_name.split()[0] if proj_name else 'Unknown'
                 project_types[proj_type] = project_types.get(proj_type, 0) + 1
 
             print("\n  📋 Major Works Projects Detected:")
             for proj_type, count in sorted(project_types.items()):
-                print(f"     - {proj_type.replace('_', ' ').title()}: {count}")
+                print(f"     - {proj_type}: {count}")
 
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),
@@ -562,36 +661,23 @@ class BlocIQOnboarder:
 
     def _extract_financial_data(self):
         """Extract budgets and service charge accounts from parsed files"""
-        building_id = self.mapped_data.get('building', {}).get('id')
-        building_name = self.mapped_data.get('building', {}).get('name')
+        # NOTE: Budgets are now extracted via the new mapper.process_file()
+        # This legacy extractor is disabled as it uses the old schema
+        print("  ℹ️  Financial extraction now handled by document mapper (BlocIQ V2)")
 
-        if not building_id:
-            print("  ⚠️  No building ID found - skipping financial extraction")
-            return
+        # Get budgets that were already extracted by the mapper
+        budgets = self.mapped_data.get('budgets', [])
+        service_charge_years = self.mapped_data.get('service_charge_years', [])
 
-        # Extract financial data
-        financial_data = self.financial_extractor.extract_financial_data(
-            self.parsed_files,
-            building_id,
-            building_name
-        )
-
-        # Store in mapped_data
-        self.mapped_data['budgets'] = financial_data['budgets']
-        self.mapped_data['service_charge_years'] = financial_data['service_charge_years']
-
-        print(f"  ✅ Found {len(financial_data['budgets'])} budgets")
-        print(f"  ✅ Found {len(financial_data['service_charge_years'])} service charge accounts")
-
-        # Log years covered
-        if financial_data.get('financial_summary', {}).get('years_covered'):
-            print(f"\n  📋 Financial Years: {', '.join(financial_data['financial_summary']['years_covered'])}")
+        print(f"  ✅ Found {len(budgets)} budgets")
+        if service_charge_years:
+            print(f"  ✅ Found {len(service_charge_years)} service charge accounts")
 
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),
             'action': 'extract_financial',
-            'budgets_found': len(financial_data['budgets']),
-            'accounts_found': len(financial_data['service_charge_years'])
+            'budgets_found': len(budgets),
+            'accounts_found': len(service_charge_years)
         })
 
     def _validate_data(self):

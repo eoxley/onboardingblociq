@@ -20,113 +20,67 @@ class SupabaseSchemaMapper:
         self.table_schemas = {
             'buildings': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'portfolio_id': 'uuid REFERENCES portfolios(id)',
                 'name': 'text NOT NULL',
                 'address': 'text',
-                'building_type': 'text',
-                'structure_type': 'text',
-                'client_name': 'text',
-                'client_contact': 'text',
-                'is_hrb': 'boolean DEFAULT false',
-                'unit_count': 'integer',
-                'total_floors': 'varchar',
-                'lift_available': 'varchar',
-                'portfolio_id': 'uuid REFERENCES portfolios(id)',  # BlocIQ V2: portfolio_id instead of agency_id
-                'council_borough': 'varchar',
-                'building_manager_name': 'varchar',
-                'building_manager_email': 'varchar',
-                'building_manager_phone': 'varchar',
-                'emergency_contact_name': 'varchar',
-                'emergency_contact_phone': 'varchar',
-                'building_age': 'varchar',
-                'construction_type': 'varchar',
-                'heating_type': 'varchar',
-                'hot_water_type': 'varchar',
-                'waste_collection_day': 'varchar',
-                'recycling_info': 'text',
-                'building_insurance_provider': 'varchar',
-                'building_insurance_expiry': 'date',
-                'fire_safety_status': 'varchar',
-                'asbestos_status': 'varchar',
-                'energy_rating': 'varchar',
-                'service_charge_frequency': 'varchar',
-                'ground_rent_amount': 'decimal',
-                'ground_rent_frequency': 'varchar',
-                'operational_notes': 'text',
-                'notes': 'text',
-                'key_access_notes': 'text',
-                'entry_code': 'varchar',
-                'fire_panel_location': 'varchar',
-                'access_notes': 'text',
-                'demo_ready': 'boolean DEFAULT false',
-                'sites_staff': 'text',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()',
-                'created_by': 'uuid REFERENCES users(id)'
+                # Basic Info
+                'number_of_units': 'integer',
+                'previous_agents': 'text',
+                # Accountants
+                'current_accountants': 'text',
+                'accountant_contact': 'text',
+                # Financial Config
+                'demand_date_1': 'date',
+                'demand_date_2': 'date',
+                'year_end_date': 'date',
+                'management_fee_ex_vat': 'numeric',
+                'management_fee_inc_vat': 'numeric',
+                'company_secretary_fee_ex_vat': 'numeric',
+                'company_secretary_fee_inc_vat': 'numeric',
+                # Ground Rent
+                'ground_rent_applicable': 'boolean',
+                'ground_rent_charges': 'text',
+                # Insurance
+                'insurance_broker': 'text',
+                'insurance_renewal_date': 'date',
+                # Section 20 Limits
+                'section_20_limit_inc_vat': 'numeric',
+                'expenditure_limit': 'numeric',
+                # Other
+                'additional_info': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'units': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'unit_number': 'varchar NOT NULL',
-                'type': 'varchar',  # 'flat', 'commercial', etc.
-                'floor': 'varchar',
-                'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
-                'apportionment_percent': 'decimal(5,2)'
+                'unit_number': 'text NOT NULL',
+                'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'leaseholders': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'unit_id': 'uuid NOT NULL REFERENCES units(id)',
                 'name': 'text NOT NULL',
-                'full_name': 'text',
-                'phone': 'text',
-                'phone_number': 'text',
                 'email': 'text',
                 'correspondence_address': 'text',
-                'is_director': 'boolean DEFAULT false'
+                'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'building_documents': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'file_name': 'text NOT NULL',
-                'file_type': 'text',
-                'storage_path': 'text NOT NULL',
-                'file_size': 'bigint',
                 'category': 'text NOT NULL',  # compliance, finance, major_works, lease, contracts, correspondence, uncategorised
-                'linked_entity_id': 'uuid',
+                'file_name': 'text NOT NULL',
+                'storage_path': 'text NOT NULL',
                 'entity_type': 'text',  # compliance_asset, budget, major_works_project, unit, leaseholder
-                'document_id': 'text',  # FK to linked record
-                'uploaded_at': 'timestamp with time zone DEFAULT now()',
-                'uploaded_by': 'uuid REFERENCES users(id)',
-                'confidence': 'numeric',
-                'confidence_level': 'text',
-                'type': 'text',  # DEPRECATED: use category instead
-                'is_unlinked': 'boolean DEFAULT false',
-                'auto_linked_building_id': 'uuid REFERENCES buildings(id)',
-                'unit_id': 'uuid REFERENCES units(id)',
-                'leaseholder_id': 'uuid REFERENCES leaseholders(id)'
+                'linked_entity_id': 'uuid',
+                'uploaded_at': 'timestamp with time zone DEFAULT now()'
             },
             'compliance_assets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'building_id': 'uuid REFERENCES buildings(id)',
-                'user_id': 'uuid REFERENCES users(id)',
-                'asset_name': 'varchar NOT NULL',
-                'asset_type': 'varchar NOT NULL',
-                'category': 'varchar NOT NULL',
-                'description': 'text',
-                'is_required': 'boolean DEFAULT false',
-                'is_active': 'boolean DEFAULT true',
-                'inspection_frequency': 'varchar NOT NULL',
-                'frequency_months': 'integer',
-                'status': 'varchar DEFAULT pending',
-                'last_inspection_date': 'date',
-                'next_due_date': 'date',
-                'certificate_expiry': 'date',
-                'inspector_name': 'varchar',
-                'inspector_company': 'varchar',
-                'inspector_contact': 'varchar',
-                'certificate_url': 'text',
-                'notes': 'text',
-                'compliance_reference': 'varchar',
-                'custom_asset': 'boolean DEFAULT false'
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'asset_name': 'text NOT NULL',
+                'asset_type': 'text NOT NULL',
+                'inspection_frequency': 'interval',
+                'description': 'text'
             },
             'compliance_inspections': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -153,36 +107,26 @@ class SupabaseSchemaMapper:
             'major_works_projects': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid REFERENCES buildings(id)',
-                'user_id': 'uuid REFERENCES users(id)',
-                'title': 'varchar NOT NULL',
-                'name': 'varchar',
-                'description': 'text',
-                'project_type': 'varchar',
-                'status': 'varchar',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'project_name': 'text NOT NULL',
+                'status': 'text',
                 'start_date': 'date',
                 'end_date': 'date',
-                'expected_completion_date': 'date',
-                'actual_completion_date': 'date',
-                'estimated_cost': 'decimal',
-                'actual_cost': 'decimal',
-                'contractor_name': 'varchar',
-                'project_manager': 'varchar',
-                'completion_percentage': 'integer DEFAULT 0',
-                'notice_of_intention_date': 'date',
-                'statement_of_estimates_date': 'date',
-                'contractor_appointed_date': 'date',
-                'is_active': 'boolean DEFAULT true',
-                'notes': 'text'
+                'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'budgets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'period': 'varchar NOT NULL',  # e.g., '2024-2025', 'YE2024'
-                'total_amount': 'decimal',
                 'document_id': 'uuid REFERENCES building_documents(id)',
-                'status': 'varchar DEFAULT \'draft\'',  # draft, approved, archived
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'notes': 'text'
+                'period': 'text NOT NULL',  # e.g., '2024-2025', 'YE2024'
+                'start_date': 'date',  # Budget period start
+                'end_date': 'date',  # Budget period end
+                'demand_date_1': 'date',  # First service charge demand date
+                'demand_date_2': 'date',  # Second service charge demand date (if applicable)
+                'year_end_date': 'date',  # Financial year end date
+                'total_amount': 'numeric',
+                'budget_type': 'text',  # 'service_charge', 'reserve_fund', 'sinking_fund'
+                'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'apportionments': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -224,6 +168,129 @@ class SupabaseSchemaMapper:
                 'created_at': 'timestamp with time zone DEFAULT now()',
                 'reviewed_at': 'timestamp with time zone',
                 'notes': 'text'
+            },
+            'building_contractors': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'contractor_type': 'text NOT NULL',  # cleaning, gardening, lift, pumps, drains, gutters, aov, emergency_lighting, fire_alarm, ventilation, gates, entryphone, parking, water_tanks, solar_panels, window_cleaning
+                'company_name': 'text',
+                'contact_person': 'text',
+                'phone': 'text',
+                'email': 'text',
+                'contract_start': 'date',
+                'contract_end': 'date',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_utilities': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'utility_type': 'text NOT NULL',  # electricity, water, gas, phone, lift_line, meters_access, stopcock_location
+                'provider_name': 'text',
+                'account_number': 'text',
+                'meter_numbers': 'text',
+                'contact_phone': 'text',
+                'location': 'text',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_insurance': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'insurance_type': 'text NOT NULL',  # building_terrorism, engineering, directors_and_officers, revaluation
+                'broker_name': 'text',
+                'insurer_name': 'text',
+                'policy_number': 'text',
+                'renewal_date': 'date',
+                'coverage_amount': 'numeric',
+                'premium_amount': 'numeric',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_legal': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'record_type': 'text NOT NULL',  # lease_dispute, contractor_dispute, litigation, solicitor, arrears
+                'description': 'text',
+                'party_name': 'text',
+                'solicitor_name': 'text',
+                'solicitor_contact': 'text',
+                'status': 'text',  # active, resolved, pending
+                'date_opened': 'date',
+                'date_closed': 'date',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_statutory_reports': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'report_type': 'text NOT NULL',  # lift_reports, gas_safety, eicr, pat_testing, hsfra, water_hygiene, asbestos_register, fire_doors, emergency_lighting, aovs, fire_equipment, lightning_protection
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'report_date': 'date',
+                'next_due_date': 'date',
+                'status': 'text',  # current, overdue, due_soon
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_keys_access': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'access_type': 'text NOT NULL',  # labelled_keys, gate_codes, entrance_codes, bin_store, bike_store
+                'description': 'text',
+                'code': 'text',  # Should be encrypted in production
+                'location': 'text',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_warranties': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'item_type': 'text NOT NULL',  # pumps, boilers, gates, fire_alarm, damp_proofing, roofing
+                'supplier': 'text',
+                'installation_date': 'date',
+                'warranty_expiry': 'date',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'company_secretary': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'company_house_filing_code': 'text',
+                'memorandum_articles': 'text',
+                'stock_transfer_forms': 'boolean',
+                'certificate_of_incorporation': 'boolean',
+                'seal_available': 'boolean',
+                'audited_accounts_years': 'integer',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_staff': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'staff_type': 'text',  # employment_contracts, job_descriptions, paye_details, pension_provider, disciplinary_action, accidents_book
+                'description': 'text',
+                'employee_name': 'text',
+                'position': 'text',
+                'start_date': 'date',
+                'end_date': 'date',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_title_deeds': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'record_type': 'text NOT NULL',  # freehold_title, head_lease, individual_leases, building_plans, as_built_drawings, om_manuals, cdm_manual, plant_machinery_docs, ongoing_major_works, planned_major_works
+                'title_number': 'text',
+                'description': 'text',
+                'document_id': 'uuid REFERENCES building_documents(id)',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
             }
         }
     
@@ -318,65 +385,21 @@ class SupabaseSchemaMapper:
 
     def map_building(self, property_form_data: Dict, leaseholder_data: Dict = None) -> Dict:
         """
-        Map to buildings table with exact column names - ENHANCED to capture all available fields
+        Map to buildings table with exact column names - ENHANCED for full property form extraction
 
         Note: portfolio_id is added by SQL writer, not here
+        Extracts all available fields from property information form
         """
         building = {
-            'id': str(uuid.uuid4()),
-            # portfolio_id will be added by SQL writer (BlocIQ V2)
-            'building_type': 'residential'
+            'id': str(uuid.uuid4())
+            # portfolio_id will be added by SQL writer
         }
 
-        # Extract from property form
+        # Extract building name
         if property_form_data:
-            # Core fields
             building['name'] = self._extract_building_name(property_form_data)
-            building['client_name'] = self._extract_field(property_form_data, ['client name', 'management company', 'freeholder'])
-            building['unit_count'] = self._extract_number(property_form_data, ['number of units', 'total units', 'units'])
-            building['operational_notes'] = self._build_operational_notes(property_form_data)
-
-            # Financial fields
-            building['service_charge_frequency'] = self._extract_field(property_form_data, ['demand dates', 'service charge frequency'])
-            building['ground_rent_amount'] = self._extract_currency(property_form_data, ['ground rent', 'ground rent amount'])
-            building['ground_rent_frequency'] = self._extract_field(property_form_data, ['ground rent frequency', 'rent frequency'])
-
-            # Location & Council
-            building['council_borough'] = self._extract_field(property_form_data, ['borough', 'council', 'local authority'])
-
-            # Building Manager & Emergency Contacts
-            building['building_manager_name'] = self._extract_field(property_form_data, ['building manager', 'site manager', 'property manager'])
-            building['building_manager_email'] = self._extract_field(property_form_data, ['manager email', 'building manager email'])
-            building['building_manager_phone'] = self._extract_field(property_form_data, ['manager phone', 'building manager phone', 'manager telephone'])
-            building['emergency_contact_name'] = self._extract_field(property_form_data, ['emergency contact', 'emergency name'])
-            building['emergency_contact_phone'] = self._extract_field(property_form_data, ['emergency phone', 'emergency number', 'emergency telephone'])
-
-            # Physical characteristics
-            building['building_age'] = self._extract_field(property_form_data, ['year built', 'building age', 'construction year', 'built'])
-            building['construction_type'] = self._extract_field(property_form_data, ['construction type', 'construction', 'building construction'])
-            building['total_floors'] = self._extract_field(property_form_data, ['total floors', 'number of floors', 'floors', 'storeys'])
-            building['lift_available'] = self._extract_boolean(property_form_data, ['lift', 'elevator', 'lift available'])
-            building['heating_type'] = self._extract_field(property_form_data, ['heating', 'heating type', 'heating system'])
-            building['hot_water_type'] = self._extract_field(property_form_data, ['hot water', 'hot water type', 'water heating'])
-
-            # Waste & Recycling
-            building['waste_collection_day'] = self._extract_field(property_form_data, ['waste collection', 'bin day', 'rubbish collection'])
-            building['recycling_info'] = self._extract_field(property_form_data, ['recycling', 'recycling info', 'recycling collection'])
-
-            # Insurance
-            building['building_insurance_provider'] = self._extract_field(property_form_data, ['insurance provider', 'insurer', 'insurance company'])
-            building['building_insurance_expiry'] = self._extract_date(property_form_data, ['insurance expiry', 'insurance renewal', 'insurance expires'])
-
-            # Compliance statuses
-            building['fire_safety_status'] = self._extract_field(property_form_data, ['fire safety', 'fire safety status', 'fire risk'])
-            building['asbestos_status'] = self._extract_field(property_form_data, ['asbestos', 'asbestos status', 'asbestos register'])
-            building['energy_rating'] = self._extract_field(property_form_data, ['epc', 'energy rating', 'energy performance'])
-
-            # Access & Security
-            building['notes'] = self._extract_field(property_form_data, ['notes', 'additional notes', 'comments'])
-            building['key_access_notes'] = self._extract_field(property_form_data, ['key access', 'access notes', 'keys'])
-            building['entry_code'] = self._extract_field(property_form_data, ['entry code', 'door code', 'access code'])
-            building['fire_panel_location'] = self._extract_field(property_form_data, ['fire panel', 'fire alarm panel', 'fire control'])
+        else:
+            building['name'] = 'Unknown Building'
 
         # Extract address - try property form first, then leaseholder data, then folder name
         address = None
@@ -391,6 +414,42 @@ class SupabaseSchemaMapper:
             if match:
                 address = match.group(1).strip()
         building['address'] = address or ''
+
+        # Extract additional fields from property form
+        if property_form_data:
+            # Basic Info
+            building['number_of_units'] = self._extract_number(property_form_data, ['number of units', 'no. of units', 'total units'])
+            building['previous_agents'] = self._extract_field(property_form_data, ['previous agents', 'previous agent'])
+
+            # Accountants
+            building['current_accountants'] = self._extract_field(property_form_data, ['current accountants', 'accountant'])
+            building['accountant_contact'] = self._extract_field(property_form_data, ['accountant contact', 'accountant details'])
+
+            # Financial Config - Demand Dates
+            building['demand_date_1'] = self._extract_date(property_form_data, ['demand date 1', 'first demand', 'demand dates'])
+            building['demand_date_2'] = self._extract_date(property_form_data, ['demand date 2', 'second demand'])
+            building['year_end_date'] = self._extract_date(property_form_data, ['year end date', 'year end', 'financial year end'])
+
+            # Financial Config - Fees
+            building['management_fee_ex_vat'] = self._extract_currency(property_form_data, ['management fee (ex vat)', 'management fee ex vat', 'mgmt fee ex vat'])
+            building['management_fee_inc_vat'] = self._extract_currency(property_form_data, ['management fee (inc vat)', 'management fee inc vat', 'mgmt fee inc vat'])
+            building['company_secretary_fee_ex_vat'] = self._extract_currency(property_form_data, ['company secretary fee (ex vat)', 'co sec fee ex vat'])
+            building['company_secretary_fee_inc_vat'] = self._extract_currency(property_form_data, ['company secretary fee (inc vat)', 'co sec fee inc vat'])
+
+            # Ground Rent
+            building['ground_rent_applicable'] = self._extract_boolean(property_form_data, ['ground rent applicable'])
+            building['ground_rent_charges'] = self._extract_field(property_form_data, ['ground rent', 'additional ground rent', 'ground rent charges'])
+
+            # Insurance
+            building['insurance_broker'] = self._extract_field(property_form_data, ['insurance broker', 'broker & insurer contact', 'broker'])
+            building['insurance_renewal_date'] = self._extract_date(property_form_data, ['insurance renewal date', 'renewal date', 'insurance & renewal date'])
+
+            # Section 20 Limits
+            building['section_20_limit_inc_vat'] = self._extract_currency(property_form_data, ['section 20 limit (inc vat)', 's20 limit inc vat', 'section 20 limit inc vat'])
+            building['expenditure_limit'] = self._extract_currency(property_form_data, ['expenditure limit'])
+
+            # Other
+            building['additional_info'] = self._extract_field(property_form_data, ['any other relevant information', 'additional information', 'notes'])
 
         return building
     
@@ -418,20 +477,8 @@ class SupabaseSchemaMapper:
             unit = {
                 'id': str(uuid.uuid4()),
                 'building_id': building_id,
-                'unit_number': unit_number,
-                'type': 'flat',
-                'floor': self._calculate_floor(unit_number)
+                'unit_number': unit_number
             }
-
-            # Extract apportionment percentage if available
-            apportionment = self._extract_field_from_row(row, ['rate', 'percentage', 'apportionment', '%', 'percent'])
-            if apportionment:
-                # Clean the value - remove % sign and convert to decimal
-                try:
-                    apportionment_clean = str(apportionment).replace('%', '').strip()
-                    unit['apportionment_percent'] = float(apportionment_clean)
-                except (ValueError, AttributeError):
-                    pass
 
             units.append(unit)
 
@@ -472,47 +519,50 @@ class SupabaseSchemaMapper:
                 'id': str(uuid.uuid4()),
                 'unit_id': unit_id,
                 'name': name,
-                'full_name': name,
-                'phone': self._extract_field_from_row(row, ['telephone', 'phone', 'mobile']),
-                'phone_number': self._extract_field_from_row(row, ['telephone', 'phone', 'mobile']),
                 'email': self._extract_field_from_row(row, ['email', 'email address']),
-                'correspondence_address': self._extract_field_from_row(row, ['address', 'correspondence address']),
-                'is_director': False
+                'correspondence_address': self._extract_field_from_row(row, ['address', 'correspondence address', 'postal address'])
             }
             leaseholders.append(leaseholder)
         
         return leaseholders
     
     def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = None,
-                               linked_entity_id: str = None, entity_type: str = None, document_id: str = None) -> Dict:
+                               linked_entity_id: str = None, entity_type: str = None, document_id: str = None,
+                               upload_info: Dict = None) -> Dict:
         """
         Map to building_documents table - BlocIQ V2 compliant
         ALWAYS sets a valid category (compliance, finance, major_works, lease, contracts, correspondence, uncategorised)
         Uses filename-based detection for accurate categorization
+
+        Args:
+            file_metadata: File metadata from parser
+            building_id: UUID of the building
+            category: Document category
+            linked_entity_id: Optional entity ID this doc is linked to
+            entity_type: Optional entity type
+            document_id: Optional document ID
+            upload_info: Optional upload info from Supabase Storage with 'public_url' and 'storage_path'
         """
         filename = file_metadata['file_name']
 
         # Normalize category to V2 standards using both category and filename - NEVER None
         normalized_category = self._normalize_category(category, filename)
 
-        # Build structured storage path
-        storage_path = f"/building_documents/{building_id}/{normalized_category}/{filename}"
+        # Use actual Supabase Storage path if available, otherwise use placeholder
+        if upload_info and 'storage_path' in upload_info:
+            storage_path = upload_info['storage_path']
+        else:
+            # Fallback to logical path structure
+            storage_path = f"{normalized_category}/{filename}"
 
         doc_record = {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
-            'file_name': filename,
-            'file_type': self._get_file_extension(filename),
-            'storage_path': storage_path,
-            'file_size': file_metadata.get('file_size', 0),
             'category': normalized_category,  # REQUIRED - never NULL, filename-aware
-            'linked_entity_id': linked_entity_id,
+            'file_name': filename,
+            'storage_path': storage_path,
             'entity_type': entity_type,
-            'document_id': document_id,
-            'confidence': file_metadata.get('confidence', 0.0),
-            'confidence_level': self._get_confidence_level(file_metadata.get('confidence', 0.0)),
-            'type': category,  # DEPRECATED: keep for backward compat
-            'is_unlinked': False
+            'linked_entity_id': linked_entity_id
         }
 
         return doc_record
@@ -612,12 +662,8 @@ class SupabaseSchemaMapper:
                 'id': str(uuid.uuid4()),
                 'unit_id': unit_id,
                 'name': leaseholder_name,
-                'full_name': leaseholder_name,
-                'phone': None,
-                'phone_number': None,
                 'email': None,
-                'correspondence_address': None,
-                'is_director': False
+                'correspondence_address': None
             }
             leaseholders.append(leaseholder)
 
@@ -843,9 +889,9 @@ class SupabaseSchemaMapper:
         frequency_months = 12
 
         # Priority order: most specific first (LOLER > lift, fire door > fire)
-        for key, (name, type_, freq, freq_months) in asset_type_map.items():
+        for key, (name_from_map, type_, freq, freq_months) in asset_type_map.items():
             if key in file_name:
-                asset_name = name
+                asset_name = name_from_map
                 asset_type = type_
                 frequency = freq
                 frequency_months = freq_months
@@ -913,22 +959,35 @@ class SupabaseSchemaMapper:
             except:
                 pass
 
-        return {
+        # Convert frequency_months to PostgreSQL interval format
+        frequency_interval = f"{frequency_months} months" if frequency_months else None
+
+        # Ensure asset_name is never None or empty - CRITICAL!
+        if asset_name is None or (isinstance(asset_name, str) and asset_name.strip() == ''):
+            print(f"DEBUG: asset_name was None/empty for file: {file_metadata.get('file_name', 'unknown')}")
+            asset_name = 'Compliance Asset'
+
+        # Ensure asset_type is never None
+        if asset_type is None or (isinstance(asset_type, str) and asset_type.strip() == ''):
+            asset_type = 'general'
+
+        result = {
             'id': str(uuid.uuid4()),
-            'building_id': building_id,
-            'asset_name': asset_name,
-            'asset_type': asset_type,
-            'category': category if category == 'compliance' else 'compliance',
-            'description': f"Extracted from {file_metadata['file_name']}",
-            'is_required': True,
-            'is_active': True,
-            'inspection_frequency': frequency,
-            'frequency_months': frequency_months,
-            'status': status,
-            'last_inspection_date': last_inspection_date,
-            'next_due_date': next_due_date,
-            'notes': f"Auto-imported from document: {file_metadata['file_name']}"
+            'building_id': building_id,  # REQUIRED - links to building
+            'asset_name': asset_name,  # REQUIRED - never null (BlocIQ V2 schema)
+            'asset_type': asset_type,  # REQUIRED - never null (BlocIQ V2 schema)
+            'inspection_frequency': frequency_interval,  # BlocIQ V2 schema
+            'description': f"Extracted from {file_metadata.get('file_name', 'unknown')}"
         }
+
+        # FINAL SAFETY CHECK - This should NEVER trigger
+        if result['asset_name'] is None:
+            print(f"CRITICAL ERROR: asset_name is still None after all checks!")
+            print(f"  File: {file_metadata.get('file_name', 'unknown')}")
+            print(f"  Result dict: {result}")
+            raise ValueError(f"Compliance asset_name cannot be None")
+
+        return result
 
     def map_budget(self, file_metadata: Dict, building_id: str, document_id: str) -> Dict:
         """
@@ -943,28 +1002,35 @@ class SupabaseSchemaMapper:
         - Only true duplicates (same building + period + subtype + document) should be blocked at SQL level
         """
         import re
+        from datetime import datetime
 
         file_name = file_metadata['file_name']
         file_name_lower = file_name.lower()
 
         # Detect finance subtype - PRIORITY ORDER MATTERS
-        finance_subtype = 'budget'  # Default
+        finance_subtype = 'service_charge'  # Default
 
         # Check for apportionment first (most specific)
         if 'apportionment' in file_name_lower or 'apportion' in file_name_lower:
-            finance_subtype = 'apportionment'
+            finance_subtype = 'service_charge'
+        # Reserve/sinking funds
+        elif 'reserve' in file_name_lower or 'sinking' in file_name_lower:
+            finance_subtype = 'reserve_fund' if 'reserve' in file_name_lower else 'sinking_fund'
         # Then check for accounts
         elif ('account' in file_name_lower and 'service charge' in file_name_lower) or 'year end' in file_name_lower:
-            finance_subtype = 'service_charge_account'
+            finance_subtype = 'service_charge'
         # Then invoices/demands
         elif 'invoice' in file_name_lower or 'demand' in file_name_lower:
-            finance_subtype = 'invoice'
+            finance_subtype = 'service_charge'
         # Finally budgets
         elif 'budget' in file_name_lower:
-            finance_subtype = 'budget'
+            finance_subtype = 'service_charge'
 
         # Extract period from filename (YE24, 2024-2025, etc.)
         period = 'Unknown'
+        start_date = None
+        end_date = None
+        year_end_date = None
 
         # Try YE format (YE24, YE 2024, etc.)
         ye_match = re.search(r'YE\s*(\d{2,4})', file_name, re.IGNORECASE)
@@ -973,32 +1039,78 @@ class SupabaseSchemaMapper:
             if len(year) == 2:
                 year = f"20{year}"
             period = f"YE{year}"
+            # Assume UK financial year ending 31st March
+            year_end_date = f"{year}-03-31"
+            # Start date is one year before
+            start_year = int(year) - 1
+            start_date = f"{start_year}-04-01"
+            end_date = year_end_date
         else:
             # Try year range (2024-2025, 2024/2025)
             range_match = re.search(r'(\d{4})[-/](\d{4})', file_name)
             if range_match:
-                period = f"{range_match.group(1)}-{range_match.group(2)}"
+                start_year = range_match.group(1)
+                end_year = range_match.group(2)
+                period = f"{start_year}-{end_year}"
+                start_date = f"{start_year}-04-01"  # Assume April start (UK standard)
+                end_date = f"{end_year}-03-31"
+                year_end_date = end_date
             else:
                 # Try single year
                 year_match = re.search(r'20(\d{2})', file_name)
                 if year_match:
-                    period = f"20{year_match.group(1)}"
+                    year = f"20{year_match.group(1)}"
+                    period = year
+                    start_date = f"{year}-04-01"
+                    end_year = int(year) + 1
+                    end_date = f"{end_year}-03-31"
+                    year_end_date = end_date
 
-        # Determine status based on subtype
-        status = 'draft'
-        if finance_subtype == 'service_charge_account':
-            status = 'approved'  # Accounts are typically finalized
-        elif finance_subtype == 'invoice':
-            status = 'approved'  # Invoices are typically sent/approved
+        # Try to extract demand dates from filename
+        # Common patterns: "Demand 1st April", "1st & 2nd Demands", etc.
+        demand_date_1 = None
+        demand_date_2 = None
+
+        # Look for explicit dates in filename
+        date_patterns = [
+            r'(\d{1,2})[/-](\d{1,2})[/-](20\d{2})',  # DD-MM-YYYY or DD/MM/YYYY
+            r'(20\d{2})[/-](\d{1,2})[/-](\d{1,2})',  # YYYY-MM-DD
+        ]
+
+        dates_found = []
+        for pattern in date_patterns:
+            for match in re.finditer(pattern, file_name):
+                try:
+                    groups = match.groups()
+                    if len(groups) == 3:
+                        if len(groups[0]) == 4:  # YYYY-MM-DD format
+                            year_val, month_val, day_val = int(groups[0]), int(groups[1]), int(groups[2])
+                        else:  # DD-MM-YYYY format
+                            day_val, month_val, year_val = int(groups[0]), int(groups[1]), int(groups[2])
+
+                        date_obj = datetime(year_val, month_val, day_val)
+                        dates_found.append(date_obj.date().isoformat())
+                except (ValueError, IndexError):
+                    continue
+
+        # Assign first two dates as demand dates
+        if len(dates_found) >= 1:
+            demand_date_1 = dates_found[0]
+        if len(dates_found) >= 2:
+            demand_date_2 = dates_found[1]
 
         return {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
-            'period': period,
             'document_id': document_id,
-            'status': status,
-            'finance_subtype': finance_subtype,  # budget, service_charge_account, invoice
-            'notes': f"Auto-imported from {file_name} (Type: {finance_subtype})"
+            'period': period,
+            'start_date': start_date,
+            'end_date': end_date,
+            'demand_date_1': demand_date_1,
+            'demand_date_2': demand_date_2,
+            'year_end_date': year_end_date,
+            'total_amount': None,  # Will need to be extracted from document or set manually
+            'budget_type': finance_subtype
         }
 
     def map_major_works(self, file_metadata: Dict, building_id: str) -> Dict:
@@ -1081,15 +1193,11 @@ class SupabaseSchemaMapper:
         return {
             'id': str(uuid.uuid4()),
             'building_id': building_id,
-            'title': title,
-            'name': title,
-            'description': f"Extracted from {file_name}",
-            'project_type': project_type,
+            'document_id': None,  # Will be set later when document is created
+            'project_name': title,
             'status': 'planned',
             'start_date': f"{year}-01-01",
-            'is_active': True,
-            'notice_type': notice_type,  # NOI, SOE, final_notice, contractor_quote
-            'notes': f"Auto-imported from document: {file_name} (Notice Type: {notice_type})"
+            'end_date': None
         }, notice_type
 
     def map_major_works_notice(self, project_id: str, document_id: str, notice_type: str = 'NOI') -> Dict:
@@ -1134,3 +1242,224 @@ class SupabaseSchemaMapper:
             'suggested_category': raw_category,  # Original classifier category for reference
             'notes': f"Auto-imported but could not be categorized. Original category: {raw_category}"
         }
+
+    def extract_property_form_data(self, property_form_data: Dict, building_id: str) -> Dict:
+        """
+        Extract all structured data from property information form
+        Returns data for multiple tables: contractors, utilities, insurance, legal, etc.
+        """
+        extracted_data = {
+            'contractors': [],
+            'utilities': [],
+            'insurance': [],
+            'legal': [],
+            'statutory_reports': [],
+            'keys_access': [],
+            'warranties': [],
+            'company_secretary': None,
+            'staff': [],
+            'title_deeds': []
+        }
+
+        if not property_form_data:
+            return extracted_data
+
+        # Extract contractors (from "Contracts & Regular Contractors" section)
+        contractor_types = [
+            ('cleaning', ['cleaning']),
+            ('window_cleaning', ['window cleaning']),
+            ('gardening', ['gardening']),
+            ('lift', ['lift company']),
+            ('pumps', ['pumps service company']),
+            ('drains', ['drains']),
+            ('gutters', ['gutters']),
+            ('aov', ['aov', 'automatic opening vents']),
+            ('emergency_lighting', ['emergency lighting']),
+            ('fire_alarm', ['fire alarm']),
+            ('ventilation', ['ventilation system']),
+            ('gates', ['gates']),
+            ('entryphone', ['entryphone']),
+            ('parking', ['parking company']),
+            ('water_tanks', ['water tanks']),
+            ('solar_panels', ['solar panels'])
+        ]
+
+        for contractor_type, keywords in contractor_types:
+            company_name = self._extract_field(property_form_data, keywords)
+            if company_name:
+                extracted_data['contractors'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'contractor_type': contractor_type,
+                    'company_name': company_name,
+                    'notes': f'Extracted from property form'
+                })
+
+        # Extract utilities
+        utility_types = [
+            ('electricity', ['electricity provider']),
+            ('water', ['water company']),
+            ('gas', ['gas provider']),
+            ('phone', ['phone line for lift']),
+            ('meters_access', ['meters access']),
+            ('stopcock_location', ['location of stopcock'])
+        ]
+
+        for utility_type, keywords in utility_types:
+            provider_name = self._extract_field(property_form_data, keywords)
+            if provider_name:
+                # Also try to extract meter numbers
+                meter_numbers = self._extract_field(property_form_data, ['meter numbers', 'meter number'])
+
+                extracted_data['utilities'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'utility_type': utility_type,
+                    'provider_name': provider_name,
+                    'meter_numbers': meter_numbers,
+                    'notes': f'Extracted from property form'
+                })
+
+        # Extract insurance records
+        insurance_types = [
+            ('building_terrorism', ['building & terrorism insurance', 'buildings & terrorism insurance']),
+            ('engineering', ['engineering insurance']),
+            ('directors_and_officers', ['directors insurance', 'd&o']),
+        ]
+
+        for insurance_type, keywords in insurance_types:
+            insurer_info = self._extract_field(property_form_data, keywords)
+            if insurer_info:
+                extracted_data['insurance'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'insurance_type': insurance_type,
+                    'broker_name': insurer_info,
+                    'notes': f'Extracted from property form'
+                })
+
+        # Extract legal records
+        legal_record_types = [
+            ('lease_dispute', ['lease disputes (if any)', 'lease dispute']),
+            ('contractor_dispute', ['contractor disputes (if any)', 'contractor dispute']),
+            ('litigation', ['litigation against the client (if any)', 'litigation']),
+            ('solicitor', ['solicitor details (if applicable)', 'solicitor']),
+            ('arrears', ['lessee arrears info', 'arrears'])
+        ]
+
+        for record_type, keywords in legal_record_types:
+            description = self._extract_field(property_form_data, keywords)
+            if description:
+                extracted_data['legal'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'record_type': record_type,
+                    'description': description,
+                    'status': 'active',
+                    'notes': f'Extracted from property form'
+                })
+
+        # Extract statutory reports
+        report_types = [
+            ('lift_reports', ['lift reports for the last 3 years', 'lift report']),
+            ('gas_safety', ['gas safety']),
+            ('eicr', ['eicr']),
+            ('pat_testing', ['pat testing']),
+            ('hsfra', ['hsfra']),
+            ('water_hygiene', ['water hygiene']),
+            ('asbestos_register', ['asbestos register']),
+            ('fire_doors', ['fire doors']),
+            ('emergency_lighting', ['emergency lighting']),
+            ('aovs', ['aovs']),
+            ('fire_equipment', ['fire equipment']),
+            ('lightning_protection', ['lightning protection'])
+        ]
+
+        for report_type, keywords in report_types:
+            report_info = self._extract_field(property_form_data, keywords)
+            if report_info:
+                extracted_data['statutory_reports'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'report_type': report_type,
+                    'notes': report_info
+                })
+
+        # Extract keys and access codes
+        access_types = [
+            ('labelled_keys', ['full set of labelled keys', 'labelled keys']),
+            ('gate_codes', ['gate codes']),
+            ('entrance_codes', ['entrance codes']),
+            ('bin_store', ['bin store']),
+            ('bike_store', ['bike store'])
+        ]
+
+        for access_type, keywords in access_types:
+            access_info = self._extract_field(property_form_data, keywords)
+            if access_info:
+                extracted_data['keys_access'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'access_type': access_type,
+                    'description': access_info,
+                    'notes': f'Extracted from property form'
+                })
+
+        # Extract warranties
+        warranty_types = [
+            ('pumps', ['pumps']),
+            ('boilers', ['boilers']),
+            ('gates', ['gates']),
+            ('fire_alarm', ['fire alarm']),
+            ('damp_proofing', ['damp proofing']),
+            ('roofing', ['roofing'])
+        ]
+
+        for item_type, keywords in warranty_types:
+            warranty_info = self._extract_field(property_form_data, [f'{keywords[0]} warranty', f'any other warranties'])
+            if warranty_info:
+                extracted_data['warranties'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'item_type': item_type,
+                    'notes': warranty_info
+                })
+
+        # Extract company secretary data
+        company_house_code = self._extract_field(property_form_data, ['companies house filing code', 'company house code'])
+        if company_house_code:
+            extracted_data['company_secretary'] = {
+                'id': str(uuid.uuid4()),
+                'building_id': building_id,
+                'company_house_filing_code': company_house_code,
+                'stock_transfer_forms': self._extract_boolean(property_form_data, ['stock transfer forms']),
+                'certificate_of_incorporation': self._extract_boolean(property_form_data, ['certificate of incorporation']),
+                'seal_available': self._extract_boolean(property_form_data, ['seal']),
+                'notes': f'Extracted from property form'
+            }
+
+        # Extract title deed records
+        deed_types = [
+            ('freehold_title', ['freehold title/title register']),
+            ('head_lease', ['head lease (if applicable)']),
+            ('individual_leases', ['individual leases']),
+            ('building_plans', ['building plans (if held)']),
+            ('as_built_drawings', ['as built drawings']),
+            ('om_manuals', ['o & m manuals']),
+            ('cdm_manual', ['cdm (construction & design manual)']),
+            ('ongoing_major_works', ['ongoing major works']),
+            ('planned_major_works', ['planned major works'])
+        ]
+
+        for record_type, keywords in deed_types:
+            deed_info = self._extract_field(property_form_data, keywords)
+            if deed_info:
+                extracted_data['title_deeds'].append({
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'record_type': record_type,
+                    'description': deed_info,
+                    'notes': f'Extracted from property form'
+                })
+
+        return extracted_data

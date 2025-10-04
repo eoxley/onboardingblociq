@@ -166,7 +166,7 @@ class SchemaValidator:
 
         for idx, asset in enumerate(assets):
             validated = self.mapper.validate_data('compliance_assets', asset)
-            required_fields = ['id', 'building_id', 'asset_name', 'asset_type', 'category', 'inspection_frequency']
+            required_fields = ['id', 'building_id', 'asset_name', 'asset_type', 'inspection_frequency']
 
             for field in required_fields:
                 if field not in validated or not validated[field]:

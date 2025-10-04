@@ -1,0 +1,12 @@
+DELETE FROM uncategorised_docs;
+DELETE FROM major_works_notices;
+DELETE FROM building_compliance_assets;
+DELETE FROM apportionments;
+DELETE FROM budgets;
+DELETE FROM major_works_projects;
+DELETE FROM compliance_inspections;
+DELETE FROM compliance_assets;
+DELETE FROM building_documents;
+DELETE FROM leaseholders;
+DELETE FROM units;
+DELETE FROM buildings;

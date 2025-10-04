@@ -270,28 +270,17 @@ class ComplianceAssetExtractor:
         # Extract certificate number
         cert_number = self._extract_certificate_number(file_content)
 
+        # BlocIQ V2 Schema - compliance_assets table (minimal schema)
+        # Convert frequency_months to PostgreSQL interval format
+        frequency_interval = f"{asset_config['frequency_months']} months" if asset_config.get('frequency_months') else None
+
         asset = {
             'id': str(uuid.uuid4()),
-            'building_id': building_id,
-            'user_id': user_id or '00000000-0000-0000-0000-000000000001',  # Placeholder
-            'asset_name': asset_config['asset_name'],
-            'asset_type': asset_config['asset_type'],
-            'category': asset_config['category'],
-            'inspection_frequency': asset_config['inspection_frequency'],
-            'frequency_months': asset_config['frequency_months'],
-            'is_required': asset_config['is_required'],
-            'is_active': True,
-            'status': status,
-            'last_inspection_date': inspection_date,
-            'certificate_expiry': expiry_date,
-            'next_due_date': next_due_date,
-            'inspector_name': inspector_name,
-            'inspector_company': inspector_company,
-            'certificate_url': None,  # Will be set when uploaded to storage
-            'notes': f'Imported from: {file_name}',
-            'custom_asset': False,
-            'created_at': datetime.now().isoformat(),
-            'updated_at': datetime.now().isoformat()
+            'building_id': building_id,  # REQUIRED - NOT NULL
+            'asset_name': asset_config['asset_name'],  # REQUIRED
+            'asset_type': asset_config['asset_type'],  # REQUIRED
+            'inspection_frequency': frequency_interval,  # interval type
+            'description': f"Imported from: {file_name}"
         }
 
         # Store certificate reference for linking

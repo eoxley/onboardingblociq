@@ -13,7 +13,7 @@ fi
 
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."
-rm -rf dist/BlocIQOnboarder.app build/BlocIQOnboarder BlocIQOnboarder.spec
+rm -rf dist build BlocIQOnboarder.spec
 
 # Build the app
 echo "🔨 Building application..."

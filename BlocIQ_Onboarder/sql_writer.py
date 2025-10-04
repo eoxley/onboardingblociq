@@ -81,9 +81,36 @@ class SQLWriter:
         if 'compliance_inspections' in mapped_data:
             self._generate_compliance_inspections_inserts(mapped_data['compliance_inspections'])
 
-        # Update units with leaseholder_ids
-        if 'unit_leaseholder_links' in mapped_data:
-            self._generate_unit_updates(mapped_data['unit_leaseholder_links'])
+        # Property form structured data tables
+        if 'building_contractors' in mapped_data:
+            self._generate_building_contractors_inserts(mapped_data['building_contractors'])
+
+        if 'building_utilities' in mapped_data:
+            self._generate_building_utilities_inserts(mapped_data['building_utilities'])
+
+        if 'building_insurance' in mapped_data:
+            self._generate_building_insurance_inserts(mapped_data['building_insurance'])
+
+        if 'building_legal' in mapped_data:
+            self._generate_building_legal_inserts(mapped_data['building_legal'])
+
+        if 'building_statutory_reports' in mapped_data:
+            self._generate_building_statutory_reports_inserts(mapped_data['building_statutory_reports'])
+
+        if 'building_keys_access' in mapped_data:
+            self._generate_building_keys_access_inserts(mapped_data['building_keys_access'])
+
+        if 'building_warranties' in mapped_data:
+            self._generate_building_warranties_inserts(mapped_data['building_warranties'])
+
+        if 'company_secretary' in mapped_data and mapped_data['company_secretary']:
+            self._generate_company_secretary_insert(mapped_data['company_secretary'])
+
+        if 'building_staff' in mapped_data:
+            self._generate_building_staff_inserts(mapped_data['building_staff'])
+
+        if 'building_title_deeds' in mapped_data:
+            self._generate_building_title_deeds_inserts(mapped_data['building_title_deeds'])
 
         # Footer
         self._add_footer()
@@ -177,27 +204,20 @@ class SQLWriter:
 
         self.sql_statements.append("")
 
-    def _generate_unit_updates(self, links: List[Dict]):
-        """Generate UPDATEs to link units with leaseholders"""
-        if not links:
-            return
-
-        self.sql_statements.append(f"-- Update {len(links)} unit-leaseholder links")
-
-        for link in links:
-            self.sql_statements.append(
-                f"UPDATE units SET leaseholder_id = '{link['leaseholder_id']}' "
-                f"WHERE id = '{link['unit_id']}';"
-            )
-
-        self.sql_statements.append("")
-
     def _generate_compliance_assets_inserts(self, assets: List[Dict]):
         """Generate INSERTs for compliance_assets table"""
         if not assets:
             return
 
         self.sql_statements.append(f"-- Insert {len(assets)} compliance assets")
+
+        # DEBUG: Check first asset
+        if assets:
+            print(f"\n🔍 DEBUG: First compliance_asset before SQL generation:")
+            print(f"  Keys: {list(assets[0].keys())}")
+            print(f"  building_id present: {'building_id' in assets[0]}")
+            print(f"  building_id value: {assets[0].get('building_id')}")
+            print()
 
         for asset in assets:
             self.sql_statements.append(
@@ -304,6 +324,143 @@ class SQLWriter:
 
         self.sql_statements.append("")
 
+    def _generate_building_contractors_inserts(self, contractors: List[Dict]):
+        """Generate INSERTs for building_contractors table"""
+        if not contractors:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(contractors)} building contractors")
+
+        for contractor in contractors:
+            self.sql_statements.append(
+                self._create_insert_statement('building_contractors', contractor, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_utilities_inserts(self, utilities: List[Dict]):
+        """Generate INSERTs for building_utilities table"""
+        if not utilities:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(utilities)} building utilities")
+
+        for utility in utilities:
+            self.sql_statements.append(
+                self._create_insert_statement('building_utilities', utility, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_insurance_inserts(self, insurance_records: List[Dict]):
+        """Generate INSERTs for building_insurance table"""
+        if not insurance_records:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(insurance_records)} insurance records")
+
+        for record in insurance_records:
+            self.sql_statements.append(
+                self._create_insert_statement('building_insurance', record, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_legal_inserts(self, legal_records: List[Dict]):
+        """Generate INSERTs for building_legal table"""
+        if not legal_records:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(legal_records)} legal records")
+
+        for record in legal_records:
+            self.sql_statements.append(
+                self._create_insert_statement('building_legal', record, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_statutory_reports_inserts(self, reports: List[Dict]):
+        """Generate INSERTs for building_statutory_reports table"""
+        if not reports:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(reports)} statutory reports")
+
+        for report in reports:
+            self.sql_statements.append(
+                self._create_insert_statement('building_statutory_reports', report, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_keys_access_inserts(self, access_records: List[Dict]):
+        """Generate INSERTs for building_keys_access table"""
+        if not access_records:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(access_records)} keys/access records")
+
+        for record in access_records:
+            self.sql_statements.append(
+                self._create_insert_statement('building_keys_access', record, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_warranties_inserts(self, warranties: List[Dict]):
+        """Generate INSERTs for building_warranties table"""
+        if not warranties:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(warranties)} warranties")
+
+        for warranty in warranties:
+            self.sql_statements.append(
+                self._create_insert_statement('building_warranties', warranty, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_company_secretary_insert(self, company_secretary: Dict):
+        """Generate INSERT for company_secretary table"""
+        if not company_secretary:
+            return
+
+        self.sql_statements.append("-- Insert company secretary data")
+        self.sql_statements.append(
+            self._create_insert_statement('company_secretary', company_secretary, use_upsert=False)
+        )
+        self.sql_statements.append("")
+
+    def _generate_building_staff_inserts(self, staff_records: List[Dict]):
+        """Generate INSERTs for building_staff table"""
+        if not staff_records:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(staff_records)} staff records")
+
+        for record in staff_records:
+            self.sql_statements.append(
+                self._create_insert_statement('building_staff', record, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
+    def _generate_building_title_deeds_inserts(self, title_deeds: List[Dict]):
+        """Generate INSERTs for building_title_deeds table"""
+        if not title_deeds:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(title_deeds)} title deed records")
+
+        for record in title_deeds:
+            self.sql_statements.append(
+                self._create_insert_statement('building_title_deeds', record, use_upsert=False)
+            )
+
+        self.sql_statements.append("")
+
     def _create_insert_statement(self, table: str, data: Dict, use_upsert: bool = True) -> str:
         """
         Create an INSERT or UPSERT statement with schema validation
@@ -316,9 +473,36 @@ class SQLWriter:
         Returns:
             SQL INSERT/UPSERT statement
         """
-        # Validate data against schema and filter out None values
+        # Validate data against schema
         validated_data = self.schema_mapper.validate_data(table, data)
-        filtered_data = {k: v for k, v in validated_data.items() if v is not None}
+
+        # DEBUG: Print for compliance_assets
+        if table == 'compliance_assets':
+            print(f"DEBUG compliance_assets:")
+            print(f"  Original data: {data}")
+            print(f"  Validated data: {validated_data}")
+
+        # Define required NOT NULL columns per table
+        required_columns = {
+            'buildings': ['id', 'name'],
+            'units': ['id', 'building_id', 'unit_number'],
+            'leaseholders': ['id', 'unit_id', 'name'],
+            'building_documents': ['id', 'building_id', 'category', 'file_name', 'storage_path'],
+            'compliance_assets': ['id', 'building_id', 'name', 'category'],
+            'budgets': ['id', 'building_id', 'period'],
+            'major_works_projects': ['id', 'building_id', 'project_name']
+        }
+
+        # Filter out None values, but keep required columns even if None (will error early)
+        table_required = required_columns.get(table, [])
+        filtered_data = {
+            k: v for k, v in validated_data.items()
+            if v is not None or k in table_required
+        }
+
+        if table == 'compliance_assets':
+            print(f"  Filtered data: {filtered_data}")
+            print()
 
         if not filtered_data:
             return f"-- Skipped empty insert for {table}"
