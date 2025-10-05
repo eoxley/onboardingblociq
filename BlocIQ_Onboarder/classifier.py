@@ -40,14 +40,23 @@ class DocumentClassifier:
             'column_patterns': ['unit', 'flat', 'leaseholder', 'owner', 'tenant', 'name', 'address']
         },
         'budgets': {
-            'keywords': ['budget', 'service charge', 'expenditure', 'income', 'year end', 'ye 20'],
+            'keywords': ['budget', 'service charge', 'expenditure', 'income', 'year end', 'ye 20',
+                        'variance', 'forecast', 'apportionment', 'schedule', 'arrears', 'account'],
             'filename_patterns': [
                 r'.*budget.*',
                 r'.*ye\s*\d{2}.*',
-                r'.*year\s*end.*',
-                r'.*accounts.*'
+                r'.*year[\s_-]?end.*',
+                r'.*accounts?.*',
+                r'.*service[\s_-]?charge.*',
+                r'.*variance.*',
+                r'.*forecast.*',
+                r'.*apportionment.*',
+                r'.*schedule.*',
+                r'.*expenditure.*',
+                r'.*\bq[1-4]\b.*',  # Quarterly reports
+                r'.*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[\s_-]?\d{2,4}.*'  # Monthly reports
             ],
-            'column_patterns': ['budget', 'expenditure', 'income', 'total', 'ye', 'year']
+            'column_patterns': ['budget', 'expenditure', 'income', 'total', 'ye', 'year', 'variance', 'forecast']
         },
         'arrears': {
             'keywords': ['arrears', 'aged debtors', 'demand', 'balance', 'outstanding'],
@@ -134,7 +143,7 @@ class DocumentClassifier:
 
     def classify(self, parsed_data: Dict) -> Tuple[str, float]:
         """
-        Classify a parsed document
+        Classify a parsed document with insurance-first priority
 
         Args:
             parsed_data: Dictionary from parsers.py
@@ -149,6 +158,27 @@ class DocumentClassifier:
         # Use taxonomy if available
         if self.taxonomy and 'document_types' in self.taxonomy:
             return self._classify_with_taxonomy(filename, content, search_text)
+
+        # PRIORITY 1: Insurance detection (to prevent false lease classification)
+        # Check for insurance-specific patterns first
+        insurance_patterns = [
+            r'policy\s+limit',
+            r'insurance\s+certificate',
+            r'public\s+liability',
+            r'employers?\s+liability',
+            r'insurer',
+            r'underwriter',
+            r'schedule\s+of\s+insurance',
+            r'excess',
+            r'premium',
+            r'indemnity',
+            r'cover\s+note',
+            r'zurich|aviva|axa|allianz',  # Common insurers
+        ]
+
+        for pattern in insurance_patterns:
+            if re.search(pattern, search_text, re.IGNORECASE):
+                return 'insurance', 0.95
 
         # Fall back to hardcoded categories
         scores = {}
@@ -194,7 +224,29 @@ class DocumentClassifier:
         return best_category, confidence
 
     def _classify_with_taxonomy(self, filename: str, content: str, search_text: str) -> Tuple[str, float]:
-        """Classify using UK block taxonomy"""
+        """Classify using UK block taxonomy with insurance-first priority"""
+
+        # PRIORITY 1: Insurance detection (to prevent false lease classification)
+        # Check for insurance-specific patterns first
+        insurance_patterns = [
+            r'policy\s+limit',
+            r'insurance\s+certificate',
+            r'public\s+liability',
+            r'employers?\s+liability',
+            r'insurer',
+            r'underwriter',
+            r'schedule\s+of\s+insurance',
+            r'excess',
+            r'premium',
+            r'indemnity',
+            r'cover\s+note',
+            r'zurich|aviva|axa|allianz',  # Common insurers
+        ]
+
+        for pattern in insurance_patterns:
+            if re.search(pattern, search_text, re.IGNORECASE):
+                return 'insurance', 0.95
+
         scores = {}
         doc_types = self.taxonomy['document_types']
 

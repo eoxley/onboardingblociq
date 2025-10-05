@@ -120,6 +120,10 @@ class BlocIQOnboarder:
         self._generate_logs()
         self._generate_confidence_report()
 
+        # Step 7: Generate classification summary PDF
+        print("\n📄 Generating classification summary PDF...")
+        self._generate_classification_summary()
+
         # Summary
         self._print_summary()
 
@@ -350,7 +354,7 @@ class BlocIQOnboarder:
             # Extract leaseholders from all units_leaseholders files
             if self.categorized_files.get('units_leaseholders'):
                 for file_data in self.categorized_files['units_leaseholders']:
-                    leaseholders = self.mapper.map_leaseholders(file_data, unit_map)
+                    leaseholders = self.mapper.map_leaseholders(file_data, unit_map, building_id)
                     if leaseholders:
                         collator.add_leaseholders_source(
                             leaseholders,
@@ -673,12 +677,82 @@ class BlocIQOnboarder:
         if service_charge_years:
             print(f"  ✅ Found {len(service_charge_years)} service charge accounts")
 
+        # Extract apportionments from apportionment files
+        self._extract_apportionments()
+
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),
             'action': 'extract_financial',
             'budgets_found': len(budgets),
             'accounts_found': len(service_charge_years)
         })
+
+    def _extract_apportionments(self):
+        """Extract apportionments from apportionment files and link to budgets and units"""
+        if not self.categorized_files.get('apportionments'):
+            print("  ℹ️  No apportionment files found")
+            return
+
+        # Get unit map for linking
+        units = self.mapped_data.get('units', [])
+        if not units:
+            print("  ⚠️  No units found - cannot extract apportionments")
+            return
+
+        unit_map = {unit['unit_number']: unit['id'] for unit in units}
+
+        # Get budgets for linking
+        budgets = self.mapped_data.get('budgets', [])
+        if not budgets:
+            print("  ℹ️  No budgets found - creating default budget for apportionments")
+            # Create a default budget to link apportionments to
+            building_id = self.mapped_data['building']['id']
+            default_budget = {
+                'id': str(__import__('uuid').uuid4()),
+                'building_id': building_id,
+                'year_start_date': None,
+                'year_end_date': None,
+                'total_amount': None,
+                'budget_type': 'service_charge'
+            }
+            budgets = [default_budget]
+            self.mapped_data['budgets'] = budgets
+
+        all_apportionments = []
+
+        for file_data in self.categorized_files['apportionments']:
+            file_name = file_data.get('file_name', 'unknown')
+
+            # Try to match apportionment file to a specific budget by year or use the most recent budget
+            budget_id = budgets[0]['id']  # Default to first/most recent budget
+
+            # Extract year from filename if present (e.g., "Apportionments 2024.xlsx")
+            import re
+            year_match = re.search(r'20\d{2}', file_name)
+            if year_match:
+                file_year = int(year_match.group())
+                # Try to find matching budget by year
+                for budget in budgets:
+                    if budget.get('year_start_date'):
+                        budget_year = int(budget['year_start_date'][:4])
+                        if budget_year == file_year:
+                            budget_id = budget['id']
+                            break
+
+            # Extract apportionments
+            apportionments = self.mapper.map_apportionments(file_data, unit_map, budget_id, building_id)
+
+            if apportionments:
+                all_apportionments.extend(apportionments)
+                print(f"  ✅ Extracted {len(apportionments)} apportionments from {file_name}")
+            else:
+                print(f"  ⚠️  No apportionments extracted from {file_name}")
+
+        if all_apportionments:
+            self.mapped_data['apportionments'] = all_apportionments
+            print(f"\n  💰 Total apportionments extracted: {len(all_apportionments)}")
+        else:
+            print("  ⚠️  No apportionments extracted from any files")
 
     def _validate_data(self):
         """Validate mapped data against UK block management rules"""
@@ -819,6 +893,58 @@ class BlocIQOnboarder:
         print(f"Budgets: {len(self.mapped_data.get('budgets', []))}")
         print(f"Service Charge Years: {len(self.mapped_data.get('service_charge_years', []))}")
 
+        # Print financial documents summary
+        financial_docs = [doc for doc in self.mapped_data.get('building_documents', []) if doc.get('category') == 'finance']
+        if financial_docs:
+            print("\n" + "=" * 60)
+            print("💰 FINANCIAL DOCUMENTS SUMMARY")
+            print("=" * 60)
+            print(f"\nDetected {len(financial_docs)} financial documents")
+
+            # Collect financial years and periods
+            financial_years = set()
+            period_labels = set()
+            for doc in financial_docs:
+                if doc.get('financial_year'):
+                    financial_years.add(doc['financial_year'])
+                if doc.get('period_label'):
+                    period_labels.add(doc['period_label'])
+
+            if financial_years:
+                years_sorted = sorted(list(financial_years))
+                print(f"Financial Years Found: {', '.join(years_sorted)}")
+
+            if period_labels:
+                periods_sorted = sorted(list(period_labels))
+                print(f"Period Labels Found: {', '.join(periods_sorted)}")
+
+            print(f"\nInserted {len(financial_docs)} entries into building_documents ✅")
+            print("\nFinancial Document Types:")
+
+            # Categorize by type
+            doc_types = {}
+            for doc in financial_docs:
+                filename_lower = doc['file_name'].lower()
+                doc_type = 'Other'
+
+                if 'budget' in filename_lower:
+                    doc_type = 'Budget'
+                elif 'variance' in filename_lower:
+                    doc_type = 'Variance Report'
+                elif 'apportionment' in filename_lower:
+                    doc_type = 'Apportionment Schedule'
+                elif 'account' in filename_lower:
+                    doc_type = 'Service Charge Account'
+                elif 'demand' in filename_lower:
+                    doc_type = 'Service Charge Demand'
+
+                doc_types[doc_type] = doc_types.get(doc_type, 0) + 1
+
+            for doc_type, count in sorted(doc_types.items()):
+                print(f"  • {doc_type}: {count}")
+
+            print("=" * 60)
+
         # Print validation summary
         errors = self.validation_report.get('errors', [])
         warnings = self.validation_report.get('warnings', [])
@@ -843,6 +969,25 @@ class BlocIQOnboarder:
         print("  4. Execute SQL in Supabase SQL Editor")
         print("  5. Upload original documents to Supabase Storage")
         print()
+
+    def _generate_classification_summary(self):
+        """Generate branded PDF summary of document classification"""
+        from generate_classification_summary import generate_classification_summary
+
+        try:
+            result = generate_classification_summary(
+                self.categorized_files,
+                output_dir=str(self.output_dir)
+            )
+
+            if result.get('pdf_path'):
+                print(f"  ✅ Classification summary PDF: {result['pdf_path']}")
+            else:
+                print(f"  ✅ Classification summary HTML: {result['html_path']}")
+                print(f"     (Install wkhtmltopdf for PDF export)")
+
+        except Exception as e:
+            print(f"  ⚠️  Error generating classification summary: {e}")
 
     def _find_file_by_category(self, category: str, keywords: List[str] = None) -> Dict:
         """Find first file matching category and keywords"""
