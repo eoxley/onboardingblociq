@@ -29,7 +29,7 @@ class DocumentClassifier:
     # Category patterns based on Pimlico Place data structure (fallback)
     CATEGORIES = {
         'units_leaseholders': {
-            'keywords': ['leaseholder', 'unit', 'tenant', 'flat', 'owner', 'lease list'],
+            'keywords': ['leaseholder', 'unit', 'tenant', 'flat', 'owner', 'lease list', 'tenancy schedule'],
             'filename_patterns': [
                 r'.*leaseholder.*list.*',
                 r'.*unit.*list.*',

@@ -20,35 +20,29 @@ class SupabaseSchemaMapper:
         self.table_schemas = {
             'buildings': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'portfolio_id': 'uuid REFERENCES portfolios(id)',
                 'name': 'text NOT NULL',
                 'address': 'text',
-                # Basic Info
-                'number_of_units': 'integer',
-                'previous_agents': 'text',
-                # Accountants
-                'current_accountants': 'text',
-                'accountant_contact': 'text',
-                # Financial Config
-                'demand_date_1': 'date',
-                'demand_date_2': 'date',
-                'year_end_date': 'date',
-                'management_fee_ex_vat': 'numeric',
-                'management_fee_inc_vat': 'numeric',
-                'company_secretary_fee_ex_vat': 'numeric',
-                'company_secretary_fee_inc_vat': 'numeric',
-                # Ground Rent
-                'ground_rent_applicable': 'boolean',
-                'ground_rent_charges': 'text',
-                # Insurance
-                'insurance_broker': 'text',
-                'insurance_renewal_date': 'date',
-                # Section 20 Limits
-                'section_20_limit_inc_vat': 'numeric',
-                'expenditure_limit': 'numeric',
-                # Other
-                'additional_info': 'text',
-                'created_at': 'timestamp with time zone DEFAULT now()'
+                'postcode': 'text',
+                'total_units': 'integer',
+                # Contact details
+                'billing_contact_name': 'text',
+                'billing_contact_email': 'text',
+                'billing_contact_phone': 'text',
+                # Freeholder
+                'freeholder_name': 'text',
+                'freeholder_company': 'text',
+                'freeholder_address': 'text',
+                'freeholder_billing_email': 'text',
+                # Management
+                'management_fee_structure': 'text',
+                'management_fee_amount': 'numeric',
+                # Building characteristics
+                'height_metres': 'numeric',
+                'number_of_storeys': 'integer',
+                'year_built': 'integer',
+                'building_type': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
             },
             'units': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -58,29 +52,60 @@ class SupabaseSchemaMapper:
             },
             'leaseholders': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'unit_id': 'uuid NOT NULL REFERENCES units(id)',
-                'name': 'text NOT NULL',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'title': 'text',
+                'first_name': 'text NOT NULL',
+                'last_name': 'text NOT NULL',
                 'email': 'text',
-                'correspondence_address': 'text',
-                'created_at': 'timestamp with time zone DEFAULT now()'
+                'phone': 'text',
+                'mobile': 'text',
+                # Property
+                'unit_number': 'text',
+                'lease_start_date': 'date',
+                'lease_term_years': 'integer',
+                'ground_rent': 'numeric',
+                # Financial
+                'service_charge_percentage': 'numeric',
+                'arrears_balance': 'numeric DEFAULT 0.00',
+                'is_active': 'boolean DEFAULT true',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
             },
             'building_documents': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
                 'category': 'text NOT NULL',  # compliance, finance, major_works, lease, contracts, correspondence, uncategorised
                 'file_name': 'text NOT NULL',
+                'filename': 'text',  # Legacy alias
                 'storage_path': 'text NOT NULL',
+                'file_path': 'text',  # Legacy alias
+                'file_size': 'integer',
+                'file_type': 'text',
                 'entity_type': 'text',  # compliance_asset, budget, major_works_project, unit, leaseholder
                 'linked_entity_id': 'uuid',
-                'uploaded_at': 'timestamp with time zone DEFAULT now()'
+                'ocr_text': 'text',
+                'processing_status': 'text',
+                'confidence_level': 'text',
+                'metadata': 'jsonb',
+                'uploaded_by': 'uuid',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
             },
             'compliance_assets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'category': 'text NOT NULL',  # BlocIQ V2: compliance category
                 'asset_name': 'text NOT NULL',
                 'asset_type': 'text NOT NULL',
                 'inspection_frequency': 'interval',
-                'description': 'text'
+                'description': 'text',
+                'last_inspection_date': 'date',
+                'next_due_date': 'date',
+                'compliance_status': 'varchar(50)',
+                'location': 'varchar(255)',
+                'responsible_party': 'varchar(255)',
+                'notes': 'text'
             },
             'compliance_inspections': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -118,6 +143,7 @@ class SupabaseSchemaMapper:
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
                 'document_id': 'uuid REFERENCES building_documents(id)',
+                'schedule_id': 'uuid REFERENCES schedules(id)',  # Link to schedule
                 'period': 'text NOT NULL',  # e.g., '2024-2025', 'YE2024'
                 'start_date': 'date',  # Budget period start
                 'end_date': 'date',  # Budget period end
@@ -128,8 +154,19 @@ class SupabaseSchemaMapper:
                 'budget_type': 'text',  # 'service_charge', 'reserve_fund', 'sinking_fund'
                 'created_at': 'timestamp with time zone DEFAULT now()'
             },
+            'schedules': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'name': 'text NOT NULL',  # e.g., 'Main Schedule', 'Schedule A', 'Commercial Schedule'
+                'service_charge_code': 'text',  # e.g., 'A', 'B', 'C'
+                'notes': 'text',
+                'meta': 'jsonb DEFAULT \'{}\'::jsonb',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'CONSTRAINT': 'UNIQUE(building_id, name)'
+            },
             'apportionments': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
                 'unit_id': 'uuid NOT NULL REFERENCES units(id)',
                 'budget_id': 'uuid NOT NULL REFERENCES budgets(id)',
                 'amount': 'decimal NOT NULL',
@@ -138,6 +175,7 @@ class SupabaseSchemaMapper:
             },
             'major_works_notices': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
                 'project_id': 'uuid NOT NULL REFERENCES major_works_projects(id)',
                 'type': 'varchar NOT NULL',  # NOI, SOE, contractor_quote, final_account
                 'document_id': 'uuid REFERENCES building_documents(id)',
@@ -181,6 +219,10 @@ class SupabaseSchemaMapper:
                 'contract_end': 'date',
                 'document_id': 'uuid REFERENCES building_documents(id)',
                 'notes': 'text',
+                'retender_status': 'text DEFAULT not_scheduled',  # not_scheduled | pending | in_progress | complete
+                'retender_due_date': 'date',
+                'next_review_date': 'date',
+                'renewal_notice_period': 'interval DEFAULT interval \'90 days\'',
                 'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'building_utilities': {
@@ -238,10 +280,13 @@ class SupabaseSchemaMapper:
             'building_keys_access': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'access_type': 'text NOT NULL',  # labelled_keys, gate_codes, entrance_codes, bin_store, bike_store
+                'access_type': 'text NOT NULL',  # labelled_keys, gate_codes, entrance_codes, stopcock, meter, bin_store, bike_store
+                'category': 'text',  # access, utilities, safety, general
+                'label': 'text',  # Human-readable label for UI
                 'description': 'text',
-                'code': 'text',  # Should be encrypted in production
-                'location': 'text',
+                'code': 'text',  # Access codes (should be encrypted in production)
+                'location': 'text',  # Physical locations (e.g., "Boiler room cupboard to the left")
+                'visibility': 'text DEFAULT team',  # team, directors, contractors
                 'notes': 'text',
                 'created_at': 'timestamp with time zone DEFAULT now()'
             },
@@ -452,10 +497,92 @@ class SupabaseSchemaMapper:
             building['additional_info'] = self._extract_field(property_form_data, ['any other relevant information', 'additional information', 'notes'])
 
         return building
-    
+
+    def detect_schedules(self, property_form_data: Dict = None, folder_name: str = None) -> List[Dict]:
+        """
+        Detect or create service charge schedules for a building
+
+        Tries to detect schedule references from:
+        1. Excel column headers in property form
+        2. Folder names
+        3. Falls back to single 'Main Schedule'
+
+        Returns list of schedule names to create
+        """
+        schedules = []
+
+        # Try to detect from property form data (Excel columns)
+        if property_form_data and 'raw_data' in property_form_data:
+            raw_data = property_form_data.get('raw_data', [])
+            if raw_data and len(raw_data) > 0:
+                # Check first row (headers) for schedule indicators
+                headers = raw_data[0] if isinstance(raw_data[0], dict) else {}
+                for key in headers.keys():
+                    key_lower = str(key).lower()
+                    if 'schedule' in key_lower:
+                        # Extract schedule name like "Schedule A", "Schedule B"
+                        import re
+                        match = re.search(r'schedule\s*([a-z0-9]+)', key_lower)
+                        if match:
+                            schedule_name = f"Schedule {match.group(1).upper()}"
+                            if schedule_name not in schedules:
+                                schedules.append(schedule_name)
+
+        # Try to detect from folder structure
+        if not schedules and folder_name:
+            import re
+            # Look for folder names like "Schedule A", "Residential Schedule", etc.
+            folder_parts = folder_name.split('/')
+            for part in folder_parts:
+                if re.search(r'schedule', part, re.IGNORECASE):
+                    clean_name = re.sub(r'^\d+\.?\s*', '', part)  # Remove numbering like "01. "
+                    clean_name = clean_name.replace('_', ' ').strip()
+                    if clean_name and clean_name not in schedules:
+                        schedules.append(clean_name)
+
+        # Fallback to single Main Schedule
+        if not schedules:
+            schedules.append("Main Schedule")
+
+        return schedules
+
+    def map_schedules(self, building_id: str, schedule_names: List[str]) -> List[Dict]:
+        """
+        Map detected schedule names to schedules table
+
+        Args:
+            building_id: UUID of the building
+            schedule_names: List of schedule names detected
+
+        Returns:
+            List of schedule records ready for SQL insertion
+        """
+        schedules = []
+
+        for idx, name in enumerate(schedule_names):
+            # Generate service charge code (A, B, C, etc.)
+            service_charge_code = chr(65 + idx)  # 65 = 'A' in ASCII
+
+            schedule = {
+                'id': str(uuid.uuid4()),
+                'building_id': building_id,
+                'name': name,
+                'service_charge_code': service_charge_code,
+                'notes': f'Auto-detected schedule from onboarding',
+                'meta': '{}'
+            }
+            schedules.append(schedule)
+
+        return schedules
+
     def map_units(self, leaseholder_data: Dict, building_id: str) -> List[Dict]:
         """Map to units table with exact column names - ENHANCED to capture apportionment"""
         units = []
+
+        # Check if this is a Tenancy Schedule PDF (text-based extraction)
+        file_name = leaseholder_data.get('file_name', '')
+        if 'tenancy schedule' in file_name.lower() and 'full_text' in leaseholder_data:
+            return self._extract_units_from_tenancy_schedule(leaseholder_data, building_id)
 
         # Handle Excel sheet structure: extract raw_data from first sheet if nested
         raw_data = leaseholder_data.get('raw_data', [])
@@ -484,14 +611,14 @@ class SupabaseSchemaMapper:
 
         return units
     
-    def map_leaseholders(self, leaseholder_data: Dict, unit_map: Dict[str, str]) -> List[Dict]:
+    def map_leaseholders(self, leaseholder_data: Dict, unit_map: Dict[str, str], building_id: str) -> List[Dict]:
         """Map to leaseholders table with exact column names"""
         leaseholders = []
 
         # Check if this is a Tenancy Schedule PDF (text-based extraction)
         file_name = leaseholder_data.get('file_name', '')
         if 'tenancy schedule' in file_name.lower() and 'full_text' in leaseholder_data:
-            return self._extract_leaseholders_from_tenancy_schedule(leaseholder_data, unit_map)
+            return self._extract_leaseholders_from_tenancy_schedule(leaseholder_data, unit_map, building_id)
 
         # Handle Excel sheet structure: extract raw_data from first sheet if nested
         raw_data = leaseholder_data.get('raw_data', [])
@@ -506,24 +633,34 @@ class SupabaseSchemaMapper:
             unit_number = self._extract_unit_number(row)
             if not unit_number or self._is_special_unit(unit_number):
                 continue
-                
-            unit_id = unit_map.get(unit_number)
-            if not unit_id:
-                continue
-                
+
+            # unit_number is TEXT now, not UUID
+            # Skip unit_id lookup - use unit_number directly
+
             name = self._extract_field_from_row(row, ['name', 'leaseholder', 'owner'])
             if not name:
                 continue
-                
+
+            # Parse name into first_name and last_name
+            title, first_name, last_name, notes = self._parse_leaseholder_name(name)
+
+            # Get correspondence address for notes
+            address = self._extract_field_from_row(row, ['address', 'correspondence address', 'postal address'])
+            if address:
+                notes = f"{notes}\nAddress: {address}" if notes else f"Address: {address}"
+
             leaseholder = {
                 'id': str(uuid.uuid4()),
-                'unit_id': unit_id,
-                'name': name,
+                'building_id': building_id,
+                'unit_number': unit_number,  # TEXT field, not UUID
+                'title': title,
+                'first_name': first_name,
+                'last_name': last_name,
                 'email': self._extract_field_from_row(row, ['email', 'email address']),
-                'correspondence_address': self._extract_field_from_row(row, ['address', 'correspondence address', 'postal address'])
+                'notes': notes
             }
             leaseholders.append(leaseholder)
-        
+
         return leaseholders
     
     def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = None,
@@ -564,6 +701,9 @@ class SupabaseSchemaMapper:
             'entity_type': entity_type,
             'linked_entity_id': linked_entity_id
         }
+
+        # Note: financial_year and period_label removed - not in production schema
+        # Financial metadata can be stored in 'metadata' jsonb field if needed
 
         return doc_record
     
@@ -638,7 +778,28 @@ class SupabaseSchemaMapper:
                 return match.group(1).strip()
         return None
 
-    def _extract_leaseholders_from_tenancy_schedule(self, file_data: Dict, unit_map: Dict[str, str]) -> List[Dict]:
+    def _extract_units_from_tenancy_schedule(self, file_data: Dict, building_id: str) -> List[Dict]:
+        """Extract units from Tenancy Schedule PDF text"""
+        units = []
+        text = file_data.get('full_text', '')
+
+        # Parse lines like: "Flat 1, 32-34 Connaught Square Marmotte Holdings Limited n/a"
+        import re
+        pattern = r'(Flat\s+\d+),\s+[\d\-]+\s+[A-Za-z\s]+?Square'
+
+        for match in re.finditer(pattern, text):
+            unit_number = match.group(1).strip()  # "Flat 1"
+
+            unit = {
+                'id': str(uuid.uuid4()),
+                'building_id': building_id,
+                'unit_number': unit_number
+            }
+            units.append(unit)
+
+        return units
+
+    def _extract_leaseholders_from_tenancy_schedule(self, file_data: Dict, unit_map: Dict[str, str], building_id: str) -> List[Dict]:
         """Extract leaseholders from Tenancy Schedule PDF text"""
         leaseholders = []
         text = file_data.get('full_text', '')
@@ -654,16 +815,24 @@ class SupabaseSchemaMapper:
             unit_number = match.group(1).strip()  # "Flat 1"
             leaseholder_name = match.group(2).strip()  # "Marmotte Holdings Limited"
 
+            # Get unit_id from unit_map
             unit_id = unit_map.get(unit_number)
             if not unit_id:
-                continue
+                continue  # Skip if unit not found in map
+
+            # Parse name into components
+            title, first_name, last_name, notes = self._parse_leaseholder_name(leaseholder_name)
 
             leaseholder = {
                 'id': str(uuid.uuid4()),
-                'unit_id': unit_id,
-                'name': leaseholder_name,
+                'building_id': building_id,
+                'unit_id': unit_id,  # UUID reference to units table
+                'unit_number': unit_number,  # TEXT field for display
+                'title': title,
+                'first_name': first_name,
+                'last_name': last_name,
                 'email': None,
-                'correspondence_address': None
+                'notes': notes
             }
             leaseholders.append(leaseholder)
 
@@ -786,12 +955,257 @@ class SupabaseSchemaMapper:
                 notes_parts.append(f"{label}: {value}")
         
         return '\n'.join(notes_parts)
-    
+
+    def map_apportionments(self, file_data: Dict, unit_map: Dict[str, str], budget_id: str, building_id: str) -> List[Dict]:
+        """
+        Map apportionment data to apportionments table
+
+        Args:
+            file_data: Parsed apportionment file data
+            unit_map: Dictionary mapping unit_number -> unit_id
+            budget_id: UUID of the associated budget record
+            building_id: UUID of the building
+
+        Returns:
+            List of apportionment records with building_id, unit_id, budget_id, amount, percentage
+        """
+        apportionments = []
+
+        # Handle Excel sheet structure: extract raw_data from first sheet if nested
+        raw_data = file_data.get('raw_data', [])
+
+        if not raw_data and 'data' in file_data:
+            # Excel files have nested structure: data -> {sheet_name} -> raw_data
+            data_value = file_data['data']
+            if isinstance(data_value, dict):
+                for sheet_name, sheet_data in data_value.items():
+                    if isinstance(sheet_data, dict) and 'raw_data' in sheet_data:
+                        raw_data = sheet_data['raw_data']
+                        break  # Use first sheet with data
+
+        for row in raw_data:
+            # Extract unit number
+            unit_number = self._extract_unit_number(row)
+            if not unit_number or self._is_special_unit(unit_number):
+                continue
+
+            # Get unit_id from map
+            unit_id = unit_map.get(unit_number)
+            if not unit_id:
+                continue
+
+            # Extract apportionment amount and percentage
+            amount = self._extract_apportionment_amount(row)
+            percentage = self._extract_apportionment_percentage(row)
+
+            # Skip if we have neither amount nor percentage
+            if amount is None and percentage is None:
+                continue
+
+            apportionment = {
+                'id': str(uuid.uuid4()),
+                'building_id': building_id,
+                'unit_id': unit_id,
+                'budget_id': budget_id,
+                'amount': amount,
+                'percentage': percentage
+            }
+
+            apportionments.append(apportionment)
+
+        return apportionments
+
+    def _extract_apportionment_amount(self, row: Dict) -> Optional[float]:
+        """Extract apportionment amount from row"""
+        # Common column names for apportionment amounts
+        amount_keywords = [
+            'apportionment', 'amount', 'service charge', 'charge',
+            'annual charge', 'total', 'value', 'sum'
+        ]
+
+        for keyword in amount_keywords:
+            for key, value in row.items():
+                if keyword.lower() in str(key).lower():
+                    # Try to parse as currency
+                    if value:
+                        import re
+                        value_str = str(value).strip()
+                        # Remove currency symbols and commas
+                        cleaned = re.sub(r'[£$,\s]', '', value_str)
+                        # Extract numeric value
+                        match = re.search(r'[\d.]+', cleaned)
+                        if match:
+                            try:
+                                return float(match.group())
+                            except ValueError:
+                                continue
+        return None
+
+    def _extract_apportionment_percentage(self, row: Dict) -> Optional[float]:
+        """Extract apportionment percentage from row"""
+        # Common column names for percentages
+        percentage_keywords = [
+            'percentage', 'percent', '%', 'share', 'proportion'
+        ]
+
+        for keyword in percentage_keywords:
+            for key, value in row.items():
+                if keyword.lower() in str(key).lower():
+                    if value:
+                        import re
+                        value_str = str(value).strip()
+                        # Remove % symbol and whitespace
+                        cleaned = re.sub(r'[%\s]', '', value_str)
+                        # Extract numeric value
+                        match = re.search(r'[\d.]+', cleaned)
+                        if match:
+                            try:
+                                return float(match.group())
+                            except ValueError:
+                                continue
+        return None
+
     def _get_file_extension(self, filename: str) -> str:
         """Extract file extension from filename"""
         import os
         return os.path.splitext(filename)[1].lower().lstrip('.')
-    
+
+    def _extract_inspection_date_from_filename(self, filename: str) -> Optional[str]:
+        """
+        Extract inspection date from filename
+        Examples:
+        - "EICR Report 2023.pdf" -> "2023-01-01"
+        - "Fire Risk Assessment Nov 2023.pdf" -> "2023-11-01"
+        - "Gas Safety 15-11-2023.pdf" -> "2023-11-15"
+        - "EPC 2024-03-20.pdf" -> "2024-03-20"
+        """
+        import re
+        from datetime import datetime
+
+        # Try full date formats first (YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY)
+        full_date_patterns = [
+            r'(\d{4})-(\d{2})-(\d{2})',  # 2023-11-15
+            r'(\d{2})-(\d{2})-(\d{4})',  # 15-11-2023
+            r'(\d{2})/(\d{2})/(\d{4})',  # 15/11/2023
+        ]
+
+        for pattern in full_date_patterns:
+            match = re.search(pattern, filename)
+            if match:
+                try:
+                    if pattern == r'(\d{4})-(\d{2})-(\d{2})':
+                        # YYYY-MM-DD
+                        year, month, day = match.groups()
+                        return f"{year}-{month}-{day}"
+                    else:
+                        # DD-MM-YYYY or DD/MM/YYYY
+                        day, month, year = match.groups()
+                        return f"{year}-{month}-{day}"
+                except:
+                    pass
+
+        # Try month name + year (Nov 2023, November 2023)
+        month_names = {
+            'jan': '01', 'january': '01',
+            'feb': '02', 'february': '02',
+            'mar': '03', 'march': '03',
+            'apr': '04', 'april': '04',
+            'may': '05',
+            'jun': '06', 'june': '06',
+            'jul': '07', 'july': '07',
+            'aug': '08', 'august': '08',
+            'sep': '09', 'september': '09', 'sept': '09',
+            'oct': '10', 'october': '10',
+            'nov': '11', 'november': '11',
+            'dec': '12', 'december': '12'
+        }
+
+        for month_name, month_num in month_names.items():
+            pattern = rf'\b{month_name}\.?\s+(\d{{4}})\b'
+            match = re.search(pattern, filename.lower())
+            if match:
+                year = match.group(1)
+                return f"{year}-{month_num}-01"
+
+        # Try just year (2023, 2024) - default to Jan 1st
+        year_match = re.search(r'\b(20\d{2})\b', filename)
+        if year_match:
+            year = year_match.group(1)
+            return f"{year}-01-01"
+
+        return None
+
+    def _calculate_next_due_date(self, last_inspection_date: str, frequency_months: int) -> str:
+        """
+        Calculate next due date by adding frequency to last inspection date
+        """
+        from datetime import datetime
+        from dateutil.relativedelta import relativedelta
+
+        try:
+            last_date = datetime.strptime(last_inspection_date, '%Y-%m-%d')
+            next_date = last_date + relativedelta(months=frequency_months)
+            return next_date.strftime('%Y-%m-%d')
+        except:
+            return None
+
+    def _calculate_compliance_status(self, next_due_date: Optional[str]) -> str:
+        """
+        Calculate compliance status based on next due date
+        - overdue: past due date
+        - due_soon: within 60 days
+        - compliant: more than 60 days away
+        - unknown: no due date
+        """
+        if not next_due_date:
+            return 'unknown'
+
+        from datetime import datetime
+
+        try:
+            due_date = datetime.strptime(next_due_date, '%Y-%m-%d')
+            today = datetime.now()
+            days_until_due = (due_date - today).days
+
+            if days_until_due < 0:
+                return 'overdue'
+            elif days_until_due <= 60:
+                return 'due_soon'
+            else:
+                return 'compliant'
+        except:
+            return 'unknown'
+
+    def _extract_location_from_filename(self, filename: str) -> Optional[str]:
+        """
+        Extract location from filename if mentioned
+        Examples:
+        - "Communal EICR.pdf" -> "Communal"
+        - "Boiler Room Gas Safety.pdf" -> "Boiler Room"
+        - "Main Electrical EICR.pdf" -> "Main Electrical"
+        """
+        import re
+
+        # Common location keywords
+        location_patterns = [
+            r'\b(communal)\b',
+            r'\b(boiler\s+room)\b',
+            r'\b(plant\s+room)\b',
+            r'\b(main\s+electrical)\b',
+            r'\b(basement)\b',
+            r'\b(roof)\b',
+            r'\b(ground\s+floor)\b',
+            r'\b(entrance)\b',
+        ]
+
+        filename_lower = filename.lower()
+        for pattern in location_patterns:
+            match = re.search(pattern, filename_lower)
+            if match:
+                return match.group(1).title()
+
+        return None
+
     def _get_confidence_level(self, confidence: float) -> str:
         """Convert confidence score to level"""
         if confidence >= 0.8:
@@ -843,6 +1257,61 @@ class SupabaseSchemaMapper:
                     pass
 
         return None
+
+    def _extract_financial_metadata(self, filename: str) -> Dict[str, Optional[str]]:
+        """
+        Extract financial year and period label from budget/financial document filenames
+
+        Examples:
+        - "Budget YE25.xlsx" → {'financial_year': '2025', 'period_label': None}
+        - "Variance Report Q1 YE25.pdf" → {'financial_year': '2025', 'period_label': 'Q1'}
+        - "Service Charge Aug 22.pdf" → {'financial_year': '2022', 'period_label': 'AUG 22'}
+        - "Budget 2024-2025.xlsx" → {'financial_year': '2024-2025', 'period_label': None}
+        """
+        import re
+
+        financial_year = None
+        period_label = None
+
+        # Extract financial year
+        # Try YE format first (YE25, YE 2024, YE24)
+        ye_match = re.search(r'YE\s?(\d{2,4})', filename, re.IGNORECASE)
+        if ye_match:
+            year = ye_match.group(1)
+            if len(year) == 2:
+                financial_year = f"20{year}"
+            else:
+                financial_year = year
+        else:
+            # Try year range (2024-2025, 2024/2025)
+            range_match = re.search(r'(\d{4})[-/](\d{4})', filename)
+            if range_match:
+                financial_year = f"{range_match.group(1)}-{range_match.group(2)}"
+            else:
+                # Try single year (20XX)
+                year_match = re.search(r'\b(20\d{2})\b', filename)
+                if year_match:
+                    financial_year = year_match.group(1)
+
+        # Extract period label
+        # Quarterly (Q1, Q2, Q3, Q4)
+        q_match = re.search(r'\b(Q[1-4])\b', filename, re.IGNORECASE)
+        if q_match:
+            period_label = q_match.group(1).upper()
+        else:
+            # Monthly (Jan 22, Aug 2022, Nov 23, etc.)
+            month_match = re.search(r'\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s?(\d{2,4})\b', filename, re.IGNORECASE)
+            if month_match:
+                month = month_match.group(1).upper()
+                year = month_match.group(2)
+                if len(year) == 2:
+                    year = f"20{year}"
+                period_label = f"{month} {year[-2:]}"  # e.g., "AUG 22"
+
+        return {
+            'financial_year': financial_year,
+            'period_label': period_label
+        }
 
     def map_compliance_asset(self, file_metadata: Dict, building_id: str, category: str) -> Dict:
         """
@@ -971,13 +1440,33 @@ class SupabaseSchemaMapper:
         if asset_type is None or (isinstance(asset_type, str) and asset_type.strip() == ''):
             asset_type = 'general'
 
+        # Extract last inspection date from filename
+        last_inspection_date = self._extract_inspection_date_from_filename(file_metadata.get('file_name', ''))
+
+        # Calculate next due date based on frequency
+        next_due_date = None
+        if last_inspection_date and frequency_months:
+            next_due_date = self._calculate_next_due_date(last_inspection_date, frequency_months)
+
+        # Determine compliance status
+        compliance_status = self._calculate_compliance_status(next_due_date)
+
+        # Extract location if mentioned in filename
+        location = self._extract_location_from_filename(file_metadata.get('file_name', ''))
+
         result = {
             'id': str(uuid.uuid4()),
             'building_id': building_id,  # REQUIRED - links to building
+            'category': 'compliance',  # REQUIRED - BlocIQ V2 schema requirement
             'asset_name': asset_name,  # REQUIRED - never null (BlocIQ V2 schema)
             'asset_type': asset_type,  # REQUIRED - never null (BlocIQ V2 schema)
             'inspection_frequency': frequency_interval,  # BlocIQ V2 schema
-            'description': f"Extracted from {file_metadata.get('file_name', 'unknown')}"
+            'description': f"Extracted from {file_metadata.get('file_name', 'unknown')}",
+            'last_inspection_date': last_inspection_date,
+            'next_due_date': next_due_date,
+            'compliance_status': compliance_status,
+            'location': location,
+            'notes': None
         }
 
         # FINAL SAFETY CHECK - This should NEVER trigger
@@ -1200,10 +1689,11 @@ class SupabaseSchemaMapper:
             'end_date': None
         }, notice_type
 
-    def map_major_works_notice(self, project_id: str, document_id: str, notice_type: str = 'NOI') -> Dict:
+    def map_major_works_notice(self, building_id: str, project_id: str, document_id: str, notice_type: str = 'NOI') -> Dict:
         """Map major works notice - links project to document"""
         return {
             'id': str(uuid.uuid4()),
+            'building_id': building_id,
             'project_id': project_id,
             'document_id': document_id,
             'type': notice_type,
@@ -1287,13 +1777,22 @@ class SupabaseSchemaMapper:
         for contractor_type, keywords in contractor_types:
             company_name = self._extract_field(property_form_data, keywords)
             if company_name:
-                extracted_data['contractors'].append({
+                # Extract contract lifecycle information
+                contract_data = self._extract_contract_lifecycle(property_form_data, contractor_type, company_name)
+
+                contractor_record = {
                     'id': str(uuid.uuid4()),
                     'building_id': building_id,
                     'contractor_type': contractor_type,
                     'company_name': company_name,
                     'notes': f'Extracted from property form'
-                })
+                }
+
+                # Add lifecycle fields if detected
+                if contract_data:
+                    contractor_record.update(contract_data)
+
+                extracted_data['contractors'].append(contractor_record)
 
         # Extract utilities
         utility_types = [
@@ -1385,25 +1884,53 @@ class SupabaseSchemaMapper:
                     'notes': report_info
                 })
 
-        # Extract keys and access codes
-        access_types = [
-            ('labelled_keys', ['full set of labelled keys', 'labelled keys']),
-            ('gate_codes', ['gate codes']),
-            ('entrance_codes', ['entrance codes']),
-            ('bin_store', ['bin store']),
-            ('bike_store', ['bike store'])
+        # Extract keys, access codes, and building knowledge - ENHANCED with category, label, visibility
+        # Format: (access_type, keywords, category, label, visibility, is_code, is_location)
+        knowledge_types = [
+            # Access information
+            ('labelled_keys', ['full set of labelled keys', 'labelled keys'], 'access', 'Keys', 'team', False, False),
+            ('gate_codes', ['gate codes'], 'access', 'Gate Codes', 'contractors', True, False),
+            ('entrance_codes', ['entrance codes'], 'access', 'Entrance Codes', 'contractors', True, False),
+
+            # Utilities locations
+            ('stopcock', ['location of stopcock', 'stopcock location'], 'utilities', 'Stopcock', 'team', False, True),
+            ('gas_meter', ['gas meter location'], 'utilities', 'Gas Meter', 'team', False, True),
+            ('electric_meter', ['electric meter location', 'electricity meter'], 'utilities', 'Electric Meter', 'team', False, True),
+            ('water_meter', ['water meter location'], 'utilities', 'Water Meter', 'team', False, True),
+
+            # General information
+            ('bin_store', ['bin store'], 'general', 'Bin Store Access', 'team', False, False),
+            ('bike_store', ['bike store'], 'general', 'Bike Store Access', 'team', False, False)
         ]
 
-        for access_type, keywords in access_types:
-            access_info = self._extract_field(property_form_data, keywords)
-            if access_info:
-                extracted_data['keys_access'].append({
+        for access_type, keywords, category, label, visibility, is_code, is_location in knowledge_types:
+            info = self._extract_field(property_form_data, keywords)
+            if info:
+                record = {
                     'id': str(uuid.uuid4()),
                     'building_id': building_id,
                     'access_type': access_type,
-                    'description': access_info,
+                    'category': category,
+                    'label': label,
+                    'visibility': visibility,
                     'notes': f'Extracted from property form'
-                })
+                }
+
+                # Populate either 'code' or 'location' or 'description' based on type
+                if is_code:
+                    record['code'] = info
+                    record['description'] = None
+                    record['location'] = None
+                elif is_location:
+                    record['location'] = info
+                    record['code'] = None
+                    record['description'] = None
+                else:
+                    record['description'] = info
+                    record['code'] = None
+                    record['location'] = None
+
+                extracted_data['keys_access'].append(record)
 
         # Extract warranties
         warranty_types = [
@@ -1463,3 +1990,180 @@ class SupabaseSchemaMapper:
                 })
 
         return extracted_data
+
+    def _extract_contract_lifecycle(self, data: Dict, contractor_type: str, company_name: str) -> Optional[Dict]:
+        """
+        Extract contract lifecycle information from text
+        Detects: renewal periods, review dates, notice periods, retender status
+        """
+        from datetime import datetime, timedelta
+        from dateutil.relativedelta import relativedelta
+        import re
+
+        lifecycle_data = {}
+
+        # Search for renewal/review keywords in all text fields
+        text_to_search = str(data).lower()
+
+        # Pattern 1: "renewal every X years/months"
+        renewal_match = re.search(r'renew(?:al)?\s+every\s+(\d+)\s+(year|month)s?', text_to_search, re.IGNORECASE)
+        if renewal_match:
+            quantity = int(renewal_match.group(1))
+            unit = renewal_match.group(2)
+
+            # Calculate renewal notice period (default: 90 days, or 1/4 of contract period)
+            if unit == 'year':
+                notice_days = min(90, quantity * 365 // 4)
+                lifecycle_data['renewal_notice_period'] = f'{notice_days} days'
+            elif unit == 'month':
+                notice_days = min(90, quantity * 30 // 4)
+                lifecycle_data['renewal_notice_period'] = f'{notice_days} days'
+
+        # Pattern 2: "review date" or "next review"
+        review_match = re.search(r'review\s+(?:date|on)?\s*:?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', text_to_search, re.IGNORECASE)
+        if review_match:
+            review_date = self._normalize_date_for_lifecycle(review_match.group(1))
+            if review_date:
+                lifecycle_data['next_review_date'] = review_date
+
+        # Pattern 3: "notice period X days/months"
+        notice_match = re.search(r'notice\s+period\s+(?:of\s+)?(\d+)\s+(day|month)s?', text_to_search, re.IGNORECASE)
+        if notice_match:
+            quantity = int(notice_match.group(1))
+            unit = notice_match.group(2)
+
+            if unit == 'month':
+                lifecycle_data['renewal_notice_period'] = f'{quantity} months'
+            else:
+                lifecycle_data['renewal_notice_period'] = f'{quantity} days'
+
+        # Pattern 4: Extract contract end date if available
+        # Try to find contract end/expiry date in the context of this contractor
+        contractor_context = self._extract_field(data, [contractor_type, company_name])
+        if contractor_context:
+            end_date_match = re.search(r'(?:expir(?:y|es)|end(?:s)?)\s+(?:date)?\s*:?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
+                                      str(contractor_context), re.IGNORECASE)
+            if end_date_match:
+                contract_end = self._normalize_date_for_lifecycle(end_date_match.group(1))
+                if contract_end:
+                    # Calculate retender_due_date based on renewal_notice_period
+                    notice_period = lifecycle_data.get('renewal_notice_period', '90 days')
+                    retender_due = self._calculate_retender_due_date(contract_end, notice_period)
+
+                    lifecycle_data['retender_due_date'] = retender_due
+
+                    # Set retender status based on retender_due_date
+                    if retender_due:
+                        try:
+                            retender_date = datetime.fromisoformat(retender_due).date()
+                            today = datetime.now().date()
+                            days_until_retender = (retender_date - today).days
+
+                            if days_until_retender < 0:
+                                lifecycle_data['retender_status'] = 'in_progress'
+                            elif days_until_retender <= 30:
+                                lifecycle_data['retender_status'] = 'pending'
+                            else:
+                                lifecycle_data['retender_status'] = 'not_scheduled'
+                        except:
+                            lifecycle_data['retender_status'] = 'not_scheduled'
+
+        return lifecycle_data if lifecycle_data else None
+
+    def _normalize_date_for_lifecycle(self, date_string: str) -> Optional[str]:
+        """Normalize date string to ISO format for lifecycle tracking"""
+        import re
+        from datetime import datetime
+
+        # Try common UK formats: DD/MM/YYYY, DD-MM-YYYY
+        for separator in ['/', '-']:
+            pattern = f'(\\d{{1,2}}){separator}(\\d{{1,2}}){separator}(\\d{{2,4}})'
+            match = re.match(pattern, date_string)
+            if match:
+                day, month, year = match.groups()
+
+                # Handle 2-digit years
+                if len(year) == 2:
+                    year = f"20{year}"
+
+                try:
+                    date_obj = datetime(int(year), int(month), int(day))
+                    return date_obj.date().isoformat()
+                except ValueError:
+                    continue
+
+        return None
+
+    def _calculate_retender_due_date(self, contract_end: str, renewal_notice_period: str) -> Optional[str]:
+        """
+        Calculate retender due date by subtracting renewal notice period from contract end date
+        contract_end: ISO date string (YYYY-MM-DD)
+        renewal_notice_period: interval string like "90 days" or "3 months"
+        """
+        from datetime import datetime
+        from dateutil.relativedelta import relativedelta
+        import re
+
+        try:
+            end_date = datetime.fromisoformat(contract_end).date()
+
+            # Parse notice period
+            match = re.match(r'(\d+)\s+(day|month)s?', renewal_notice_period)
+            if match:
+                quantity = int(match.group(1))
+                unit = match.group(2)
+
+                if unit == 'month':
+                    retender_date = end_date - relativedelta(months=quantity)
+                else:  # days
+                    retender_date = end_date - relativedelta(days=quantity)
+
+                return retender_date.isoformat()
+        except:
+            pass
+
+        return None
+
+    def _parse_leaseholder_name(self, name_string: str) -> tuple:
+        """
+        Parse name into title, first_name, last_name, notes
+
+        Examples:
+            'Derek Mason' → (None, 'Derek', 'Mason', None)
+            'Mr Derek Mason' → ('Mr', 'Derek', 'Mason', None)
+            'Derek Mason & Peter Hayward' → (None, 'Derek', 'Mason', 'Joint owners: Derek Mason & Peter Hayward')
+        """
+        import re
+
+        notes = None
+
+        # Handle multiple names
+        if ' & ' in name_string or ' and ' in name_string.lower():
+            # Take first person, put full text in notes
+            first_person = re.split(r' & | and ', name_string, flags=re.IGNORECASE)[0]
+            notes = f"Joint owners: {name_string}"
+        else:
+            first_person = name_string
+
+        # Extract title
+        titles = ['Mr', 'Mrs', 'Ms', 'Miss', 'Dr', 'Prof', 'Sir', 'Lady', 'Rev']
+        title = None
+        for t in titles:
+            if first_person.strip().startswith(t + ' '):
+                title = t
+                first_person = first_person.strip()[len(t)+1:]
+                break
+
+        # Split first/last name
+        parts = first_person.strip().split()
+        if len(parts) >= 2:
+            first_name = parts[0]
+            last_name = ' '.join(parts[1:])
+        elif len(parts) == 1:
+            first_name = parts[0]
+            last_name = parts[0]  # Use same for both if only one name given
+        else:
+            first_name = 'Unknown'
+            last_name = 'Unknown'
+
+        return title, first_name, last_name, notes

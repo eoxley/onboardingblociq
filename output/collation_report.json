@@ -1,0 +1,122 @@
+{
+  "conflicts_count": 8,
+  "conflicts": [
+    {
+      "type": "unit",
+      "unit_number": "Flat 1",
+      "field": "id",
+      "values": [
+        "f3ab3a59-a10a-44ba-97cb-2d52d2192ba8",
+        "751419bc-79aa-4185-8dcf-f3fd48f666ce"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 2",
+      "field": "id",
+      "values": [
+        "bed209d7-3e5c-4138-b2bb-fbb331c82617",
+        "caf02b69-1417-49f2-8b01-5ebb7f8a5532"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 3",
+      "field": "id",
+      "values": [
+        "978db428-de43-4568-a0b2-f0fa739c59f2",
+        "957d7adb-a9cd-4459-8af5-bd9741c66687"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 4",
+      "field": "id",
+      "values": [
+        "575fe98e-23fb-4799-a521-dfd48c582fc9",
+        "134d863f-f3c5-47ed-a2f6-9269a54288ed"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 5",
+      "field": "id",
+      "values": [
+        "6e2545cc-9cbc-4342-b509-9b6f7ad9de38",
+        "83bac201-b499-4592-88f1-c2fa63a4b508"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 6",
+      "field": "id",
+      "values": [
+        "e01e5e65-c930-45bb-8503-2eaedf1c52b0",
+        "21c7c959-3681-4f74-9dd5-d3ea27a08544"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 7",
+      "field": "id",
+      "values": [
+        "1a4d9f82-872f-4962-a158-44d5e8589f2d",
+        "d017389a-1021-441d-8026-939c4cc36e52"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 8",
+      "field": "id",
+      "values": [
+        "de834633-a9a7-4573-b5a0-2f6599ba7641",
+        "7c32a758-bb85-4832-9147-eb19c9055f16"
+      ],
+      "sources": [
+        "Tenancy Schedule by Property.pdf",
+        "connaught apportionment.xlsx"
+      ],
+      "resolution": "kept_first"
+    }
+  ],
+  "merges_count": 0,
+  "merge_log": [],
+  "recommendations": [
+    "Found 8 conflicts that need manual review"
+  ]
+}

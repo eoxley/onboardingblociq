@@ -71,6 +71,9 @@ class BlocIQOnboarder:
         self.audit_log = []
         self.validation_report = {}
         self.confidence_report = []
+        self.enrichment_data = {}
+        self.enrichment_stats = {}
+        self.folder_name = self.client_folder.name
 
     def run(self):
         """Execute the onboarding process"""
@@ -235,6 +238,16 @@ class BlocIQOnboarder:
         print(f"\n  🏢 Building: {building.get('name', 'Unknown')}")
         print(f"  📍 Address: {building.get('address', 'Not found')}")
 
+        # Detect and create schedules for this building
+        print(f"\n  📋 Detecting service charge schedules...")
+        schedule_names = self.schema_mapper.detect_schedules(
+            property_form_data=property_form,
+            folder_name=self.folder_name
+        )
+        schedules = self.schema_mapper.map_schedules(building_id, schedule_names)
+        self.mapped_data['schedules'] = schedules
+        print(f"     ✓ Created {len(schedules)} schedule(s): {', '.join(schedule_names)}")
+
         # Extract property form structured data (contractors, utilities, insurance, etc.)
         if property_form:
             print(f"\n  📋 Extracting property form structured data...")
@@ -297,8 +310,15 @@ class BlocIQOnboarder:
 
         # Extract from units_leaseholders files (high confidence for names/contact)
         if self.categorized_files.get('units_leaseholders'):
+            print(f"  → Extracting units from {len(self.categorized_files['units_leaseholders'])} leaseholder files")
             for file_data in self.categorized_files['units_leaseholders']:
+                fname = file_data.get('file_name', '')
+                has_full_text = 'full_text' in file_data
+                print(f"     Processing: {fname} (has_full_text: {has_full_text})")
+                if has_full_text and 'tenancy schedule' in fname.lower():
+                    print(f"       → Tenancy Schedule detected, full_text length: {len(file_data['full_text'])}")
                 units = self.mapper.map_units(file_data, building_id)
+                print(f"       → Extracted {len(units)} units")
                 if units:
                     collator.add_units_source(
                         units,
@@ -353,15 +373,26 @@ class BlocIQOnboarder:
 
             # Extract leaseholders from all units_leaseholders files
             if self.categorized_files.get('units_leaseholders'):
+                print(f"  → Extracting leaseholders from {len(self.categorized_files['units_leaseholders'])} files")
                 for file_data in self.categorized_files['units_leaseholders']:
+                    # Debug: check if Tenancy Schedule has full_text
+                    if 'tenancy schedule' in file_data.get('file_name', '').lower():
+                        print(f"     DEBUG: Tenancy Schedule has full_text: {'full_text' in file_data}")
+                        if 'full_text' in file_data:
+                            print(f"     DEBUG: full_text length: {len(file_data['full_text'])}")
+
                     leaseholders = self.mapper.map_leaseholders(file_data, unit_map, building_id)
+                    print(f"     {file_data['file_name']}: {len(leaseholders)} leaseholders")
                     if leaseholders:
+                        print(f"     → Adding {len(leaseholders)} leaseholders to collator")
                         collator.add_leaseholders_source(
                             leaseholders,
                             file_data['file_name'],
                             'leaseholder_list',
                             confidence=0.90
                         )
+                    else:
+                        print(f"     → Skipping (empty list)")
 
             # Get merged leaseholders
             leaseholders = collator.get_merged_leaseholders()
@@ -505,7 +536,7 @@ class BlocIQOnboarder:
             self.upload_map = {}
 
     def _generate_sql(self):
-        """Generate SQL migration script"""
+        """Generate SQL migration script with enrichment"""
         # Validate schema before generating SQL
         print("\n🔍 Validating data against Supabase schema...")
         validation_result = self.validator.validate_complete_migration(self.mapped_data)
@@ -525,6 +556,53 @@ class BlocIQOnboarder:
         # Generate SQL
         sql_script = self.sql_writer.generate_migration(self.mapped_data)
 
+        # ============================================================
+        # POST-PROCESSING ENRICHMENT
+        # ============================================================
+        print("\n🧠 Running post-processing enrichment...")
+        from enrichment_processor import EnrichmentProcessor
+
+        enrichment_processor = EnrichmentProcessor()
+        enrichment_data = enrichment_processor.process(
+            mapped_data=self.mapped_data,
+            parsed_files=self.parsed_files,
+            folder_name=self.folder_name
+        )
+
+        # Append enrichment SQL to migration script
+        if enrichment_data.get('sql_statements'):
+            enrichment_sql = '\n'.join(enrichment_data['sql_statements'])
+            sql_script += f"\n\n-- ============================================================\n"
+            sql_script += f"-- POST-PROCESSING ENRICHMENT\n"
+            sql_script += f"-- Auto-generated corrections and enhancements\n"
+            sql_script += f"-- ============================================================\n\n"
+            sql_script += enrichment_sql
+
+        # Get enrichment stats
+        enrichment_stats = enrichment_processor.get_stats()
+
+        # Display enrichment summary
+        print(f"\n  📊 Enrichment Summary:")
+        if enrichment_stats.get('addresses_extracted', 0) > 0:
+            print(f"     ✅ Addresses extracted: {enrichment_stats['addresses_extracted']}")
+        if enrichment_stats.get('addresses_skipped', 0) > 0:
+            print(f"     ⚠️  Addresses skipped: {enrichment_stats['addresses_skipped']}")
+        if enrichment_stats.get('major_works_tagged', 0) > 0:
+            print(f"     ✅ Major works tagged: {enrichment_stats['major_works_tagged']}")
+        if enrichment_stats.get('budget_placeholders_created', 0) > 0:
+            print(f"     ✅ Budget placeholders: {enrichment_stats['budget_placeholders_created']}")
+        if enrichment_stats.get('building_intelligence_entries', 0) > 0:
+            print(f"     🧠 Building knowledge entries: {enrichment_stats['building_intelligence_entries']}")
+
+        # Store enrichment data for summary
+        self.enrichment_data = enrichment_data
+        self.enrichment_stats = enrichment_stats
+
+        # Update validation report with enrichment summary
+        validation_result['enrichment_summary'] = enrichment_processor.get_validation_summary()
+        with open(validation_file, 'w') as f:
+            json.dump(validation_result, f, indent=2)
+
         # Write to file
         sql_file = self.output_dir / 'migration.sql'
         with open(sql_file, 'w') as f:
@@ -537,7 +615,8 @@ class BlocIQOnboarder:
             'action': 'generate_sql',
             'file': str(sql_file),
             'lines': len(sql_script.split('\n')),
-            'validation_passed': validation_result['valid']
+            'validation_passed': validation_result['valid'],
+            'enrichment_stats': enrichment_stats
         })
 
     # Backup functionality removed - files will be uploaded directly to Supabase
@@ -595,11 +674,160 @@ class BlocIQOnboarder:
             }
         }
 
+        # Add enrichment summary if available
+        if hasattr(self, 'enrichment_stats'):
+            summary['post_processing_summary'] = {
+                'building_metadata_filled': self.enrichment_stats.get('building_metadata_filled', 0),
+                'addresses_extracted': self.enrichment_stats.get('addresses_extracted', 0),
+                'major_works_tagged': self.enrichment_stats.get('major_works_tagged', 0),
+                'budget_placeholders_created': self.enrichment_stats.get('budget_placeholders_created', 0),
+                'building_intelligence_entries': self.enrichment_stats.get('building_intelligence_entries', 0)
+            }
+
+        # Add building knowledge details if available
+        if hasattr(self, 'enrichment_data') and self.enrichment_data.get('building_knowledge'):
+            summary['building_intelligence'] = {
+                'total_entries': len(self.enrichment_data['building_knowledge']),
+                'by_category': {}
+            }
+            for entry in self.enrichment_data['building_knowledge']:
+                category = entry.get('category', 'unknown')
+                summary['building_intelligence']['by_category'][category] = \
+                    summary['building_intelligence']['by_category'].get(category, 0) + 1
+
+        # Add detailed compliance assets breakdown
+        compliance_assets = self.mapped_data.get('compliance_assets', [])
+        if compliance_assets:
+            from datetime import timedelta
+
+            today = datetime.now().date()
+
+            # Group by asset type
+            by_type = {}
+            by_status = {'compliant': 0, 'overdue': 0, 'due_soon': 0, 'unknown': 0}
+
+            detailed_assets = []
+
+            for asset in compliance_assets:
+                asset_type = asset.get('asset_type', 'unknown')
+                asset_name = asset.get('asset_name', 'Unknown Asset')
+                status = asset.get('compliance_status', 'unknown')
+                next_due = asset.get('next_due_date')
+                last_inspection = asset.get('last_inspection_date')
+
+                # Count by type
+                by_type[asset_type] = by_type.get(asset_type, 0) + 1
+
+                # Count by status
+                by_status[status] = by_status.get(status, 0) + 1
+
+                # Add to detailed list
+                asset_detail = {
+                    'name': asset_name,
+                    'type': asset_type,
+                    'status': status,
+                    'last_inspection': last_inspection,
+                    'next_due': next_due,
+                    'location': asset.get('location'),
+                    'responsible_party': asset.get('responsible_party')
+                }
+                detailed_assets.append(asset_detail)
+
+            summary['compliance_assets'] = {
+                'total': len(compliance_assets),
+                'by_type': by_type,
+                'by_status': by_status,
+                'details': detailed_assets
+            }
+
+        # Add detailed contractor contracts summary
+        contractors = self.mapped_data.get('building_contractors', [])
+        if contractors:
+            from datetime import timedelta
+
+            total_contracts = len(contractors)
+            expiring_next_90_days = 0
+            retenders_pending = 0
+            budget_review_links = 0
+
+            # Group by contractor type
+            by_type = {}
+            detailed_contracts = []
+
+            today = datetime.now().date()
+            ninety_days_from_now = today + timedelta(days=90)
+
+            for contractor in contractors:
+                contractor_type = contractor.get('contractor_type', 'unknown')
+                company_name = contractor.get('company_name', 'Unknown Company')
+                contract_start = contractor.get('contract_start')
+                contract_end = contractor.get('contract_end')
+                retender_status = contractor.get('retender_status', 'not_scheduled')
+                retender_due = contractor.get('retender_due_date')
+                next_review = contractor.get('next_review_date')
+
+                # Count by type
+                by_type[contractor_type] = by_type.get(contractor_type, 0) + 1
+
+                # Count expiring contracts
+                if contract_end:
+                    try:
+                        end_date = datetime.fromisoformat(contract_end).date() if isinstance(contract_end, str) else contract_end
+                        if today <= end_date <= ninety_days_from_now:
+                            expiring_next_90_days += 1
+                    except:
+                        pass
+
+                # Count pending retenders
+                if retender_status in ['pending', 'in_progress']:
+                    retenders_pending += 1
+
+                # Count budget review links
+                if next_review:
+                    budget_review_links += 1
+
+                # Add to detailed list
+                contract_detail = {
+                    'company': company_name,
+                    'type': contractor_type,
+                    'start_date': contract_start,
+                    'end_date': contract_end,
+                    'retender_status': retender_status,
+                    'retender_due_date': retender_due,
+                    'next_review_date': next_review,
+                    'contact_person': contractor.get('contact_person'),
+                    'phone': contractor.get('phone'),
+                    'email': contractor.get('email')
+                }
+                detailed_contracts.append(contract_detail)
+
+            summary['contractor_contracts'] = {
+                'total': total_contracts,
+                'expiring_next_90_days': expiring_next_90_days,
+                'retenders_pending': retenders_pending,
+                'budget_review_links': budget_review_links,
+                'by_type': by_type,
+                'details': detailed_contracts
+            }
+
         summary_file = self.output_dir / 'summary.json'
         with open(summary_file, 'w') as f:
             json.dump(summary, f, indent=2)
 
         print(f"  ✅ Summary: {summary_file}")
+
+        # Generate formatted summary report (PDF or Word)
+        try:
+            from report_generator import export_summary_report
+            report_file = export_summary_report(
+                summary_path=str(summary_file),
+                output_dir=str(self.output_dir)
+            )
+        except ImportError as e:
+            print(f"  ⚠️  Could not generate report: {e}")
+            print(f"  ℹ️  Install dependencies: pip install reportlab>=4.0.0")
+        except Exception as e:
+            print(f"  ⚠️  Error generating report: {e}")
 
     def _extract_compliance_data(self):
         """Extract compliance assets and inspections from parsed files"""

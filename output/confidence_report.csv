@@ -1,0 +1,86 @@
+category,item,source_file,confidence_score,action,notes
+building,Connaught Square,property_form,95,AUTO,Extracted from property information form
+unit,Flat 1,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 2,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 3,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 4,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 5,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 6,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 7,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 8,apportionment_file,70,REVIEW,Missing apportionment
+document,Important Information .pdf,Important Information .pdf,50,REJECT,Type: unknown
+document,ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf,ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf,50,REJECT,Type: unknown
+document,Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf,Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf,50,REJECT,Type: unknown
+document,Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf,Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf,50,REJECT,Type: unknown
+document,Official Copy (Lease) 13.06.2003 - NGL827422.pdf,Official Copy (Lease) 13.06.2003 - NGL827422.pdf,50,REJECT,Type: unknown
+document,Official Copy (Lease) 04.08.2022 - NGL809841.pdf,Official Copy (Lease) 04.08.2022 - NGL809841.pdf,50,REJECT,Type: unknown
+document,Signed April 2025 Arrears Collection Procedure.pdf,Signed April 2025 Arrears Collection Procedure.pdf,50,REJECT,Type: unknown
+document,WP0005V17 Welcome Pack.pdf,WP0005V17 Welcome Pack.pdf,50,REJECT,Type: unknown
+document,Jobcard_For_Job_No_33844_07-04-2025_1143.pdf,Jobcard_For_Job_No_33844_07-04-2025_1143.pdf,50,REJECT,Type: unknown
+document,Jobcard_For_Job_No_37675_25-07-2025_1549.pdf,Jobcard_For_Job_No_37675_25-07-2025_1549.pdf,50,REJECT,Type: unknown
+document,Jobcard_For_Job_No_34012_01-05-2025_1616.pdf,Jobcard_For_Job_No_34012_01-05-2025_1616.pdf,50,REJECT,Type: unknown
+document,Jobcard_For_Job_No_32759_17-03-2025_1145.pdf,Jobcard_For_Job_No_32759_17-03-2025_1145.pdf,50,REJECT,Type: unknown
+document,Jobcard_For_Job_No_32810_17-03-2025_1311.pdf,Jobcard_For_Job_No_32810_17-03-2025_1311.pdf,50,REJECT,Type: unknown
+document,Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf,Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf,50,REJECT,Type: unknown
+document,Licence_Document_352024.pdf,Licence_Document_352024.pdf,50,REJECT,Type: unknown
+document,JLGServiceVisit-M00813-12-09-2024.pdf,JLGServiceVisit-M00813-12-09-2024.pdf,50,REJECT,Type: unknown
+document,JLGServiceVisit-M00813-13-11-2024.pdf,JLGServiceVisit-M00813-13-11-2024.pdf,50,REJECT,Type: unknown
+document,JLGServiceVisit-M00813-02-12-2024.pdf,JLGServiceVisit-M00813-02-12-2024.pdf,50,REJECT,Type: unknown
+document,JLGServiceVisit-M00813-08-07-2024.pdf,JLGServiceVisit-M00813-08-07-2024.pdf,50,REJECT,Type: unknown
+document,JLGServiceVisit-M00813-08-10-2024.pdf,JLGServiceVisit-M00813-08-10-2024.pdf,50,REJECT,Type: unknown
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Legionella Risk Assessment,extracted,85,AUTO,Status: pending
+compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Legionella Risk Assessment,extracted,85,AUTO,Status: pending
+compliance,Legionella Risk Assessment,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
+compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending

@@ -39,6 +39,10 @@ class SQLWriter:
         if 'building' in mapped_data:
             self._generate_building_insert(mapped_data['building'])
 
+        # Generate schedules (must be after building, before budgets/units/assets)
+        if 'schedules' in mapped_data:
+            self._generate_schedules_inserts(mapped_data['schedules'])
+
         if 'units' in mapped_data:
             self._generate_units_inserts(mapped_data['units'])
 
@@ -118,7 +122,7 @@ class SQLWriter:
         return '\n'.join(self.sql_statements)
 
     def _add_header(self):
-        """Add migration header with agency placeholder block"""
+        """Add migration header with agency placeholder block and schema migrations"""
         self.sql_statements.extend([
             "-- BlocIQ Onboarder - Auto-generated Migration",
             f"-- Generated at: {self._now()}",
@@ -126,6 +130,68 @@ class SQLWriter:
             "",
             "-- =====================================",
             "-- REQUIRED: Replace AGENCY_ID_PLACEHOLDER with your agency UUID",
+            "-- =====================================",
+            "",
+            "-- =====================================",
+            "-- SCHEMA MIGRATIONS: Add missing columns if they don't exist",
+            "-- =====================================",
+            "",
+            "-- Add building_id to leaseholders (if not exists)",
+            "ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS building_id uuid;",
+            "",
+            "-- Add building_id to apportionments (if not exists)",
+            "ALTER TABLE apportionments ADD COLUMN IF NOT EXISTS building_id uuid;",
+            "",
+            "-- Add building_id to major_works_notices (if not exists)",
+            "ALTER TABLE major_works_notices ADD COLUMN IF NOT EXISTS building_id uuid;",
+            "",
+            "-- Add foreign key constraints (if not exist)",
+            "DO $$ BEGIN",
+            "  ALTER TABLE leaseholders ADD CONSTRAINT fk_leaseholders_building FOREIGN KEY (building_id) REFERENCES buildings(id);",
+            "EXCEPTION WHEN duplicate_object THEN NULL;",
+            "END $$;",
+            "",
+            "DO $$ BEGIN",
+            "  ALTER TABLE apportionments ADD CONSTRAINT fk_apportionments_building FOREIGN KEY (building_id) REFERENCES buildings(id);",
+            "EXCEPTION WHEN duplicate_object THEN NULL;",
+            "END $$;",
+            "",
+            "DO $$ BEGIN",
+            "  ALTER TABLE major_works_notices ADD CONSTRAINT fk_major_works_notices_building FOREIGN KEY (building_id) REFERENCES buildings(id);",
+            "EXCEPTION WHEN duplicate_object THEN NULL;",
+            "END $$;",
+            "",
+            "-- Create indexes for performance (if not exist)",
+            "CREATE INDEX IF NOT EXISTS idx_leaseholders_building_id ON leaseholders(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_apportionments_building_id ON apportionments(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_major_works_notices_building_id ON major_works_notices(building_id);",
+            "",
+            "-- Add compliance tracking columns to compliance_assets",
+            "ALTER TABLE compliance_assets "
+            "ADD COLUMN IF NOT EXISTS last_inspection_date DATE, "
+            "ADD COLUMN IF NOT EXISTS next_due_date DATE, "
+            "ADD COLUMN IF NOT EXISTS compliance_status VARCHAR(50) DEFAULT 'unknown', "
+            "ADD COLUMN IF NOT EXISTS location VARCHAR(255), "
+            "ADD COLUMN IF NOT EXISTS responsible_party VARCHAR(255), "
+            "ADD COLUMN IF NOT EXISTS notes TEXT;",
+            "",
+            "-- Create index on compliance status for quick filtering",
+            "CREATE INDEX IF NOT EXISTS idx_compliance_assets_status ON compliance_assets(compliance_status);",
+            "CREATE INDEX IF NOT EXISTS idx_compliance_assets_next_due ON compliance_assets(next_due_date);",
+            "",
+            "-- Add contract lifecycle tracking columns to building_contractors",
+            "ALTER TABLE building_contractors "
+            "ADD COLUMN IF NOT EXISTS retender_status text DEFAULT 'not_scheduled', "
+            "ADD COLUMN IF NOT EXISTS retender_due_date date, "
+            "ADD COLUMN IF NOT EXISTS next_review_date date, "
+            "ADD COLUMN IF NOT EXISTS renewal_notice_period interval DEFAULT interval '90 days';",
+            "",
+            "-- Create index on contract lifecycle for quick filtering",
+            "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_due ON building_contractors(retender_due_date);",
+            "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_status ON building_contractors(retender_status);",
+            "",
+            "-- =====================================",
+            "-- DATA MIGRATION: Insert building data",
             "-- =====================================",
             "",
             "-- Example: INSERT INTO agencies (id, name) VALUES ('AGENCY_ID_PLACEHOLDER', 'My Agency')",
@@ -160,6 +226,23 @@ class SQLWriter:
         self.sql_statements.append(
             self._create_insert_statement('buildings', building_with_portfolio, use_upsert=False)
         )
+        self.sql_statements.append("")
+
+    def _generate_schedules_inserts(self, schedules: List[Dict]):
+        """Generate INSERTs for schedules table"""
+        if not schedules:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(schedules)} schedule(s)")
+
+        for schedule in schedules:
+            self.sql_statements.append(
+                self._create_insert_statement('schedules', schedule, use_upsert=False)
+            )
+
+        # Log created schedules
+        schedule_names = [s.get('name', 'Unknown') for s in schedules]
+        self.sql_statements.append(f"-- Created schedules: {', '.join(schedule_names)}")
         self.sql_statements.append("")
 
     def _generate_units_inserts(self, units: List[Dict]):
@@ -486,9 +569,9 @@ class SQLWriter:
         required_columns = {
             'buildings': ['id', 'name'],
             'units': ['id', 'building_id', 'unit_number'],
-            'leaseholders': ['id', 'unit_id', 'name'],
+            'leaseholders': ['id', 'building_id', 'first_name', 'last_name'],
             'building_documents': ['id', 'building_id', 'category', 'file_name', 'storage_path'],
-            'compliance_assets': ['id', 'building_id', 'name', 'category'],
+            'compliance_assets': ['id', 'building_id', 'asset_name', 'asset_type'],
             'budgets': ['id', 'building_id', 'period'],
             'major_works_projects': ['id', 'building_id', 'project_name']
         }

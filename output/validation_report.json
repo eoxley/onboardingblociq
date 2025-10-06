@@ -1,0 +1,24 @@
+{
+  "valid": false,
+  "errors": [
+    "leaseholders[0]: Missing required field 'unit_id'",
+    "leaseholders[1]: Missing required field 'unit_id'",
+    "leaseholders[2]: Missing required field 'unit_id'",
+    "leaseholders[3]: Missing required field 'unit_id'",
+    "leaseholders[4]: Missing required field 'unit_id'",
+    "leaseholders[5]: Missing required field 'unit_id'",
+    "leaseholders[6]: Missing required field 'unit_id'",
+    "leaseholders[7]: Missing required field 'unit_id'",
+    "major_works_projects[0]: Missing required field 'project_type'",
+    "major_works_projects[1]: Missing required field 'project_type'",
+    "major_works_projects[2]: Missing required field 'project_type'",
+    "major_works_projects[3]: Missing required field 'project_type'"
+  ],
+  "warnings": [],
+  "results": [
+    "\u2705 buildings.id: c30c69ef-5ca3-4e1d-b69b-f3d0750f00b3",
+    "\u2705 buildings.name: Connaught Square",
+    "\u2705 buildings.address: CONNAUGHT SQUARE"
+  ],
+  "enrichment_summary": "\u2705 Created 8 budget placeholder(s) for unstructured PDFs\n\u2705 Extracted 260 building knowledge entrie(s)"
+}

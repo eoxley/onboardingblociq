@@ -39,9 +39,49 @@ class ExcelParser(FileParser):
 
     def parse(self) -> Dict[str, Any]:
         """Parse Excel file and return structured data"""
+        import zipfile
+
+        # Detect if file is actually old .xls format (not a zip)
+        is_old_format = False
+        try:
+            with open(self.file_path, 'rb') as f:
+                # Check magic bytes - old Excel files start with D0 CF 11 E0 (OLE2/CFB)
+                magic = f.read(4)
+                if magic == b'\xD0\xCF\x11\xE0':
+                    is_old_format = True
+        except:
+            pass
+
+        # Try xlrd first if it's an old format file
+        if is_old_format:
+            try:
+                df = pd.read_excel(self.file_path, sheet_name=None, engine='xlrd')
+
+                result = {
+                    **self.get_file_metadata(),
+                    'sheets': list(df.keys()),
+                    'total_rows': sum(len(sheet) for sheet in df.values()),
+                    'data': {}
+                }
+
+                for sheet_name, sheet_df in df.items():
+                    result['data'][sheet_name] = {
+                        'rows': len(sheet_df),
+                        'columns': list(sheet_df.columns),
+                        'sample': sheet_df.head(5).to_dict('records') if not sheet_df.empty else [],
+                        'raw_data': sheet_df.to_dict('records')
+                    }
+
+                return result
+            except Exception as e:
+                print(f"  ⚠️  xlrd failed: {e}")
+                # Fall through to openpyxl
+                pass
+
+        # Try modern xlsx format
         try:
             # Try pandas first for simple tables
-            df = pd.read_excel(self.file_path, sheet_name=None)
+            df = pd.read_excel(self.file_path, sheet_name=None, engine='openpyxl')
 
             result = {
                 **self.get_file_metadata(),
@@ -62,29 +102,8 @@ class ExcelParser(FileParser):
             return result
 
         except Exception as e:
-            # Try with xlrd engine for old .xls format files
-            try:
-                df = pd.read_excel(self.file_path, sheet_name=None, engine='xlrd')
-
-                result = {
-                    **self.get_file_metadata(),
-                    'sheets': list(df.keys()),
-                    'total_rows': sum(len(sheet) for sheet in df.values()),
-                    'data': {}
-                }
-
-                for sheet_name, sheet_df in df.items():
-                    result['data'][sheet_name] = {
-                        'rows': len(sheet_df),
-                        'columns': list(sheet_df.columns),
-                        'sample': sheet_df.head(5).to_dict('records') if not sheet_df.empty else [],
-                        'raw_data': sheet_df.to_dict('records')
-                    }
-
-                return result
-            except:
-                # Final fallback to openpyxl for complex formatted sheets
-                return self._parse_with_openpyxl()
+            # Final fallback to openpyxl for complex formatted sheets
+            return self._parse_with_openpyxl()
 
     def _parse_with_openpyxl(self) -> Dict[str, Any]:
         """Parse complex Excel files with formatting"""

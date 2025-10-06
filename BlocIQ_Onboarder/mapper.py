@@ -29,11 +29,23 @@ class SupabaseMapper:
         """
         return self.schema_mapper.map_units(leaseholder_data, building_id)
 
-    def map_leaseholders(self, leaseholder_data: Dict, unit_map: Dict[str, str]) -> List[Dict]:
+    def map_leaseholders(self, leaseholder_data: Dict, unit_map: Dict[str, str], building_id: str) -> List[Dict]:
         """
         Map leaseholder data to leaseholders table using exact schema
         """
-        return self.schema_mapper.map_leaseholders(leaseholder_data, unit_map)
+        return self.schema_mapper.map_leaseholders(leaseholder_data, unit_map, building_id)
+
+    def extract_property_form_data(self, property_form_data: Dict, building_id: str) -> Dict:
+        """
+        Extract property form structured data
+        """
+        return self.schema_mapper.extract_property_form_data(property_form_data, building_id)
+
+    def map_apportionments(self, file_data: Dict, unit_map: Dict[str, str], budget_id: str, building_id: str) -> List[Dict]:
+        """
+        Map apportionment data to apportionments table using exact schema
+        """
+        return self.schema_mapper.map_apportionments(file_data, unit_map, budget_id, building_id)
 
     def map_building_documents(self, file_metadata: Dict, building_id: str, category: str = 'uncategorized',
                                linked_entity_id: str = None, entity_type: str = None) -> Dict:
@@ -104,6 +116,7 @@ class SupabaseMapper:
             # Create notice linking project to document
             if notice_type:
                 notice = self.schema_mapper.map_major_works_notice(
+                    building_id=building_id,
                     project_id=major_works_data['id'],
                     document_id=doc_id,
                     notice_type=notice_type
