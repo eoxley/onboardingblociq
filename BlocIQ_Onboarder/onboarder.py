@@ -130,6 +130,9 @@ class BlocIQOnboarder:
         # Summary
         self._print_summary()
 
+        # Step 8: Cleanup large objects from memory
+        self._cleanup_parsed_data()
+
     def _setup_output_directories(self):
         """Create output directories"""
         self.output_dir.mkdir(exist_ok=True)
@@ -1231,6 +1234,33 @@ class BlocIQOnboarder:
 
         return None
 
+    def _cleanup_parsed_data(self):
+        """Clear large parsed data objects from memory"""
+        print("\n🧹 Cleaning up memory...")
+
+        # Clear parsed files data (largest memory consumer)
+        if hasattr(self, 'parsed_files'):
+            self.parsed_files.clear()
+
+        # Clear categorized files
+        if hasattr(self, 'categorized_files'):
+            self.categorized_files.clear()
+
+        # Clear raw data from mapped_data
+        if hasattr(self, 'mapped_data'):
+            for key in list(self.mapped_data.keys()):
+                if key.endswith('_raw'):
+                    del self.mapped_data[key]
+
+        print("   ✓ Large objects cleared from memory")
+
+
+def cleanup_memory():
+    """Force garbage collection and clear memory"""
+    import gc
+    gc.collect()
+    print("🧹 Memory cleaned")
+
 
 def main():
     """Main entry point"""
@@ -1253,9 +1283,13 @@ def main():
         print(f"❌ Error: {args.client_folder} is not a directory")
         sys.exit(1)
 
-    # Run onboarder
-    onboarder = BlocIQOnboarder(args.client_folder, args.building_name)
-    onboarder.run()
+    try:
+        # Run onboarder
+        onboarder = BlocIQOnboarder(args.client_folder, args.building_name)
+        onboarder.run()
+    finally:
+        # Always cleanup memory on exit (success or error)
+        cleanup_memory()
 
 
 if __name__ == '__main__':

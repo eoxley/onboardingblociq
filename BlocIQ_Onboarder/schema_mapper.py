@@ -20,29 +20,28 @@ class SupabaseSchemaMapper:
         self.table_schemas = {
             'buildings': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'portfolio_id': 'uuid REFERENCES portfolios(id)',
                 'name': 'text NOT NULL',
                 'address': 'text',
-                'postcode': 'text',
-                'total_units': 'integer',
-                # Contact details
-                'billing_contact_name': 'text',
-                'billing_contact_email': 'text',
-                'billing_contact_phone': 'text',
-                # Freeholder
-                'freeholder_name': 'text',
-                'freeholder_company': 'text',
-                'freeholder_address': 'text',
-                'freeholder_billing_email': 'text',
-                # Management
-                'management_fee_structure': 'text',
-                'management_fee_amount': 'numeric',
-                # Building characteristics
-                'height_metres': 'numeric',
-                'number_of_storeys': 'integer',
-                'year_built': 'integer',
-                'building_type': 'text',
-                'created_at': 'timestamp with time zone DEFAULT now()',
-                'updated_at': 'timestamp with time zone DEFAULT now()'
+                'number_of_units': 'integer',
+                'previous_agents': 'text',
+                'current_accountants': 'text',
+                'accountant_contact': 'text',
+                'demand_date_1': 'date',
+                'demand_date_2': 'date',
+                'year_end_date': 'date',
+                'management_fee_ex_vat': 'numeric',
+                'management_fee_inc_vat': 'numeric',
+                'company_secretary_fee_ex_vat': 'numeric',
+                'company_secretary_fee_inc_vat': 'numeric',
+                'ground_rent_applicable': 'boolean',
+                'ground_rent_charges': 'text',
+                'insurance_broker': 'text',
+                'insurance_renewal_date': 'date',
+                'section_20_limit_inc_vat': 'numeric',
+                'expenditure_limit': 'numeric',
+                'additional_info': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
             },
             'units': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -52,23 +51,11 @@ class SupabaseSchemaMapper:
             },
             'leaseholders': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'title': 'text',
-                'first_name': 'text NOT NULL',
-                'last_name': 'text NOT NULL',
+                'unit_id': 'uuid REFERENCES units(id)',
+                'building_id': 'uuid REFERENCES buildings(id)',
+                'name': 'text',
                 'email': 'text',
-                'phone': 'text',
-                'mobile': 'text',
-                # Property
-                'unit_number': 'text',
-                'lease_start_date': 'date',
-                'lease_term_years': 'integer',
-                'ground_rent': 'numeric',
-                # Financial
-                'service_charge_percentage': 'numeric',
-                'arrears_balance': 'numeric DEFAULT 0.00',
-                'is_active': 'boolean DEFAULT true',
-                'notes': 'text',
+                'correspondence_address': 'text',
                 'created_at': 'timestamp with time zone DEFAULT now()',
                 'updated_at': 'timestamp with time zone DEFAULT now()'
             },
@@ -94,18 +81,18 @@ class SupabaseSchemaMapper:
             },
             'compliance_assets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'category': 'text NOT NULL',  # BlocIQ V2: compliance category
-                'asset_name': 'text NOT NULL',
-                'asset_type': 'text NOT NULL',
-                'inspection_frequency': 'interval',
                 'description': 'text',
+                'building_id': 'uuid REFERENCES buildings(id)',
+                'asset_name': 'text',
+                'asset_type': 'text',
+                'inspection_frequency': 'interval',
                 'last_inspection_date': 'date',
                 'next_due_date': 'date',
-                'compliance_status': 'varchar(50)',
-                'location': 'varchar(255)',
-                'responsible_party': 'varchar(255)',
-                'notes': 'text'
+                'compliance_status': 'character varying',
+                'location': 'character varying',
+                'responsible_party': 'character varying',
+                'notes': 'text',
+                'is_active': 'boolean'
             },
             'compliance_inspections': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
@@ -158,10 +145,10 @@ class SupabaseSchemaMapper:
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
                 'name': 'text NOT NULL',  # e.g., 'Main Schedule', 'Schedule A', 'Commercial Schedule'
-                'service_charge_code': 'text',  # e.g., 'A', 'B', 'C'
-                'notes': 'text',
-                'meta': 'jsonb DEFAULT \'{}\'::jsonb',
+                'description': 'text',
+                'agency_id': 'uuid',
                 'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()',
                 'CONSTRAINT': 'UNIQUE(building_id, name)'
             },
             'apportionments': {
@@ -560,16 +547,11 @@ class SupabaseSchemaMapper:
         schedules = []
 
         for idx, name in enumerate(schedule_names):
-            # Generate service charge code (A, B, C, etc.)
-            service_charge_code = chr(65 + idx)  # 65 = 'A' in ASCII
-
             schedule = {
                 'id': str(uuid.uuid4()),
                 'building_id': building_id,
                 'name': name,
-                'service_charge_code': service_charge_code,
-                'notes': f'Auto-detected schedule from onboarding',
-                'meta': '{}'
+                'description': f'Auto-detected schedule from onboarding'
             }
             schedules.append(schedule)
 
@@ -591,10 +573,18 @@ class SupabaseSchemaMapper:
             # Excel files have nested structure: data -> {sheet_name} -> raw_data
             data_value = leaseholder_data['data']
             if isinstance(data_value, dict):
+                # ENHANCED: Prioritize sheets with "leaseholder" or "apportionment" in name
                 for sheet_name, sheet_data in data_value.items():
                     if isinstance(sheet_data, dict) and 'raw_data' in sheet_data:
-                        raw_data = sheet_data['raw_data']
-                        break  # Use first sheet with data
+                        if 'leaseholder' in sheet_name.lower() or 'apportionment' in sheet_name.lower():
+                            raw_data = sheet_data['raw_data']
+                            break
+                # Fallback to first sheet with data
+                if not raw_data:
+                    for sheet_name, sheet_data in data_value.items():
+                        if isinstance(sheet_data, dict) and 'raw_data' in sheet_data:
+                            raw_data = sheet_data['raw_data']
+                            break
 
         for row in raw_data:
             unit_number = self._extract_unit_number(row)
@@ -624,10 +614,18 @@ class SupabaseSchemaMapper:
         raw_data = leaseholder_data.get('raw_data', [])
         if not raw_data and 'data' in leaseholder_data:
             # Excel files have nested structure: data -> {sheet_name} -> raw_data
+            # ENHANCED: Prioritize sheets with "leaseholder" or "apportionment" in name
             for sheet_name, sheet_data in leaseholder_data['data'].items():
                 if 'raw_data' in sheet_data:
-                    raw_data = sheet_data['raw_data']
-                    break  # Use first sheet with data
+                    if 'leaseholder' in sheet_name.lower() or 'apportionment' in sheet_name.lower():
+                        raw_data = sheet_data['raw_data']
+                        break
+            # Fallback to first sheet with data
+            if not raw_data:
+                for sheet_name, sheet_data in leaseholder_data['data'].items():
+                    if 'raw_data' in sheet_data:
+                        raw_data = sheet_data['raw_data']
+                        break
 
         for row in raw_data:
             unit_number = self._extract_unit_number(row)
@@ -637,27 +635,24 @@ class SupabaseSchemaMapper:
             # unit_number is TEXT now, not UUID
             # Skip unit_id lookup - use unit_number directly
 
-            name = self._extract_field_from_row(row, ['name', 'leaseholder', 'owner'])
-            if not name:
+            # ENHANCED: Include more name column variants
+            name = self._extract_field_from_row(row, ['name', 'leaseholder name', 'leaseholder', 'owner', 'tenant'])
+            if not name or not name.strip():
                 continue
 
-            # Parse name into first_name and last_name
-            title, first_name, last_name, notes = self._parse_leaseholder_name(name)
+            # Get unit_id from unit_map
+            unit_id = unit_map.get(unit_number)
 
-            # Get correspondence address for notes
-            address = self._extract_field_from_row(row, ['address', 'correspondence address', 'postal address'])
-            if address:
-                notes = f"{notes}\nAddress: {address}" if notes else f"Address: {address}"
+            # Get correspondence address
+            correspondence_address = self._extract_field_from_row(row, ['address', 'correspondence address', 'postal address'])
 
             leaseholder = {
                 'id': str(uuid.uuid4()),
                 'building_id': building_id,
-                'unit_number': unit_number,  # TEXT field, not UUID
-                'title': title,
-                'first_name': first_name,
-                'last_name': last_name,
+                'unit_id': unit_id,
+                'name': name.strip(),
                 'email': self._extract_field_from_row(row, ['email', 'email address']),
-                'notes': notes
+                'correspondence_address': correspondence_address
             }
             leaseholders.append(leaseholder)
 
@@ -820,19 +815,13 @@ class SupabaseSchemaMapper:
             if not unit_id:
                 continue  # Skip if unit not found in map
 
-            # Parse name into components
-            title, first_name, last_name, notes = self._parse_leaseholder_name(leaseholder_name)
-
             leaseholder = {
                 'id': str(uuid.uuid4()),
                 'building_id': building_id,
-                'unit_id': unit_id,  # UUID reference to units table
-                'unit_number': unit_number,  # TEXT field for display
-                'title': title,
-                'first_name': first_name,
-                'last_name': last_name,
+                'unit_id': unit_id,
+                'name': leaseholder_name,
                 'email': None,
-                'notes': notes
+                'correspondence_address': None
             }
             leaseholders.append(leaseholder)
 
@@ -840,12 +829,12 @@ class SupabaseSchemaMapper:
 
     def _extract_unit_number(self, row: Dict) -> Optional[str]:
         """Extract unit number from row data"""
-        # First try 'Unit description' column (priority for apportionment files)
-        unit_field = self._extract_field_from_row(row, ['unit description', 'unit_description', 'description', 'unit', 'flat', 'property'])
+        # ENHANCED: Try 'Unit' column first (common in leaseholder files), then 'Unit description'
+        unit_field = self._extract_field_from_row(row, ['unit', 'unit description', 'unit_description', 'description', 'flat', 'property'])
 
         # If not found, try 'Unit reference' column
         if not unit_field:
-            unit_field = self._extract_field_from_row(row, ['unit reference', 'unit_reference', 'reference', 'ref'])
+            unit_field = self._extract_field_from_row(row, ['reference', 'unit reference', 'unit_reference', 'ref'])
 
         if not unit_field:
             return None
@@ -917,7 +906,16 @@ class SupabaseSchemaMapper:
                 if keyword.lower() in str(key).lower():
                     return str(value).strip() if value else None
         return None
-    
+
+    def _normalize_unit_name(self, unit_name: str) -> str:
+        """Normalize unit names for consistent matching (e.g., 'Flat 4, 48-49 Gloucester Square' -> 'Flat 4')"""
+        import re
+        # Extract just the flat number/identifier, strip building names
+        match = re.search(r'Flat\s+(\d+|[A-Z]\d+)', unit_name, re.IGNORECASE)
+        if match:
+            return f"Flat {match.group(1)}"
+        return unit_name.strip()
+
     def _extract_number(self, data: Dict, keywords: List[str]) -> Optional[int]:
         """Extract numeric value"""
         value = self._extract_field(data, keywords)
@@ -978,10 +976,18 @@ class SupabaseSchemaMapper:
             # Excel files have nested structure: data -> {sheet_name} -> raw_data
             data_value = file_data['data']
             if isinstance(data_value, dict):
+                # ENHANCED: Prioritize sheets with "apportionment" or "leaseholder" in name
                 for sheet_name, sheet_data in data_value.items():
                     if isinstance(sheet_data, dict) and 'raw_data' in sheet_data:
-                        raw_data = sheet_data['raw_data']
-                        break  # Use first sheet with data
+                        if 'apportionment' in sheet_name.lower() or 'leaseholder' in sheet_name.lower():
+                            raw_data = sheet_data['raw_data']
+                            break
+                # Fallback to first sheet with data
+                if not raw_data:
+                    for sheet_name, sheet_data in data_value.items():
+                        if isinstance(sheet_data, dict) and 'raw_data' in sheet_data:
+                            raw_data = sheet_data['raw_data']
+                            break
 
         for row in raw_data:
             # Extract unit number
@@ -1456,17 +1462,18 @@ class SupabaseSchemaMapper:
 
         result = {
             'id': str(uuid.uuid4()),
-            'building_id': building_id,  # REQUIRED - links to building
-            'category': 'compliance',  # REQUIRED - BlocIQ V2 schema requirement
-            'asset_name': asset_name,  # REQUIRED - never null (BlocIQ V2 schema)
-            'asset_type': asset_type,  # REQUIRED - never null (BlocIQ V2 schema)
-            'inspection_frequency': frequency_interval,  # BlocIQ V2 schema
+            'building_id': building_id,
             'description': f"Extracted from {file_metadata.get('file_name', 'unknown')}",
+            'asset_name': asset_name,
+            'asset_type': asset_type,
+            'inspection_frequency': frequency_interval,
             'last_inspection_date': last_inspection_date,
             'next_due_date': next_due_date,
             'compliance_status': compliance_status,
             'location': location,
-            'notes': None
+            'responsible_party': None,
+            'notes': None,
+            'is_active': True
         }
 
         # FINAL SAFETY CHECK - This should NEVER trigger
