@@ -31,6 +31,13 @@ from matchers import file_sha256
 from data_collator import DataCollator
 from storage_uploader import SupabaseStorageUploader
 
+# Import new extractors
+from extractors.insurance_extractor import InsuranceExtractor
+from extractors.contracts_extractor import ContractsExtractor
+from extractors.utilities_extractor import UtilitiesExtractor
+from extractors.meetings_extractor import MeetingsExtractor
+from extractors.client_money_extractor import ClientMoneyExtractor
+
 
 class BlocIQOnboarder:
     """Main onboarding orchestrator"""
@@ -63,6 +70,13 @@ class BlocIQOnboarder:
         self.financial_extractor = FinancialExtractor()
         self.validator = SchemaValidator()
         self.block_validator = BlockValidator()
+
+        # Initialize new extractors
+        self.insurance_extractor = InsuranceExtractor()
+        self.contracts_extractor = ContractsExtractor()
+        self.utilities_extractor = UtilitiesExtractor()
+        self.meetings_extractor = MeetingsExtractor()
+        self.client_money_extractor = ClientMoneyExtractor()
 
         # Results storage
         self.parsed_files = []
@@ -105,6 +119,10 @@ class BlocIQOnboarder:
 
         print("\n💰 Extracting financial data...")
         self._extract_financial_data()
+
+        # Step 4.6: Extract insurance, contracts, utilities, meetings, client money
+        print("\n🔍 Extracting additional handover intelligence...")
+        self._extract_handover_intelligence()
 
         # Step 4.7: Validate data against business rules
         print("\n✅ Validating data against UK block management rules...")
@@ -984,6 +1002,91 @@ class BlocIQOnboarder:
             print(f"\n  💰 Total apportionments extracted: {len(all_apportionments)}")
         else:
             print("  ⚠️  No apportionments extracted from any files")
+
+    def _extract_handover_intelligence(self):
+        """Extract insurance, contracts, utilities, meetings, and client money data"""
+        building_id = self.mapped_data['building']['id']
+
+        # Extract insurance policies
+        insurance_policies = []
+        if self.categorized_files.get('insurance'):
+            print(f"  📋 Processing {len(self.categorized_files['insurance'])} insurance documents...")
+            for file_data in self.categorized_files['insurance']:
+                result = self.insurance_extractor.extract(file_data, building_id)
+                if result and result.get('policy'):
+                    insurance_policies.append(result['policy'])
+                    print(f"     ✓ {file_data['file_name']}: Policy #{result['policy'].get('policy_number', 'N/A')}")
+
+        if insurance_policies:
+            self.mapped_data['insurance_policies'] = insurance_policies
+            print(f"  ✅ Extracted {len(insurance_policies)} insurance policies")
+
+        # Extract contracts
+        contracts = []
+        if self.categorized_files.get('contracts'):
+            print(f"  📋 Processing {len(self.categorized_files['contracts'])} contract documents...")
+            for file_data in self.categorized_files['contracts']:
+                result = self.contracts_extractor.extract(file_data, building_id)
+                if result and result.get('contract'):
+                    contracts.append(result['contract'])
+                    print(f"     ✓ {file_data['file_name']}: {result['contract'].get('service_type', 'N/A')}")
+
+        if contracts:
+            self.mapped_data['contracts'] = contracts
+            print(f"  ✅ Extracted {len(contracts)} service contracts")
+
+        # Extract utilities
+        utilities = []
+        if self.categorized_files.get('utilities'):
+            print(f"  📋 Processing {len(self.categorized_files['utilities'])} utility documents...")
+            for file_data in self.categorized_files['utilities']:
+                result = self.utilities_extractor.extract(file_data, building_id)
+                if result and result.get('utility'):
+                    utilities.append(result['utility'])
+                    print(f"     ✓ {file_data['file_name']}: {result['utility'].get('utility_type', 'N/A')}")
+
+        if utilities:
+            self.mapped_data['utilities'] = utilities
+            print(f"  ✅ Extracted {len(utilities)} utility accounts")
+
+        # Extract meetings
+        meetings = []
+        if self.categorized_files.get('meetings'):
+            print(f"  📋 Processing {len(self.categorized_files['meetings'])} meeting documents...")
+            for file_data in self.categorized_files['meetings']:
+                result = self.meetings_extractor.extract(file_data, building_id)
+                if result and result.get('meeting'):
+                    meetings.append(result['meeting'])
+                    print(f"     ✓ {file_data['file_name']}: {result['meeting'].get('meeting_type', 'N/A')}")
+
+        if meetings:
+            self.mapped_data['meetings'] = meetings
+            print(f"  ✅ Extracted {len(meetings)} meeting records")
+
+        # Extract client money snapshots
+        client_money = []
+        if self.categorized_files.get('client_money'):
+            print(f"  📋 Processing {len(self.categorized_files['client_money'])} client money documents...")
+            for file_data in self.categorized_files['client_money']:
+                result = self.client_money_extractor.extract(file_data, building_id)
+                if result and result.get('snapshot'):
+                    client_money.append(result['snapshot'])
+                    print(f"     ✓ {file_data['file_name']}: Balance £{result['snapshot'].get('balance', 0):,.2f}")
+
+        if client_money:
+            self.mapped_data['client_money_snapshots'] = client_money
+            print(f"  ✅ Extracted {len(client_money)} client money snapshots")
+
+        # Log audit
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'extract_handover_intelligence',
+            'insurance_policies': len(insurance_policies),
+            'contracts': len(contracts),
+            'utilities': len(utilities),
+            'meetings': len(meetings),
+            'client_money_snapshots': len(client_money)
+        })
 
     def _validate_data(self):
         """Validate mapped data against UK block management rules"""

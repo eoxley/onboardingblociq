@@ -274,13 +274,23 @@ class ComplianceAssetExtractor:
         # Convert frequency_months to PostgreSQL interval format
         frequency_interval = f"{asset_config['frequency_months']} months" if asset_config.get('frequency_months') else None
 
+        # Calculate compliance status based on next due date
+        compliance_status = self._determine_compliance_status(next_due_date)
+
         asset = {
             'id': str(uuid.uuid4()),
             'building_id': building_id,  # REQUIRED - NOT NULL
             'asset_name': asset_config['asset_name'],  # REQUIRED
             'asset_type': asset_config['asset_type'],  # REQUIRED
             'inspection_frequency': frequency_interval,  # interval type
-            'description': f"Imported from: {file_name}"
+            'description': f"Imported from: {file_name}",
+            # New fields for enhanced tracking
+            'inspection_contractor': inspector_company,
+            'inspection_date': inspection_date,
+            'reinspection_date': next_due_date,
+            'outcome': self._extract_outcome(file_content),
+            'compliance_status': compliance_status,
+            'source_document_id': None  # Will be set when building_documents record is created
         }
 
         # Store certificate reference for linking
@@ -465,6 +475,39 @@ class ComplianceAssetExtractor:
                 return 'compliant'
         except:
             return 'pending'
+
+    def _determine_compliance_status(self, next_due_date: Optional[str]) -> str:
+        """Determine compliance status for new schema field"""
+        if not next_due_date:
+            return 'unknown'
+
+        try:
+            due_date = datetime.fromisoformat(next_due_date).date()
+            today = datetime.now().date()
+            days_until_due = (due_date - today).days
+
+            if days_until_due < 0:
+                return 'overdue'
+            elif days_until_due <= 30:
+                return 'due_soon'
+            else:
+                return 'compliant'
+        except:
+            return 'unknown'
+
+    def _extract_outcome(self, content: str) -> Optional[str]:
+        """Extract inspection outcome (Satisfactory/Certified/Failed)"""
+        content_lower = content.lower()
+
+        # Look for explicit outcomes
+        if re.search(r'\bsatisfactory\b|\bcertified\b|\bpassed\b', content_lower):
+            return 'Satisfactory'
+        elif re.search(r'\bunsatisfactory\b|\bfailed\b|\bnon[- ]compliant\b', content_lower):
+            return 'Failed'
+        elif re.search(r'\badvisory\b|\bfor\s+information\b', content_lower):
+            return 'Advisory'
+
+        return None
 
     def _create_compliance_inspection(self, file_data: Dict, asset: Dict, building_id: str, user_id: str = None) -> Optional[Dict]:
         """

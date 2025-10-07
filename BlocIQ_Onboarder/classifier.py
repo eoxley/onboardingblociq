@@ -131,13 +131,85 @@ class DocumentClassifier:
             'column_patterns': ['unit', 'flat', '%', 'percentage', 'share', 'apportionment']
         },
         'insurance': {
-            'keywords': ['insurance', 'policy', 'claim', 'premium', 'cover'],
+            'keywords': ['insurance', 'policy', 'claim', 'premium', 'cover', 'policy schedule',
+                        'certificate of insurance', 'sum insured', 'insurer', 'broker',
+                        'policy number', 'reinstatement value', 'el/pl', 'terrorism',
+                        'engineering inspection', 'excess', 'indemnity', 'underwriter'],
             'filename_patterns': [
                 r'.*insurance.*',
                 r'.*policy.*',
-                r'.*claim.*'
+                r'.*claim.*',
+                r'.*schedule.*insurance.*',
+                r'.*certificate.*insurance.*'
             ],
-            'content_patterns': ['insurance', 'policy', 'premium', 'insurer']
+            'content_patterns': ['insurance', 'policy', 'premium', 'insurer', 'policy schedule',
+                               'sum insured', 'reinstatement value', 'cover note', 'excess']
+        },
+        'client_money': {
+            'keywords': ['client account', 'uncommitted funds', 'service charge balance',
+                        'arrears report', 'trial balance', 'bank account', 'trust account',
+                        'client money', 'reconciliation'],
+            'filename_patterns': [
+                r'.*client.*account.*',
+                r'.*trial.*balance.*',
+                r'.*bank.*reconciliation.*',
+                r'.*trust.*account.*',
+                r'.*uncommitted.*'
+            ],
+            'content_patterns': ['client account', 'uncommitted funds', 'trust account',
+                               'reconciliation', 'bank balance']
+        },
+        'utilities': {
+            'keywords': ['account number', 'mpan', 'mprn', 'supply number', 'tariff',
+                        'unit rate', 'electricity', 'gas', 'water', 'waste', 'comms'],
+            'filename_patterns': [
+                r'.*utilit.*',
+                r'.*electricity.*',
+                r'.*gas.*supply.*',
+                r'.*water.*',
+                r'.*mpan.*',
+                r'.*mprn.*'
+            ],
+            'content_patterns': ['account number', 'mpan', 'mprn', 'supply number', 'tariff',
+                               'unit rate', 'supplier']
+        },
+        'meetings': {
+            'keywords': ['agm', 'egm', 'board meeting', 'minutes', 'agenda', 'action log',
+                        'handover meeting', 'annual general meeting'],
+            'filename_patterns': [
+                r'.*\bagm\b.*',
+                r'.*\begm\b.*',
+                r'.*board.*meeting.*',
+                r'.*minutes.*',
+                r'.*agenda.*',
+                r'.*action.*log.*'
+            ],
+            'content_patterns': ['annual general meeting', 'extraordinary general meeting',
+                               'minutes', 'agenda', 'resolved', 'action items']
+        },
+        'keys_access': {
+            'keywords': ['fob', 'key register', 'access control', 'kms', 'codes',
+                        'key holder', 'access list'],
+            'filename_patterns': [
+                r'.*key.*register.*',
+                r'.*fob.*',
+                r'.*access.*control.*',
+                r'.*kms.*'
+            ],
+            'content_patterns': ['key register', 'fob', 'access control', 'key holder',
+                               'entry code']
+        },
+        'section20': {
+            'keywords': ['section 20', 'notice of intention', 'statement of estimates',
+                        'award', 'tender', 's20', 'consultation'],
+            'filename_patterns': [
+                r'.*section.*20.*',
+                r'.*s20.*',
+                r'.*notice.*intention.*',
+                r'.*statement.*estimates.*'
+            ],
+            'content_patterns': ['section 20', 'notice of intention', 'statement of estimates',
+                               'consultation', 'qualifying works']
         }
     }
 
@@ -346,6 +418,11 @@ class DocumentClassifier:
             'staff': [],
             'apportionments': [],
             'insurance': [],
+            'client_money': [],
+            'utilities': [],
+            'meetings': [],
+            'keys_access': [],
+            'section20': [],
             'uncategorized': []
         }
 
