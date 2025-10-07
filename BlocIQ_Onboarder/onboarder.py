@@ -13,6 +13,7 @@ import sys
 import shutil
 import json
 import argparse
+import uuid
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict
@@ -120,6 +121,22 @@ class BlocIQOnboarder:
         print("\n💰 Extracting financial data...")
         self._extract_financial_data()
 
+        # Step 4.55: Extract financial & compliance intelligence
+        print("\n💼 Extracting financial & compliance intelligence...")
+        self._extract_financial_intelligence()
+
+        # Step 4.555: Extract financial data from Excel files (no OCR)
+        print("\n📊 Extracting financial data from Excel files...")
+        self._extract_excel_financial_data()
+
+        # Step 4.56: Extract staffing data
+        print("\n👤 Extracting building staffing data...")
+        self._extract_staffing_data()
+
+        # Step 4.57: Extract lease information with OCR
+        print("\n📜 Extracting lease information...")
+        self._extract_lease_data()
+
         # Step 4.6: Extract insurance, contracts, utilities, meetings, client money
         print("\n🔍 Extracting additional handover intelligence...")
         self._extract_handover_intelligence()
@@ -135,6 +152,10 @@ class BlocIQOnboarder:
         # Step 5: Generate SQL
         print("\n📝 Generating SQL migration...")
         self._generate_sql()
+
+        # Step 5.5: Execute SQL migration to Supabase
+        print("\n🚀 Executing SQL migration to Supabase...")
+        self._execute_sql_migration()
 
         # Step 6: Generate logs and reports
         print("\n📊 Generating audit logs and confidence report...")
@@ -640,6 +661,126 @@ class BlocIQOnboarder:
             'enrichment_stats': enrichment_stats
         })
 
+    def _execute_sql_migration(self):
+        """Execute SQL migration to Supabase"""
+        import os
+        from supabase import create_client
+
+        # Get Supabase credentials
+        supabase_url = os.getenv('SUPABASE_URL')
+        supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_KEY')
+
+        if not supabase_url or not supabase_key:
+            print("  ⚠️  Supabase credentials not found in environment")
+            print("  ℹ️  Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to auto-execute migrations")
+            print("  📝 SQL migration saved to output/migration.sql - execute manually")
+            return
+
+        try:
+            # Read SQL migration file
+            sql_file = self.output_dir / 'migration.sql'
+            if not sql_file.exists():
+                print("  ⚠️  SQL migration file not found")
+                return
+
+            with open(sql_file, 'r') as f:
+                sql_script = f.read()
+
+            # Connect to Supabase
+            supabase = create_client(supabase_url, supabase_key)
+            print("  ✅ Connected to Supabase")
+
+            # Split SQL into individual statements
+            # Remove comments and split by semicolon
+            statements = []
+            current_statement = []
+
+            for line in sql_script.split('\n'):
+                # Skip comment-only lines
+                if line.strip().startswith('--'):
+                    continue
+
+                current_statement.append(line)
+
+                # If line ends with semicolon, it's end of statement
+                if line.strip().endswith(';'):
+                    statement = '\n'.join(current_statement).strip()
+                    if statement and not statement.startswith('--'):
+                        statements.append(statement)
+                    current_statement = []
+
+            print(f"  📝 Executing {len(statements)} SQL statements...")
+
+            # Execute statements
+            executed = 0
+            failed = 0
+
+            for i, statement in enumerate(statements, 1):
+                try:
+                    # Execute via Supabase RPC or direct SQL
+                    # Note: Supabase Python client doesn't support direct SQL execution
+                    # We need to use the PostgREST API or psycopg2
+
+                    # For now, use psycopg2 if available
+                    import psycopg2
+                    from urllib.parse import urlparse
+
+                    # Parse database URL from Supabase URL
+                    # Supabase format: https://xxx.supabase.co
+                    # We need the direct Postgres connection
+
+                    db_url = os.getenv('DATABASE_URL')
+                    if not db_url:
+                        print("  ⚠️  DATABASE_URL not found - cannot execute SQL directly")
+                        print("  ℹ️  Set DATABASE_URL for direct Postgres connection")
+                        print("  📝 Execute migration.sql manually via Supabase SQL Editor")
+                        return
+
+                    # Connect to Postgres
+                    conn = psycopg2.connect(db_url)
+                    cursor = conn.cursor()
+
+                    # Execute statement
+                    cursor.execute(statement)
+                    conn.commit()
+
+                    executed += 1
+                    if executed % 10 == 0:
+                        print(f"     Progress: {executed}/{len(statements)} statements")
+
+                except Exception as e:
+                    failed += 1
+                    print(f"  ⚠️  Statement {i} failed: {str(e)[:100]}")
+                    continue
+
+            # Close connection
+            if 'cursor' in locals():
+                cursor.close()
+            if 'conn' in locals():
+                conn.close()
+
+            print(f"\n  ✅ Migration complete!")
+            print(f"     Executed: {executed}")
+            if failed > 0:
+                print(f"     Failed: {failed}")
+
+            self.audit_log.append({
+                'timestamp': datetime.now().isoformat(),
+                'action': 'execute_sql_migration',
+                'executed': executed,
+                'failed': failed
+            })
+
+        except ImportError as e:
+            print(f"  ⚠️  psycopg2 not installed: {e}")
+            print(f"  ℹ️  Install with: pip install psycopg2-binary")
+            print(f"  📝 Execute migration.sql manually via Supabase SQL Editor")
+        except Exception as e:
+            print(f"  ⚠️  Error executing migration: {e}")
+            print(f"  📝 Execute migration.sql manually via Supabase SQL Editor")
+            import traceback
+            traceback.print_exc()
+
     # Backup functionality removed - files will be uploaded directly to Supabase
 
     def _generate_logs(self):
@@ -837,18 +978,59 @@ class BlocIQOnboarder:
 
         print(f"  ✅ Summary: {summary_file}")
 
-        # Generate formatted summary report (PDF or Word)
+        # Generate Building Health Check Report (replaces old summary report)
         try:
-            from report_generator import export_summary_report
-            report_file = export_summary_report(
-                summary_path=str(summary_file),
-                output_dir=str(self.output_dir)
+            # Always generate health check report - create building_id if needed
+            building_id = self.mapped_data.get('building', {}).get('id')
+            if not building_id:
+                # Generate a temporary ID for the report
+                import uuid
+                building_id = str(uuid.uuid4())
+                print("\n  ℹ️  No building ID found, using temporary ID for report generation")
+
+            print("\n📊 Generating Building Health Check Report...")
+            from reporting.building_health_check import BuildingHealthCheckGenerator
+            import os
+
+            # Try to connect to Supabase if credentials available
+            supabase_client = None
+            supabase_url = os.getenv('SUPABASE_URL')
+            supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_KEY')
+
+            if supabase_url and supabase_key:
+                try:
+                    from supabase import create_client
+                    supabase_client = create_client(supabase_url, supabase_key)
+                    print("  ✅ Connected to Supabase for live data")
+                except Exception as e:
+                    print(f"  ⚠️  Could not connect to Supabase: {e}")
+                    print("  ℹ️  Report will use local extracted data")
+
+            # Generate comprehensive health check report (using local data if no Supabase)
+            generator = BuildingHealthCheckGenerator(supabase_client=supabase_client)
+            report_file = generator.generate_report(
+                building_id=building_id,
+                output_dir=str(self.output_dir),
+                local_data=self.mapped_data if not supabase_client else None
             )
+
+            if report_file:
+                print(f"\n  ✅ Building Health Check Report: {report_file}")
+                print(f"  📄 Report includes:")
+                print(f"     • Full letterhead template on all pages")
+                print(f"     • Building summary and key metrics")
+                print(f"     • Contractor overview with status icons")
+                print(f"     • Asset register with compliance tracking")
+                print(f"     • Compliance matrix by category")
+                print(f"     • Auto-generated recommendations")
+
         except ImportError as e:
-            print(f"  ⚠️  Could not generate report: {e}")
-            print(f"  ℹ️  Install dependencies: pip install reportlab>=4.0.0")
+            print(f"  ⚠️  Could not generate Building Health Check report: {e}")
+            print(f"  ℹ️  Install dependencies: pip install reportlab>=4.0.0 PyPDF2>=3.0.0")
         except Exception as e:
-            print(f"  ⚠️  Error generating report: {e}")
+            print(f"  ⚠️  Error generating Building Health Check report: {e}")
+            import traceback
+            traceback.print_exc()
 
     def _extract_compliance_data(self):
         """Extract compliance assets and inspections from parsed files"""
@@ -899,7 +1081,10 @@ class BlocIQOnboarder:
             for project in projects:
                 proj_name = project.get('project_name', 'Unknown')
                 # Extract first word as type
-                proj_type = proj_name.split()[0] if proj_name else 'Unknown'
+                if isinstance(proj_name, str) and proj_name:
+                    proj_type = proj_name.split()[0]
+                else:
+                    proj_type = 'Unknown'
                 project_types[proj_type] = project_types.get(proj_type, 0) + 1
 
             print("\n  📋 Major Works Projects Detected:")
@@ -934,6 +1119,217 @@ class BlocIQOnboarder:
             'action': 'extract_financial',
             'budgets_found': len(budgets),
             'accounts_found': len(service_charge_years)
+        })
+
+    def _extract_financial_intelligence(self):
+        """Extract financial & compliance intelligence using new AI-powered extractor"""
+        from financial_intelligence_extractor import FinancialIntelligenceExtractor
+
+        extractor = FinancialIntelligenceExtractor(
+            parsed_files=self.parsed_files,
+            mapped_data=self.mapped_data
+        )
+
+        # Extract all financial & compliance data
+        results = extractor.extract_all()
+
+        # Merge extracted data into mapped_data
+        # Note: Apportionments and budgets may already exist from mapper
+        # We append new ones found by the intelligence extractor
+
+        if results['apportionments']:
+            existing = self.mapped_data.get('apportionments', [])
+            self.mapped_data['apportionments'] = existing + results['apportionments']
+
+        if results['budgets']:
+            existing = self.mapped_data.get('budgets', [])
+            self.mapped_data['budgets'] = existing + results['budgets']
+
+        if results['insurance']:
+            existing = self.mapped_data.get('building_insurance', [])
+            self.mapped_data['building_insurance'] = existing + results['insurance']
+
+        # Fire door inspections - new table
+        self.mapped_data['fire_door_inspections'] = results['fire_door_inspections']
+
+        # Store alerts for reporting
+        self.financial_intelligence_alerts = results['alerts']
+
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'extract_financial_intelligence',
+            'apportionments': len(results['apportionments']),
+            'budgets': len(results['budgets']),
+            'insurance': len(results['insurance']),
+            'fire_door_inspections': len(results['fire_door_inspections']),
+            'alerts': len(results['alerts'])
+        })
+
+    def _extract_staffing_data(self):
+        """Extract building staffing data using staffing extractor"""
+        from staffing_extractor import StaffingExtractor
+
+        extractor = StaffingExtractor(
+            parsed_files=self.parsed_files,
+            mapped_data=self.mapped_data
+        )
+
+        # Extract all staffing data
+        results = extractor.extract_all()
+
+        # Add to mapped_data
+        self.mapped_data['building_staff'] = results['staff_members']
+
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'extract_staffing_data',
+            'staff_members': len(results['staff_members'])
+        })
+
+    def _extract_excel_financial_data(self):
+        """Extract financial data directly from Excel files (no OCR)"""
+        from excel_financial_extractor import ExcelFinancialExtractor
+
+        # Initialize extractor
+        extractor = ExcelFinancialExtractor(
+            parsed_files=self.parsed_files,
+            mapped_data=self.mapped_data
+        )
+
+        # Extract all financial data
+        results = extractor.extract_all()
+
+        # Merge budgets (avoid duplicates from different extraction methods)
+        existing_budgets = self.mapped_data.get('budgets', [])
+        new_budgets = results['budgets']
+
+        # Add new budgets that don't already exist
+        for new_budget in new_budgets:
+            # Check for duplicates by source document
+            is_duplicate = any(
+                b.get('source_document') == new_budget.get('source_document')
+                for b in existing_budgets
+            )
+            if not is_duplicate:
+                existing_budgets.append(new_budget)
+
+        self.mapped_data['budgets'] = existing_budgets
+
+        # Merge apportionments (avoid duplicates)
+        existing_apportionments = self.mapped_data.get('apportionments', [])
+        new_apportionments = results['apportionments']
+
+        for new_app in new_apportionments:
+            # Check for duplicates by unit_id
+            is_duplicate = any(
+                a.get('unit_id') == new_app.get('unit_id') and
+                a.get('source_document') == new_app.get('source_document')
+                for a in existing_apportionments
+            )
+            if not is_duplicate:
+                existing_apportionments.append(new_app)
+
+        self.mapped_data['apportionments'] = existing_apportionments
+
+        # Merge insurance records (avoid duplicates)
+        existing_insurance = self.mapped_data.get('building_insurance', [])
+        new_insurance = results['building_insurance']
+
+        for new_ins in new_insurance:
+            # Check for duplicates by source document
+            is_duplicate = any(
+                i.get('source_document') == new_ins.get('source_document')
+                for i in existing_insurance
+            )
+            if not is_duplicate:
+                existing_insurance.append(new_ins)
+
+        self.mapped_data['building_insurance'] = existing_insurance
+
+        # Convert errors to timeline events for logging
+        if results['errors']:
+            timeline_events = self.mapped_data.get('timeline_events', [])
+
+            for error in results['errors']:
+                event = {
+                    'id': str(__import__('uuid').uuid4()),
+                    'building_id': self.mapped_data.get('building', {}).get('id'),
+                    'event_type': 'import_error',
+                    'description': error.get('error', 'Unknown error'),
+                    'metadata': {
+                        'file': error.get('file'),
+                        'error_type': error.get('type')
+                    },
+                    'severity': 'warning'
+                }
+                timeline_events.append(event)
+
+            self.mapped_data['timeline_events'] = timeline_events
+
+        # Store summary for Building Health Check
+        self.excel_financial_summary = {
+            'budgets_detected': len(new_budgets),
+            'apportionments_mapped': len(new_apportionments),
+            'insurance_detected': len(new_insurance),
+            'errors': len(results['errors']),
+            'missing_totals': sum(1 for e in results['errors'] if e.get('type') == 'budget_missing_total')
+        }
+
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'extract_excel_financial_data',
+            'budgets': len(new_budgets),
+            'apportionments': len(new_apportionments),
+            'insurance': len(new_insurance),
+            'errors': len(results['errors'])
+        })
+
+    def _extract_lease_data(self):
+        """Extract lease information from documents using OCR"""
+        from lease_extractor import LeaseExtractor
+
+        # Initialize lease extractor
+        extractor = LeaseExtractor(
+            parsed_files=self.parsed_files,
+            mapped_data=self.mapped_data
+        )
+
+        # Extract all lease data
+        results = extractor.extract_all()
+
+        # Add to mapped_data
+        self.mapped_data['leases'] = results['leases']
+
+        # Convert errors to timeline events
+        if results['errors']:
+            timeline_events = self.mapped_data.get('timeline_events', [])
+
+            for error in results['errors']:
+                event = {
+                    'id': str(__import__('uuid').uuid4()),
+                    'building_id': self.mapped_data.get('building', {}).get('id'),
+                    'event_type': 'import_error',
+                    'description': f"Lease extraction error: {error.get('error', 'Unknown error')}",
+                    'metadata': {
+                        'file': error.get('file'),
+                        'error_type': error.get('type')
+                    },
+                    'severity': 'warning'
+                }
+                timeline_events.append(event)
+
+            self.mapped_data['timeline_events'] = timeline_events
+
+        # Store statistics
+        stats = results.get('statistics', {})
+
+        self.audit_log.append({
+            'timestamp': datetime.now().isoformat(),
+            'action': 'extract_lease_data',
+            'leases_extracted': stats.get('leases_extracted', 0),
+            'files_processed': stats.get('files_processed', 0),
+            'files_with_ocr': stats.get('files_with_ocr', 0),
+            'errors': len(results['errors'])
         })
 
     def _extract_apportionments(self):
@@ -1021,19 +1417,47 @@ class BlocIQOnboarder:
             self.mapped_data['insurance_policies'] = insurance_policies
             print(f"  ✅ Extracted {len(insurance_policies)} insurance policies")
 
-        # Extract contracts
+        # Extract contracts and contractors
         contracts = []
+        contractors = []
+        maintenance_schedules = []
+
         if self.categorized_files.get('contracts'):
             print(f"  📋 Processing {len(self.categorized_files['contracts'])} contract documents...")
             for file_data in self.categorized_files['contracts']:
                 result = self.contracts_extractor.extract(file_data, building_id)
-                if result and result.get('contract'):
-                    contracts.append(result['contract'])
-                    print(f"     ✓ {file_data['file_name']}: {result['contract'].get('service_type', 'N/A')}")
+                if result:
+                    if result.get('contract'):
+                        contracts.append(result['contract'])
+                        print(f"     ✓ {file_data['file_name']}: {result['contract'].get('service_type', 'N/A')}")
+
+                        # Extract contractor details if present
+                        if result.get('contractor'):
+                            contractors.append(result['contractor'])
+
+                        # Generate maintenance schedules from contract frequency
+                        contract = result['contract']
+                        if contract.get('frequency'):
+                            from extractors.maintenance_schedule_generator import MaintenanceScheduleGenerator
+                            schedule_gen = MaintenanceScheduleGenerator()
+                            schedules = schedule_gen.generate_from_contract(contract)
+                            maintenance_schedules.extend(schedules)
 
         if contracts:
             self.mapped_data['contracts'] = contracts
             print(f"  ✅ Extracted {len(contracts)} service contracts")
+
+        if contractors:
+            # Deduplicate contractors
+            from db.contractor_deduplicator import ContractorDeduplicator
+            deduplicator = ContractorDeduplicator()
+            dedup_result = deduplicator.deduplicate(contractors)
+            self.mapped_data['contractors'] = dedup_result['new']
+            print(f"  ✅ Extracted {len(dedup_result['new'])} unique contractors ({len(dedup_result['existing'])} duplicates skipped)")
+
+        if maintenance_schedules:
+            self.mapped_data['maintenance_schedules'] = maintenance_schedules
+            print(f"  ✅ Generated {len(maintenance_schedules)} maintenance schedules")
 
         # Extract utilities
         utilities = []
@@ -1077,15 +1501,66 @@ class BlocIQOnboarder:
             self.mapped_data['client_money_snapshots'] = client_money
             print(f"  ✅ Extracted {len(client_money)} client money snapshots")
 
+        # Extract assets from all documents
+        assets = []
+        print(f"  📋 Scanning all documents for building assets...")
+        from extractors.assets_extractor import AssetsExtractor
+        assets_extractor = AssetsExtractor()
+
+        # Scan compliance, contracts, and other documents for asset mentions
+        all_docs = []
+        for category in ['compliance', 'contracts', 'insurance', 'legal']:
+            if self.categorized_files.get(category):
+                all_docs.extend(self.categorized_files[category])
+
+        for file_data in all_docs:
+            detected_assets = assets_extractor.extract(file_data, building_id)
+            if detected_assets:
+                assets.extend(detected_assets)
+                print(f"     ✓ {file_data['file_name']}: Found {len(detected_assets)} asset(s)")
+
+        if assets:
+            # Link assets to compliance records if available
+            compliance_assets = self.mapped_data.get('compliance_assets', [])
+            for asset in assets:
+                if compliance_assets:
+                    compliance_id = assets_extractor.link_to_compliance(asset, compliance_assets)
+                    if compliance_id:
+                        asset['compliance_asset_id'] = compliance_id
+
+            self.mapped_data['assets'] = assets
+            print(f"  ✅ Extracted {len(assets)} building assets")
+
+        # Create building-contractor links
+        if contractors:
+            building_contractor_links = []
+            for contractor in contractors:
+                link = {
+                    'id': str(uuid.uuid4()),
+                    'building_id': building_id,
+                    'contractor_id': contractor['id'],
+                    'relationship_type': 'service_provider',
+                    'is_preferred': False,
+                    'notes': None
+                }
+                building_contractor_links.append(link)
+
+            if building_contractor_links:
+                self.mapped_data['building_contractor_links'] = building_contractor_links
+                print(f"  ✅ Created {len(building_contractor_links)} building-contractor links")
+
         # Log audit
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),
             'action': 'extract_handover_intelligence',
             'insurance_policies': len(insurance_policies),
             'contracts': len(contracts),
+            'contractors': len(contractors),
             'utilities': len(utilities),
             'meetings': len(meetings),
-            'client_money_snapshots': len(client_money)
+            'client_money_snapshots': len(client_money),
+            'assets': len(assets),
+            'maintenance_schedules': len(maintenance_schedules)
         })
 
     def _validate_data(self):

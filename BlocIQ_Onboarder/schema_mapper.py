@@ -323,6 +323,86 @@ class SupabaseSchemaMapper:
                 'document_id': 'uuid REFERENCES building_documents(id)',
                 'notes': 'text',
                 'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'contractors': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'company_name': 'text NOT NULL',
+                'contact_person': 'text',
+                'email': 'text',
+                'phone': 'text',
+                'address': 'text',
+                'specialization': 'text',
+                'accreditations': 'text[]',
+                'insurance_expiry': 'date',
+                'vat_number': 'text',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'contracts': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'contractor_id': 'uuid REFERENCES contractors(id)',
+                'contractor_name': 'text',
+                'service_type': 'text',
+                'start_date': 'date',
+                'end_date': 'date',
+                'renewal_date': 'date',
+                'frequency': 'text',
+                'value': 'numeric',
+                'contract_status': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'building_contractors': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'contractor_id': 'uuid NOT NULL REFERENCES contractors(id)',
+                'relationship_type': 'text',
+                'is_preferred': 'boolean DEFAULT false',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'assets': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'contractor_id': 'uuid REFERENCES contractors(id)',
+                'compliance_asset_id': 'uuid REFERENCES compliance_assets(id)',
+                'asset_type': 'text NOT NULL',
+                'asset_name': 'text',
+                'location_description': 'text',
+                'manufacturer': 'text',
+                'model_number': 'text',
+                'serial_number': 'text',
+                'installation_date': 'date',
+                'service_frequency': 'text',
+                'last_service_date': 'date',
+                'next_due_date': 'date',
+                'condition_rating': 'text',
+                'compliance_category': 'text',
+                'linked_documents': 'text[]',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
+            },
+            'maintenance_schedules': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'contract_id': 'uuid REFERENCES contracts(id)',
+                'contractor_id': 'uuid REFERENCES contractors(id)',
+                'service_type': 'text NOT NULL',
+                'description': 'text',
+                'frequency': 'text',
+                'frequency_interval': 'interval',
+                'next_due_date': 'date',
+                'last_completed_date': 'date',
+                'estimated_duration': 'interval',
+                'cost_estimate': 'numeric',
+                'priority': 'text',
+                'status': 'text',
+                'notes': 'text',
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
             }
         }
     
@@ -2141,6 +2221,10 @@ class SupabaseSchemaMapper:
             'Derek Mason & Peter Hayward' → (None, 'Derek', 'Mason', 'Joint owners: Derek Mason & Peter Hayward')
         """
         import re
+
+        # Handle non-string input
+        if not isinstance(name_string, str):
+            return None, 'Unknown', 'Unknown', None
 
         notes = None
 
