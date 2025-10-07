@@ -15,6 +15,7 @@ PyYAML>=6.0.0
 
 # Report generation
 reportlab>=4.0.0
+matplotlib>=3.5.0
 
 # Note: Tkinter is included with Python standard library
 # No additional GUI dependencies needed

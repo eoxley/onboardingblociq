@@ -69,6 +69,12 @@ Examples:
         help='Skip schema introspection and suggestion generation'
     )
 
+    parser.add_argument(
+        '--generate-report',
+        action='store_true',
+        help='Generate Building Health Check PDF report after processing'
+    )
+
     args = parser.parse_args()
 
     print("=" * 70)
@@ -179,6 +185,45 @@ Examples:
 
         onboarder.run()
 
+        # Generate Building Health Check report if requested
+        if args.generate_report:
+            print("\n" + "=" * 70)
+            print("📊 Generating Building Health Check Report...")
+            print("=" * 70)
+
+            try:
+                from dotenv import load_dotenv
+                from supabase import create_client
+                from BlocIQ_Onboarder.reporting import BuildingHealthCheckGenerator
+
+                # Load environment
+                env_path = Path(__file__).parent / 'BlocIQ_Onboarder' / '.env.local'
+                if env_path.exists():
+                    load_dotenv(env_path)
+
+                supabase_url = os.getenv('SUPABASE_URL')
+                supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+
+                if supabase_url and supabase_key:
+                    supabase = create_client(supabase_url, supabase_key)
+                    report_gen = BuildingHealthCheckGenerator(supabase)
+                else:
+                    print("   ⚠️  No Supabase credentials - generating with sample data")
+                    report_gen = BuildingHealthCheckGenerator()
+
+                # Generate report
+                report_path = report_gen.generate_report(building_id, output_dir=output_dir)
+
+                if report_path:
+                    print(f"\n   ✅ Building Health Check Report: {report_path}")
+                else:
+                    print("   ⚠️  Failed to generate report")
+
+            except Exception as e:
+                print(f"   ❌ Error generating report: {e}")
+                import traceback
+                traceback.print_exc()
+
         print("\n" + "=" * 70)
         print("✅ ONBOARDING COMPLETE")
         print("=" * 70)
@@ -189,6 +234,8 @@ Examples:
         print(f"   • {output_dir}/ingestion_audit.csv - Detailed ingestion log")
         print(f"   • {output_dir}/confidence_report.csv - Data confidence scores")
         print(f"   • {output_dir}/validation_report.json - Data validation results")
+        if args.generate_report:
+            print(f"   • {output_dir}/{building_id}_Building_Health_Check.pdf - Health Check Report")
         print()
         print("⚠️  IMPORTANT: Review schema_suggestions.sql before applying!")
         print("ℹ️  Apply SQL manually: Do NOT execute automatically")
