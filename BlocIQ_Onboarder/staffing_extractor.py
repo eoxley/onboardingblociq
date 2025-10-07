@@ -152,6 +152,10 @@ class StaffingExtractor:
         text = parsed_file.get('text_content', '')
         file_name = parsed_file.get('file_name', '')
 
+        # Ensure text is a string
+        if not isinstance(text, str):
+            return
+
         if not text:
             return
 
