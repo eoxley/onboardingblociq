@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: blociq-ocr-service
+    runtime: docker
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false  # This will be set manually in Render dashboard
+      - key: ALLOWED_ORIGINS
+        value: "https://www.blociq.co.uk,https://*.vercel.app,http://localhost:3000"
+    autoDeploy: true
+    branch: main

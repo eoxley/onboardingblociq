@@ -116,6 +116,34 @@ class SQLWriter:
         if 'building_title_deeds' in mapped_data:
             self._generate_building_title_deeds_inserts(mapped_data['building_title_deeds'])
 
+        # New tables: contractors, contracts, assets, maintenance_schedules
+        if 'contractors' in mapped_data:
+            self._generate_contractors_inserts(mapped_data['contractors'])
+
+        if 'contracts' in mapped_data:
+            self._generate_contracts_inserts(mapped_data['contracts'])
+
+        if 'building_contractor_links' in mapped_data:
+            self._generate_building_contractor_links_inserts(mapped_data['building_contractor_links'])
+
+        if 'assets' in mapped_data:
+            self._generate_assets_inserts(mapped_data['assets'])
+
+        if 'maintenance_schedules' in mapped_data:
+            self._generate_maintenance_schedules_inserts(mapped_data['maintenance_schedules'])
+
+        # Financial & Compliance Intelligence
+        if 'fire_door_inspections' in mapped_data:
+            self._generate_fire_door_inspections_inserts(mapped_data['fire_door_inspections'])
+
+        # Timeline Events (error logging and audit trail)
+        if 'timeline_events' in mapped_data:
+            self._generate_timeline_events_inserts(mapped_data['timeline_events'])
+
+        # Leases
+        if 'leases' in mapped_data:
+            self._generate_leases_inserts(mapped_data['leases'])
+
         # Footer
         self._add_footer()
 
@@ -189,6 +217,113 @@ class SQLWriter:
             "-- Create index on contract lifecycle for quick filtering",
             "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_due ON building_contractors(retender_due_date);",
             "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_status ON building_contractors(retender_status);",
+            "",
+            "-- =====================================",
+            "-- FINANCIAL & COMPLIANCE INTELLIGENCE TABLES",
+            "-- =====================================",
+            "",
+            "-- Fire Door Inspections",
+            "CREATE TABLE IF NOT EXISTS fire_door_inspections (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid REFERENCES buildings(id),",
+            "  unit_id uuid REFERENCES units(id),",
+            "  location text,",
+            "  inspection_date date,",
+            "  status text CHECK (status IN ('compliant','non-compliant','overdue','unknown')),",
+            "  notes text,",
+            "  document_path text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_building ON fire_door_inspections(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_status ON fire_door_inspections(status);",
+            "",
+            "-- Budgets",
+            "CREATE TABLE IF NOT EXISTS budgets (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid REFERENCES buildings(id),",
+            "  year_start date,",
+            "  year_end date,",
+            "  total_amount numeric(15,2),",
+            "  status text CHECK (status IN ('draft','final','approved')),",
+            "  source_document text,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_budgets_building ON budgets(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_budgets_year ON budgets(year_start);",
+            "",
+            "-- Building Insurance",
+            "CREATE TABLE IF NOT EXISTS building_insurance (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid REFERENCES buildings(id),",
+            "  provider text,",
+            "  policy_number text,",
+            "  expiry_date date,",
+            "  premium_amount numeric(15,2),",
+            "  source_document text,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_insurance_building ON building_insurance(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_building_insurance_expiry ON building_insurance(expiry_date);",
+            "",
+            "-- Building Staff",
+            "CREATE TABLE IF NOT EXISTS building_staff (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid REFERENCES buildings(id),",
+            "  name text NOT NULL,",
+            "  role text,",
+            "  contact_info text,",
+            "  hours text,",
+            "  company_name text,",
+            "  contractor_id uuid REFERENCES building_contractors(id),",
+            "  source_document text,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_staff_building ON building_staff(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_building_staff_role ON building_staff(role);",
+            "",
+            "-- Timeline Events (for error logging and audit trail)",
+            "CREATE TABLE IF NOT EXISTS timeline_events (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid REFERENCES buildings(id),",
+            "  event_type text NOT NULL,",
+            "  event_date timestamptz DEFAULT now(),",
+            "  description text,",
+            "  metadata jsonb,",
+            "  severity text CHECK (severity IN ('info','warning','error')) DEFAULT 'info',",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_timeline_events_building ON timeline_events(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_timeline_events_type ON timeline_events(event_type);",
+            "CREATE INDEX IF NOT EXISTS idx_timeline_events_date ON timeline_events(event_date);",
+            "",
+            "-- Leases",
+            "CREATE TABLE IF NOT EXISTS leases (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid REFERENCES buildings(id),",
+            "  unit_id uuid REFERENCES units(id),",
+            "  term_start date,",
+            "  term_years integer,",
+            "  expiry_date date,",
+            "  ground_rent numeric(10,2),",
+            "  rent_review_period integer,",
+            "  leaseholder_name text,",
+            "  lessor_name text,",
+            "  source_document text,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_leases_building ON leases(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);",
+            "CREATE INDEX IF NOT EXISTS idx_leases_expiry ON leases(expiry_date);",
             "",
             "-- =====================================",
             "-- DATA MIGRATION: Insert building data",
@@ -640,6 +775,102 @@ class SQLWriter:
         insert_sql += ";"
         return insert_sql
 
+    def _generate_contractors_inserts(self, contractors: List[Dict]):
+        """Generate INSERT statements for contractors table"""
+        if not contractors:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(contractors)} contractors")
+        for contractor in contractors:
+            self.sql_statements.append(
+                self._create_insert_statement('contractors', contractor, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_contracts_inserts(self, contracts: List[Dict]):
+        """Generate INSERT statements for contracts table"""
+        if not contracts:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(contracts)} contracts")
+        for contract in contracts:
+            self.sql_statements.append(
+                self._create_insert_statement('contracts', contract, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_building_contractor_links_inserts(self, links: List[Dict]):
+        """Generate INSERT statements for building_contractors junction table"""
+        if not links:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(links)} building-contractor links")
+        for link in links:
+            self.sql_statements.append(
+                self._create_insert_statement('building_contractors', link, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_assets_inserts(self, assets: List[Dict]):
+        """Generate INSERT statements for assets table"""
+        if not assets:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(assets)} assets")
+        for asset in assets:
+            self.sql_statements.append(
+                self._create_insert_statement('assets', asset, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_maintenance_schedules_inserts(self, schedules: List[Dict]):
+        """Generate INSERT statements for maintenance_schedules table"""
+        if not schedules:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(schedules)} maintenance schedules")
+        for schedule in schedules:
+            self.sql_statements.append(
+                self._create_insert_statement('maintenance_schedules', schedule, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_fire_door_inspections_inserts(self, inspections: List[Dict]):
+        """Generate INSERT statements for fire_door_inspections table"""
+        if not inspections:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(inspections)} fire door inspections")
+        for inspection in inspections:
+            self.sql_statements.append(
+                self._create_insert_statement('fire_door_inspections', inspection, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_timeline_events_inserts(self, events: List[Dict]):
+        """Generate INSERT statements for timeline_events table (error logging)"""
+        if not events:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(events)} timeline events (import logs)")
+        for event in events:
+            self.sql_statements.append(
+                self._create_insert_statement('timeline_events', event, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_leases_inserts(self, leases: List[Dict]):
+        """Generate INSERT statements for leases table"""
+        if not leases:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(leases)} lease records")
+        for lease in leases:
+            self.sql_statements.append(
+                self._create_insert_statement('leases', lease, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
     def _format_value(self, value: Any) -> str:
         """Format a value for SQL with proper type handling"""
         if value is None:
@@ -655,14 +886,20 @@ class SQLWriter:
             # Handle UUID strings - don't quote them
             if self._is_uuid_string(value):
                 return f"'{value}'"
-            
+
             # Handle timestamps - ensure proper format
             if self._is_timestamp_string(value):
                 return f"'{value}'"
-            
+
             # Escape single quotes for regular strings
             escaped = value.replace("'", "''")
             return f"'{escaped}'"
+
+        # Handle lists (PostgreSQL arrays)
+        if isinstance(value, list):
+            # Format as PostgreSQL array
+            formatted_items = [self._format_value(item) for item in value]
+            return f"ARRAY[{', '.join(formatted_items)}]"
 
         # JSON for complex types
         return f"'{json.dumps(value)}'"

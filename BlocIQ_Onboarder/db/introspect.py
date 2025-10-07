@@ -100,6 +100,71 @@ TARGET_SCHEMA = {
         'ocr_text': 'TEXT',
         'metadata': 'JSONB',
         'created_at': 'TIMESTAMPTZ DEFAULT now()'
+    },
+    'contractors': {
+        'id': 'UUID PRIMARY KEY DEFAULT gen_random_uuid()',
+        'company_name': 'TEXT NOT NULL',
+        'contact_person': 'TEXT',
+        'email': 'TEXT',
+        'phone': 'TEXT',
+        'address': 'TEXT',
+        'specialization': 'TEXT',
+        'accreditations': 'TEXT[]',
+        'insurance_expiry': 'DATE',
+        'vat_number': 'TEXT',
+        'notes': 'TEXT',
+        'created_at': 'TIMESTAMPTZ DEFAULT now()',
+        'updated_at': 'TIMESTAMPTZ DEFAULT now()'
+    },
+    'building_contractors': {
+        'id': 'UUID PRIMARY KEY DEFAULT gen_random_uuid()',
+        'building_id': 'UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE',
+        'contractor_id': 'UUID NOT NULL REFERENCES contractors(id) ON DELETE CASCADE',
+        'relationship_type': 'TEXT',
+        'is_preferred': 'BOOLEAN DEFAULT false',
+        'notes': 'TEXT',
+        'created_at': 'TIMESTAMPTZ DEFAULT now()'
+    },
+    'maintenance_schedules': {
+        'id': 'UUID PRIMARY KEY DEFAULT gen_random_uuid()',
+        'building_id': 'UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE',
+        'contract_id': 'UUID REFERENCES contracts(id) ON DELETE SET NULL',
+        'contractor_id': 'UUID REFERENCES contractors(id) ON DELETE SET NULL',
+        'service_type': 'TEXT NOT NULL',
+        'description': 'TEXT',
+        'frequency': 'TEXT',
+        'frequency_interval': 'INTERVAL',
+        'next_due_date': 'DATE',
+        'last_completed_date': 'DATE',
+        'estimated_duration': 'INTERVAL',
+        'cost_estimate': 'NUMERIC',
+        'priority': 'TEXT',
+        'status': 'TEXT',
+        'notes': 'TEXT',
+        'created_at': 'TIMESTAMPTZ DEFAULT now()',
+        'updated_at': 'TIMESTAMPTZ DEFAULT now()'
+    },
+    'assets': {
+        'id': 'UUID PRIMARY KEY DEFAULT gen_random_uuid()',
+        'building_id': 'UUID NOT NULL REFERENCES buildings(id) ON DELETE CASCADE',
+        'contractor_id': 'UUID REFERENCES contractors(id) ON DELETE SET NULL',
+        'compliance_asset_id': 'UUID REFERENCES compliance_assets(id) ON DELETE SET NULL',
+        'asset_type': 'TEXT NOT NULL',
+        'asset_name': 'TEXT',
+        'location_description': 'TEXT',
+        'manufacturer': 'TEXT',
+        'model_number': 'TEXT',
+        'serial_number': 'TEXT',
+        'installation_date': 'DATE',
+        'service_frequency': 'TEXT',
+        'last_service_date': 'DATE',
+        'next_due_date': 'DATE',
+        'condition_rating': 'TEXT',
+        'compliance_category': 'TEXT',
+        'linked_documents': 'TEXT[]',
+        'notes': 'TEXT',
+        'created_at': 'TIMESTAMPTZ DEFAULT now()',
+        'updated_at': 'TIMESTAMPTZ DEFAULT now()'
     }
 }
 
@@ -280,6 +345,15 @@ class SchemaIntrospector:
         elif table_name == 'building_documents':
             index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_category ON {table_name}(category);")
             index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_doc_type ON {table_name}(document_type);")
+        elif table_name == 'contractors':
+            index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_company_name ON {table_name}(company_name);")
+        elif table_name == 'maintenance_schedules':
+            index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_next_due ON {table_name}(next_due_date);")
+            index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_status ON {table_name}(status);")
+        elif table_name == 'assets':
+            index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_asset_type ON {table_name}(asset_type);")
+            index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_next_due ON {table_name}(next_due_date);")
+            index_statements.append(f"CREATE INDEX IF NOT EXISTS idx_{table_name}_compliance ON {table_name}(compliance_category);")
 
         if index_statements:
             lines.append('\n' + '\n'.join(index_statements))

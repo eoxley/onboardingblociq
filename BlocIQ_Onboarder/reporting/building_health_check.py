@@ -4,6 +4,7 @@ AI-driven PDF report with analytics, risk assessment, and recommendations
 """
 
 import os
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -20,6 +21,7 @@ from reportlab.platypus import (
     PageBreak, Image, KeepTogether
 )
 from reportlab.pdfgen import canvas
+from PyPDF2 import PdfReader, PdfWriter
 
 # Matplotlib for charts
 import matplotlib
@@ -30,38 +32,91 @@ import numpy as np
 
 
 class BuildingHealthCheckGenerator:
-    """Generates comprehensive Building Health Check PDF reports"""
+    """Generates comprehensive Building Health Check PDF reports with company branding"""
 
-    def __init__(self, supabase_client=None):
+    def __init__(self, supabase_client=None, branding_config_path=None):
         """
         Initialize report generator
 
         Args:
             supabase_client: Supabase client instance (optional)
+            branding_config_path: Path to branding.json (optional)
         """
         self.supabase = supabase_client
         self.building_data = {}
         self.health_score = 0
         self.recommendations = []
 
-        # Report styling
+        # Load branding configuration
+        self.branding = self._load_branding_config(branding_config_path)
+
+        # Colors from branding config (must be set before styles)
+        brand_colors = self.branding.get('brand_colors', {})
+        self.COLOR_EXCELLENT = colors.HexColor(brand_colors.get('success', '#10b981'))
+        self.COLOR_GOOD = colors.HexColor('#22c55e')
+        self.COLOR_ATTENTION = colors.HexColor(brand_colors.get('warning', '#f59e0b'))
+        self.COLOR_CRITICAL = colors.HexColor(brand_colors.get('danger', '#ef4444'))
+        self.COLOR_HEADER = colors.HexColor(brand_colors.get('primary', '#1e40af'))
+
+        # Status icons
+        self.STATUS_ICONS = self.branding.get('status_icons', {
+            'compliant': '✅',
+            'due_soon': '⚠️',
+            'overdue': '❌',
+            'missing': '❓',
+            'unknown': '❔'
+        })
+
+        # Report styling (after colors are set)
         self.styles = getSampleStyleSheet()
         self._setup_custom_styles()
 
-        # Colors
-        self.COLOR_EXCELLENT = colors.HexColor('#10b981')  # Green
-        self.COLOR_GOOD = colors.HexColor('#22c55e')
-        self.COLOR_ATTENTION = colors.HexColor('#f59e0b')  # Amber
-        self.COLOR_CRITICAL = colors.HexColor('#ef4444')  # Red
-        self.COLOR_HEADER = colors.HexColor('#1e40af')  # Blue
+    def _load_branding_config(self, config_path=None):
+        """Load branding configuration from JSON file"""
+        if config_path is None:
+            # Default path
+            config_path = Path(__file__).parent.parent / 'config' / 'branding.json'
+
+        try:
+            with open(config_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print(f"   ⚠️  Branding config not found at {config_path}, using defaults")
+            return self._get_default_branding()
+        except json.JSONDecodeError as e:
+            print(f"   ⚠️  Error parsing branding config: {e}, using defaults")
+            return self._get_default_branding()
+
+    def _get_default_branding(self):
+        """Get default branding configuration"""
+        return {
+            "company_name": "BlocIQ",
+            "report_title": "BlocIQ Building Health Check",
+            "logo_path": None,
+            "brand_colors": {
+                "primary": "#1e40af",
+                "success": "#10b981",
+                "warning": "#f59e0b",
+                "danger": "#ef4444"
+            },
+            "status_icons": {
+                "compliant": "✅",
+                "due_soon": "⚠️",
+                "overdue": "❌",
+                "missing": "❓"
+            }
+        }
 
     def _setup_custom_styles(self):
         """Setup custom paragraph styles"""
+        fonts = self.branding.get('fonts', {})
+
         # Title style
         self.styles.add(ParagraphStyle(
             name='CustomTitle',
             parent=self.styles['Heading1'],
-            fontSize=24,
+            fontSize=fonts.get('size_title', 24),
+            fontName=fonts.get('title', 'Helvetica-Bold'),
             textColor=self.COLOR_HEADER,
             spaceAfter=20,
             alignment=TA_CENTER
@@ -81,16 +136,7 @@ class BuildingHealthCheckGenerator:
             borderRadius=None
         ))
 
-        # Body text
-        self.styles.add(ParagraphStyle(
-            name='BodyText',
-            parent=self.styles['BodyText'],
-            fontSize=10,
-            leading=14,
-            alignment=TA_JUSTIFY
-        ))
-
-        # Warning text
+        # Warning text (BodyText already exists in stylesheet)
         self.styles.add(ParagraphStyle(
             name='Warning',
             parent=self.styles['BodyText'],
@@ -99,13 +145,14 @@ class BuildingHealthCheckGenerator:
             leftIndent=20
         ))
 
-    def generate_report(self, building_id: str, output_dir: str = 'reports') -> str:
+    def generate_report(self, building_id: str, output_dir: str = 'reports', local_data: Dict = None) -> str:
         """
         Generate Building Health Check PDF report
 
         Args:
             building_id: UUID of building
             output_dir: Output directory for PDF
+            local_data: Optional local mapped_data dict (for offline generation)
 
         Returns:
             Path to generated PDF
@@ -113,25 +160,30 @@ class BuildingHealthCheckGenerator:
         print(f"\n📊 Generating Building Health Check Report...")
         print(f"   Building ID: {building_id}")
 
-        # Ensure output directory exists
-        output_path = Path(output_dir)
+        # Ensure building-specific directory exists: /reports/[building_id]/
+        output_path = Path(output_dir) / building_id
         output_path.mkdir(exist_ok=True, parents=True)
 
-        # Gather all data
-        self.building_data = self._gather_building_data(building_id)
+        # Gather all data (from Supabase or local data)
+        if local_data:
+            print("   ℹ️  Using local extracted data")
+            self.building_data = self._prepare_local_data(building_id, local_data)
+        else:
+            print("   ℹ️  Querying Supabase for data")
+            self.building_data = self._gather_building_data(building_id)
 
         if not self.building_data.get('building'):
             print("   ⚠️  No building data found")
             return None
 
-        # Calculate health score
+        # Calculate health score (updated weights)
         self.health_score = self._calculate_health_score()
 
         # Generate recommendations
         self.recommendations = self._generate_recommendations()
 
-        # Create PDF
-        pdf_filename = f"{building_id}_Building_Health_Check.pdf"
+        # Create PDF with new filename: building_health_check.pdf
+        pdf_filename = "building_health_check.pdf"
         pdf_path = output_path / pdf_filename
 
         doc = SimpleDocTemplate(
@@ -147,23 +199,127 @@ class BuildingHealthCheckGenerator:
         story = []
         story.extend(self._build_header())
         story.extend(self._build_overview())
+        story.extend(self._build_contractor_overview())
         story.extend(self._build_health_score_section())
         story.append(PageBreak())
+        story.extend(self._build_asset_register_section())
         story.extend(self._build_compliance_section())
+        story.append(PageBreak())
+        story.extend(self._build_compliance_matrix())
         story.extend(self._build_insurance_section())
         story.append(PageBreak())
         story.extend(self._build_contracts_section())
         story.extend(self._build_utilities_section())
         story.extend(self._build_financial_section())
+        story.extend(self._build_budgets_section())
+        story.extend(self._build_apportionments_section())
         story.append(PageBreak())
+        story.extend(self._build_fire_door_inspections_section())
+        story.extend(self._build_staffing_section())
+        story.append(PageBreak())
+        story.extend(self._build_lease_summary_section())
+        story.extend(self._build_assets_section())
         story.extend(self._build_meetings_section())
         story.extend(self._build_recommendations_section())
 
         # Build PDF
         doc.build(story)
 
-        print(f"   ✅ Report generated: {pdf_path}")
-        return str(pdf_path)
+        # Apply letterhead template as background
+        final_pdf_path = self._apply_letterhead_background(pdf_path)
+
+        print(f"   ✅ Report generated: {final_pdf_path}")
+        return str(final_pdf_path)
+
+    def _apply_letterhead_background(self, pdf_path: Path) -> Path:
+        """
+        Apply letterhead template as background to all pages
+
+        Args:
+            pdf_path: Path to generated PDF
+
+        Returns:
+            Path to final PDF with letterhead background
+        """
+        letterhead_template = self.branding.get('letterhead_template')
+
+        # If no letterhead template, return original
+        if not letterhead_template:
+            return pdf_path
+
+        # Resolve letterhead path
+        if not os.path.isabs(letterhead_template):
+            letterhead_path = Path(__file__).parent.parent / letterhead_template
+        else:
+            letterhead_path = Path(letterhead_template)
+
+        # Check if letterhead exists
+        if not letterhead_path.exists():
+            print(f"   ⚠️  Letterhead template not found: {letterhead_path}")
+            return pdf_path
+
+        try:
+            print(f"   📄 Applying letterhead background...")
+
+            # Read letterhead template
+            letterhead_reader = PdfReader(str(letterhead_path))
+            letterhead_page = letterhead_reader.pages[0]
+
+            # Read generated content
+            content_reader = PdfReader(str(pdf_path))
+            writer = PdfWriter()
+
+            # Merge each page: letterhead as background, content on top
+            for page_num, content_page in enumerate(content_reader.pages):
+                # Create new page with letterhead as background
+                letterhead_page_copy = letterhead_reader.pages[0]  # Always use first page of letterhead
+
+                # Merge content on top of letterhead
+                letterhead_page_copy.merge_page(content_page)
+
+                # Add merged page to writer
+                writer.add_page(letterhead_page_copy)
+
+            # Write final PDF with letterhead background
+            final_path = pdf_path.parent / f"{pdf_path.stem}_letterhead{pdf_path.suffix}"
+            with open(final_path, 'wb') as output_file:
+                writer.write(output_file)
+
+            # Replace original with letterhead version
+            os.remove(pdf_path)
+            os.rename(final_path, pdf_path)
+
+            print(f"   ✅ Letterhead applied to all pages")
+            return pdf_path
+
+        except Exception as e:
+            print(f"   ⚠️  Error applying letterhead: {e}")
+            print(f"   📄 Using report without letterhead background")
+            return pdf_path
+
+    def _prepare_local_data(self, building_id: str, mapped_data: Dict) -> Dict:
+        """Prepare local mapped_data for report generation"""
+        data = {
+            'building': mapped_data.get('building', {'id': building_id, 'name': 'Unknown', 'address': 'Unknown'}),
+            'compliance_assets': mapped_data.get('compliance_assets', []),
+            'insurance_policies': mapped_data.get('building_insurance', []),
+            'contracts': mapped_data.get('building_contractors', []),
+            'utilities': [],
+            'meetings': [],
+            'client_money': [],
+            'units_count': len(mapped_data.get('units', [])),
+            'assets': mapped_data.get('compliance_assets', []),
+            'contractors': mapped_data.get('building_contractors', []),
+            'maintenance_schedules': [],
+            'apportionments': mapped_data.get('apportionments', []),
+            'budgets': mapped_data.get('budgets', []),
+            'building_insurance': mapped_data.get('building_insurance', []),
+            'fire_door_inspections': [],
+            'leaseholders': mapped_data.get('leaseholders', []),
+            'building_staff': mapped_data.get('building_staff', []),
+            'leases': mapped_data.get('leases', [])
+        }
+        return data
 
     def _gather_building_data(self, building_id: str) -> Dict:
         """Gather all building data from various sources"""
@@ -175,7 +331,17 @@ class BuildingHealthCheckGenerator:
             'utilities': self._query_utilities(building_id),
             'meetings': self._query_meetings(building_id),
             'client_money': self._query_client_money(building_id),
-            'units_count': self._query_units_count(building_id)
+            'units_count': self._query_units_count(building_id),
+            'assets': self._query_assets(building_id),
+            'contractors': self._query_contractors(building_id),
+            'maintenance_schedules': self._query_maintenance_schedules(building_id),
+            'apportionments': self._query_apportionments(building_id),
+            'budgets': self._query_budgets(building_id),
+            'building_insurance': self._query_building_insurance(building_id),
+            'fire_door_inspections': self._query_fire_door_inspections(building_id),
+            'leaseholders': self._query_leaseholders(building_id),
+            'building_staff': self._query_building_staff(building_id),
+            'leases': self._query_leases(building_id)
         }
         return data
 
@@ -267,37 +433,143 @@ class BuildingHealthCheckGenerator:
         except:
             return 0
 
+    def _query_assets(self, building_id: str) -> List[Dict]:
+        """Query building assets"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('assets').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_contractors(self, building_id: str) -> List[Dict]:
+        """Query contractors linked to building"""
+        if not self.supabase:
+            return []
+
+        try:
+            # Query through building_contractors junction table
+            result = self.supabase.table('building_contractors')\
+                .select('contractors(*)')\
+                .eq('building_id', building_id)\
+                .execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_maintenance_schedules(self, building_id: str) -> List[Dict]:
+        """Query maintenance schedules"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('maintenance_schedules').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_apportionments(self, building_id: str) -> List[Dict]:
+        """Query apportionments"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('apportionments').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_budgets(self, building_id: str) -> List[Dict]:
+        """Query budgets"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('budgets').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_building_insurance(self, building_id: str) -> List[Dict]:
+        """Query building insurance"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('building_insurance').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_fire_door_inspections(self, building_id: str) -> List[Dict]:
+        """Query fire door inspections"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('fire_door_inspections').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_leaseholders(self, building_id: str) -> List[Dict]:
+        """Query leaseholders"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('leaseholders').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_building_staff(self, building_id: str) -> List[Dict]:
+        """Query building staff"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('building_staff').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
+    def _query_leases(self, building_id: str) -> List[Dict]:
+        """Query leases"""
+        if not self.supabase:
+            return []
+
+        try:
+            result = self.supabase.table('leases').select('*').eq('building_id', building_id).execute()
+            return result.data or []
+        except:
+            return []
+
     def _calculate_health_score(self) -> float:
         """
         Calculate overall building health score (0-100)
 
-        Component weights:
-        - Compliance: 30%
-        - Insurance: 25%
-        - Contracts: 15%
-        - Finance: 15%
-        - Utilities: 10%
-        - Meetings: 5%
+        Component weights (as per specification):
+        - Compliance Coverage: 40%
+        - Maintenance & Contractor Readiness: 25%
+        - Financial Completeness: 25%
+        - Insurance Validity: 10%
         """
         scores = {}
 
-        # Compliance score (30%)
-        scores['compliance'] = self._score_compliance() * 0.30
+        # Compliance Coverage (40%)
+        scores['compliance'] = self._score_compliance() * 0.40
 
-        # Insurance score (25%)
-        scores['insurance'] = self._score_insurance() * 0.25
+        # Maintenance & Contractor Readiness (25%)
+        scores['maintenance'] = self._score_maintenance() * 0.25
 
-        # Contracts score (15%)
-        scores['contracts'] = self._score_contracts() * 0.15
+        # Financial Completeness (25%)
+        scores['finance'] = self._score_finance() * 0.25
 
-        # Finance score (15%)
-        scores['finance'] = self._score_finance() * 0.15
-
-        # Utilities score (10%)
-        scores['utilities'] = self._score_utilities() * 0.10
-
-        # Meetings score (5%)
-        scores['meetings'] = self._score_meetings() * 0.05
+        # Insurance Validity (10%)
+        scores['insurance'] = self._score_insurance() * 0.10
 
         total_score = sum(scores.values())
         return round(total_score, 1)
@@ -368,11 +640,52 @@ class BuildingHealthCheckGenerator:
 
         return max(0, min(100, score))
 
+    def _score_maintenance(self) -> float:
+        """Score maintenance & contractor readiness (0-100)"""
+        # Check contracts, contractors, maintenance schedules, and assets
+        contracts = self.building_data.get('contracts', [])
+        contractors = self.building_data.get('contractors', [])
+        schedules = self.building_data.get('maintenance_schedules', [])
+        assets = self.building_data.get('assets', [])
+
+        score = 0
+        weights = []
+
+        # Contracts score (40% of maintenance score)
+        if contracts:
+            active = sum(1 for c in contracts if c.get('contract_status') == 'active')
+            contracts_score = (active / len(contracts)) * 100 if contracts else 60
+            score += contracts_score * 0.4
+            weights.append(0.4)
+
+        # Contractors score (30% of maintenance score)
+        if contractors:
+            contractors_score = min(100, (len(contractors) / 5) * 100)  # 5+ contractors = 100%
+            score += contractors_score * 0.3
+            weights.append(0.3)
+
+        # Maintenance schedules score (30% of maintenance score)
+        if schedules:
+            # Check how many are up to date
+            today = datetime.now().date()
+            up_to_date = sum(1 for s in schedules if s.get('next_due') and
+                           datetime.strptime(str(s['next_due']), '%Y-%m-%d').date() > today)
+            schedules_score = (up_to_date / len(schedules)) * 100 if schedules else 60
+            score += schedules_score * 0.3
+            weights.append(0.3)
+
+        # If no data, return moderate score
+        if not weights:
+            return 60.0
+
+        # Normalize by actual weights used
+        return min(100, score / sum(weights))
+
     def _score_contracts(self) -> float:
-        """Score contracts health (0-100)"""
+        """Score contracts health (0-100) - LEGACY"""
         contracts = self.building_data.get('contracts', [])
         if not contracts:
-            return 60.0  # Moderate score if no contracts data
+            return 60.0
 
         active = sum(1 for c in contracts if c.get('contract_status') == 'active')
         total = len(contracts)
@@ -383,23 +696,59 @@ class BuildingHealthCheckGenerator:
         return (active / total) * 100
 
     def _score_finance(self) -> float:
-        """Score financial health (0-100)"""
+        """Score financial completeness (0-100)"""
+        score = 0
+        weights = []
+
+        # Budget score (40% of finance score)
+        budgets = self.building_data.get('budgets', [])
+        if budgets:
+            # Check if current year budget exists
+            current_year = datetime.now().year
+            has_current = any(str(current_year) in str(b.get('year_start', '')) or
+                            str(current_year - 1) in str(b.get('year_start', ''))
+                            for b in budgets)
+            budget_score = 100 if has_current else 50
+            score += budget_score * 0.4
+            weights.append(0.4)
+        else:
+            score += 50 * 0.4  # Missing budget = 50%
+            weights.append(0.4)
+
+        # Apportionment score (30% of finance score)
+        apportionments = self.building_data.get('apportionments', [])
+        if apportionments:
+            # Check if totals equal 100%
+            total_pct = sum(a.get('percentage', 0) for a in apportionments)
+            apport_score = 100 if abs(total_pct - 100) < 0.1 else 70
+            score += apport_score * 0.3
+            weights.append(0.3)
+        else:
+            score += 60 * 0.3  # Missing apportionments = 60%
+            weights.append(0.3)
+
+        # Client money / arrears score (30% of finance score)
         snapshots = self.building_data.get('client_money', [])
-        if not snapshots:
-            return 70.0  # Moderate score if no data
+        if snapshots:
+            snapshot = snapshots[0]
+            balance = snapshot.get('balance', 0) or 0
+            arrears = snapshot.get('arrears_total', 0) or 0
 
-        snapshot = snapshots[0]
-        balance = snapshot.get('balance', 0) or 0
-        arrears = snapshot.get('arrears_total', 0) or 0
+            if balance == 0:
+                arrears_score = 50
+            else:
+                arrears_ratio = arrears / balance if balance > 0 else 0
+                arrears_score = 100 - (arrears_ratio * 100)
+                arrears_score = max(0, min(100, arrears_score))
 
-        if balance == 0:
-            return 50.0
+            score += arrears_score * 0.3
+            weights.append(0.3)
+        else:
+            score += 70 * 0.3  # No data = 70%
+            weights.append(0.3)
 
-        # Score based on arrears ratio
-        arrears_ratio = arrears / balance if balance > 0 else 0
-        score = 100 - (arrears_ratio * 100)
-
-        return max(0, min(100, score))
+        # Normalize by actual weights used
+        return min(100, score / sum(weights)) if weights else 70.0
 
     def _score_utilities(self) -> float:
         """Score utilities health (0-100)"""
@@ -500,15 +849,43 @@ class BuildingHealthCheckGenerator:
         return recommendations[:10]  # Top 10 recommendations
 
     def _build_header(self) -> List:
-        """Build report header"""
+        """Build report header with company logo"""
         elements = []
 
         building = self.building_data.get('building', {})
         building_name = building.get('name', 'Unknown Building')
 
+        # Check if using letterhead template
+        uses_letterhead = bool(self.branding.get('letterhead_template'))
+
+        # Add company logo if available (only if not using letterhead template)
+        logo_path = self.branding.get('logo_path')
+        if logo_path and not uses_letterhead:
+            # Resolve logo path relative to module
+            if not os.path.isabs(logo_path):
+                logo_path = Path(__file__).parent.parent / logo_path
+
+            if os.path.exists(logo_path):
+                try:
+                    # Add logo at top
+                    logo = Image(str(logo_path), width=2*inch, height=0.8*inch)
+                    elements.append(logo)
+                    elements.append(Spacer(1, 0.2*inch))
+                except Exception as e:
+                    print(f"   ⚠️  Could not load logo: {e}")
+
+        # Add top spacing if using letterhead to avoid overlap with letterhead header
+        if uses_letterhead:
+            elements.append(Spacer(1, 1.5*inch))
+
         # Title
-        title = Paragraph("Building Health Check Report", self.styles['CustomTitle'])
+        report_title = self.branding.get('report_title', 'Building Health Check Report')
+        title = Paragraph(report_title, self.styles['CustomTitle'])
         elements.append(title)
+
+        # Subtitle
+        subtitle = f"Building Intelligence Report – {building_name}"
+        elements.append(Paragraph(f"<i>{subtitle}</i>", self.styles['BodyText']))
         elements.append(Spacer(1, 0.3*inch))
 
         # Building info
@@ -516,7 +893,7 @@ class BuildingHealthCheckGenerator:
         <b>Building:</b> {building_name}<br/>
         <b>Address:</b> {building.get('address', 'N/A')}<br/>
         <b>Report Date:</b> {datetime.now().strftime('%d %B %Y')}<br/>
-        <b>Prepared by:</b> BlocIQ Onboarder (Automated)
+        <b>Prepared by:</b> {self.branding.get('company_name', 'BlocIQ')} Onboarder (Automated)
         """
         elements.append(Paragraph(building_info, self.styles['BodyText']))
         elements.append(Spacer(1, 0.5*inch))
@@ -524,23 +901,36 @@ class BuildingHealthCheckGenerator:
         return elements
 
     def _build_overview(self) -> List:
-        """Build overview section"""
+        """Build overview section - Building Summary"""
         elements = []
 
-        elements.append(Paragraph("Executive Summary", self.styles['SectionHeader']))
+        elements.append(Paragraph("Section 1: Building Summary", self.styles['SectionHeader']))
 
-        # Stats table
+        # Building summary table matching required format
         building = self.building_data.get('building', {})
+        building_name = building.get('name', 'Unknown Building')
+
+        # Count leaseholders
+        leaseholders_count = len(self.building_data.get('leaseholders', []))
+
+        # Count assets
+        assets_count = len(self.building_data.get('assets', []))
+
+        # Count active contracts
+        contracts = self.building_data.get('contracts', [])
+        active_contracts = len([c for c in contracts if c.get('contract_status') == 'active'])
+
         stats_data = [
-            ['Metric', 'Count'],
-            ['Units', str(self.building_data.get('units_count', 0))],
-            ['Compliance Assets', str(len(self.building_data.get('compliance_assets', [])))],
-            ['Insurance Policies', str(len(self.building_data.get('insurance_policies', [])))],
-            ['Active Contracts', str(len([c for c in self.building_data.get('contracts', []) if c.get('contract_status') == 'active']))],
-            ['Utility Accounts', str(len(self.building_data.get('utilities', [])))]
+            ['Field', 'Value'],
+            ['Building Name', building_name],
+            ['Total Units', str(self.building_data.get('units_count', 0))],
+            ['Total Leaseholders', str(leaseholders_count)],
+            ['Active Contracts', str(active_contracts)],
+            ['Known Assets', str(assets_count)],
+            ['Compliance Assets', str(len(self.building_data.get('compliance_assets', [])))]
         ]
 
-        stats_table = Table(stats_data, colWidths=[3*inch, 2*inch])
+        stats_table = Table(stats_data, colWidths=[3*inch, 3*inch])
         stats_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -553,6 +943,175 @@ class BuildingHealthCheckGenerator:
         ]))
 
         elements.append(stats_table)
+        elements.append(Spacer(1, 0.3*inch))
+
+        return elements
+
+    def _build_contractor_overview(self) -> List:
+        """Build Section 2: Contractor Overview"""
+        elements = []
+
+        elements.append(Paragraph("Section 2: Contractor Overview", self.styles['SectionHeader']))
+
+        contractors = self.building_data.get('contractors', [])
+        contracts = self.building_data.get('contracts', [])
+
+        if not contractors and not contracts:
+            elements.append(Paragraph("No contractor data available.", self.styles['BodyText']))
+            elements.append(Spacer(1, 0.3*inch))
+            return elements
+
+        # List contractors and their contracts
+        for contract in contracts:
+            contractor_name = contract.get('contractor_name', 'Unknown Contractor')
+            service_type = contract.get('service_type', 'N/A').replace('_', ' ').title()
+            frequency = contract.get('frequency', 'N/A').title()
+            end_date = contract.get('end_date', 'N/A')
+            status = contract.get('contract_status', 'unknown')
+
+            # Status icon
+            status_icon = self.STATUS_ICONS.get(status, self.STATUS_ICONS.get('unknown'))
+
+            contractor_line = f"{status_icon} <b>{contractor_name}</b> – {service_type} – {frequency} – Next Due: {end_date}"
+            elements.append(Paragraph(contractor_line, self.styles['BodyText']))
+            elements.append(Spacer(1, 0.1*inch))
+
+        elements.append(Spacer(1, 0.2*inch))
+        return elements
+
+    def _build_asset_register_section(self) -> List:
+        """Build Section 3: Asset Register"""
+        elements = []
+
+        elements.append(Paragraph("Section 3: Asset Register", self.styles['SectionHeader']))
+
+        assets = self.building_data.get('assets', [])
+        contractors = {c.get('id'): c.get('company_name') for c in self.building_data.get('contractors', [])}
+        compliance_assets = {c.get('id'): c.get('compliance_status', 'unknown') for c in self.building_data.get('compliance_assets', [])}
+
+        if not assets:
+            elements.append(Paragraph("No asset data available.", self.styles['BodyText']))
+            elements.append(Spacer(1, 0.3*inch))
+            return elements
+
+        # Asset table
+        table_data = [['Asset', 'Contractor', 'Frequency', 'Last Service', 'Next Due', 'Compliance', 'Status']]
+
+        for asset in assets[:15]:  # First 15 assets
+            asset_name = asset.get('asset_name') or asset.get('asset_type', 'N/A').replace('_', ' ').title()
+            contractor_id = asset.get('contractor_id')
+            contractor_name = contractors.get(contractor_id, 'N/A')
+            frequency = asset.get('service_frequency', 'N/A')
+            last_service = asset.get('last_service_date', 'N/A')
+            next_due = asset.get('next_due_date', 'N/A')
+
+            # Get compliance status
+            compliance_id = asset.get('compliance_asset_id')
+            compliance_status = compliance_assets.get(compliance_id, 'unknown')
+            compliance_category = asset.get('compliance_category', 'N/A').replace('_', ' ').title()
+
+            # Determine status icon
+            if next_due and next_due != 'N/A':
+                try:
+                    next_date = datetime.fromisoformat(next_due).date()
+                    today = datetime.now().date()
+                    days_until = (next_date - today).days
+
+                    if days_until < 0:
+                        status_icon = self.STATUS_ICONS['overdue']
+                    elif days_until < 30:
+                        status_icon = self.STATUS_ICONS['due_soon']
+                    else:
+                        status_icon = self.STATUS_ICONS['compliant']
+                except:
+                    status_icon = self.STATUS_ICONS['unknown']
+            else:
+                status_icon = self.STATUS_ICONS['unknown']
+
+            table_data.append([
+                asset_name,
+                contractor_name,
+                frequency,
+                last_service,
+                next_due,
+                compliance_category,
+                status_icon
+            ])
+
+        asset_table = Table(table_data, colWidths=[1.2*inch, 1.1*inch, 0.9*inch, 0.9*inch, 0.9*inch, 1.0*inch, 0.5*inch])
+        asset_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+
+        elements.append(asset_table)
+
+        if len(assets) > 15:
+            elements.append(Spacer(1, 0.1*inch))
+            elements.append(Paragraph(f"<i>... and {len(assets) - 15} more assets</i>", self.styles['BodyText']))
+
+        elements.append(Spacer(1, 0.3*inch))
+        return elements
+
+    def _build_compliance_matrix(self) -> List:
+        """Build Section 4: Compliance Matrix"""
+        elements = []
+
+        elements.append(Paragraph("Section 4: Compliance Matrix", self.styles['SectionHeader']))
+
+        compliance_assets = self.building_data.get('compliance_assets', [])
+
+        if not compliance_assets:
+            elements.append(Paragraph("No compliance data available.", self.styles['BodyText']))
+            elements.append(Spacer(1, 0.3*inch))
+            return elements
+
+        # Group by compliance category
+        categories = {}
+        for asset in compliance_assets:
+            category = asset.get('asset_type', 'Other').replace('_', ' ').title()
+            status = asset.get('compliance_status', 'unknown')
+
+            if category not in categories:
+                categories[category] = {'compliant': 0, 'overdue': 0, 'unknown': 0}
+
+            if status in ['compliant', 'current']:
+                categories[category]['compliant'] += 1
+            elif status in ['overdue', 'expired']:
+                categories[category]['overdue'] += 1
+            else:
+                categories[category]['unknown'] += 1
+
+        # Build matrix table
+        matrix_data = [['Category', 'Compliant', 'Overdue', 'Unknown']]
+        for category, counts in sorted(categories.items()):
+            matrix_data.append([
+                category,
+                f"{self.STATUS_ICONS['compliant']} {counts['compliant']}",
+                f"{self.STATUS_ICONS['overdue']} {counts['overdue']}" if counts['overdue'] > 0 else '0',
+                f"{self.STATUS_ICONS['unknown']} {counts['unknown']}" if counts['unknown'] > 0 else '0'
+            ])
+
+        matrix_table = Table(matrix_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+        matrix_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+
+        elements.append(matrix_table)
         elements.append(Spacer(1, 0.3*inch))
 
         return elements
@@ -819,6 +1378,85 @@ class BuildingHealthCheckGenerator:
 
         return elements
 
+    def _build_assets_section(self) -> List:
+        """Build assets register section"""
+        elements = []
+
+        elements.append(Paragraph("🏗️ Asset Register", self.styles['SectionHeader']))
+
+        assets = self.building_data.get('assets', [])
+
+        if not assets:
+            elements.append(Paragraph("No asset data available.", self.styles['BodyText']))
+            elements.append(Spacer(1, 0.3*inch))
+            return elements
+
+        # Group assets by type
+        assets_by_type = {}
+        for asset in assets:
+            asset_type = asset.get('asset_type', 'other')
+            if asset_type not in assets_by_type:
+                assets_by_type[asset_type] = []
+            assets_by_type[asset_type].append(asset)
+
+        # Summary text
+        summary_text = f"Total Assets: <b>{len(assets)}</b> | Types: <b>{len(assets_by_type)}</b>"
+        elements.append(Paragraph(summary_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Build assets table (show first 20 assets)
+        table_data = [['Asset Type', 'Name', 'Location', 'Condition', 'Last Service', 'Next Due']]
+
+        for asset in assets[:20]:  # Limit to 20 assets
+            asset_type = asset.get('asset_type', 'N/A').replace('_', ' ').title()
+            asset_name = asset.get('asset_name', 'N/A')
+            location = asset.get('location_description', 'N/A')
+            if len(location) > 30:
+                location = location[:27] + '...'
+            condition = asset.get('condition_rating', 'Unknown')
+            last_service = asset.get('last_service_date', 'N/A')
+            next_due = asset.get('next_due_date', 'N/A')
+
+            # Color code by condition
+            if condition and condition.lower() == 'poor':
+                condition_cell = Paragraph(f'<font color="red">{condition}</font>', self.styles['BodyText'])
+            elif condition and condition.lower() == 'excellent':
+                condition_cell = Paragraph(f'<font color="green">{condition}</font>', self.styles['BodyText'])
+            else:
+                condition_cell = condition
+
+            table_data.append([
+                asset_type,
+                asset_name,
+                location,
+                condition_cell,
+                last_service,
+                next_due
+            ])
+
+        assets_table = Table(table_data, colWidths=[1.2*inch, 1.5*inch, 1.5*inch, 0.9*inch, 1.0*inch, 1.0*inch])
+        assets_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+
+        elements.append(assets_table)
+
+        if len(assets) > 20:
+            elements.append(Spacer(1, 0.1*inch))
+            elements.append(Paragraph(f"<i>... and {len(assets) - 20} more assets</i>", self.styles['BodyText']))
+
+        elements.append(Spacer(1, 0.3*inch))
+
+        return elements
+
     def _build_meetings_section(self) -> List:
         """Build meetings section"""
         elements = []
@@ -842,14 +1480,21 @@ class BuildingHealthCheckGenerator:
         return elements
 
     def _build_recommendations_section(self) -> List:
-        """Build recommendations section"""
+        """Build Section 5: Recommendations"""
         elements = []
 
-        elements.append(Paragraph("💡 Recommendations & Action Items", self.styles['SectionHeader']))
+        elements.append(Paragraph("Section 5: Recommendations", self.styles['SectionHeader']))
 
         if not self.recommendations:
-            elements.append(Paragraph("No specific recommendations at this time.", self.styles['BodyText']))
+            # Generate recommendations if not already done
+            self.recommendations = self._generate_recommendations()
+
+        if not self.recommendations:
+            elements.append(Paragraph("No specific recommendations at this time. All systems appear to be operating normally.", self.styles['BodyText']))
             return elements
+
+        elements.append(Paragraph("<b>Auto-generated action items based on data analysis:</b>", self.styles['BodyText']))
+        elements.append(Spacer(1, 0.1*inch))
 
         for i, rec in enumerate(self.recommendations, 1):
             elements.append(Paragraph(f"{i}. {rec}", self.styles['BodyText']))
@@ -928,3 +1573,387 @@ class BuildingHealthCheckGenerator:
             return '#f59e0b'
         else:
             return '#ef4444'
+
+    def _build_budgets_section(self) -> List:
+        """Build budgets summary section"""
+        elements = []
+
+        budgets = self.building_data.get('budgets', [])
+        if not budgets:
+            return elements
+
+        elements.append(Paragraph("💰 Budgets", self.styles['SectionHeader']))
+
+        # Detection status summary
+        budgets_with_totals = len([b for b in budgets if b.get('total_amount')])
+        budgets_missing_totals = len(budgets) - budgets_with_totals
+
+        status_text = f"✅ Budgets detected: {len(budgets)}"
+        if budgets_missing_totals > 0:
+            status_text += f" | ⚠️ Missing totals in {budgets_missing_totals}/{len(budgets)} docs"
+
+        elements.append(Paragraph(status_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.2*cm))
+
+        # Build table
+        table_data = [['Year', 'Total', 'Status', 'Notes']]
+
+        for budget in budgets[:10]:  # Limit to 10
+            year_start = budget.get('year_start', '')
+            year_end = budget.get('year_end', '')
+
+            if year_start and year_end:
+                year_display = f"{year_start} - {year_end}"
+            else:
+                year_display = 'N/A'
+
+            total = budget.get('total', 0)
+            total_display = f"£{total:,.0f}" if total else 'N/A'
+
+            status = budget.get('status', 'unknown').title()
+            notes = budget.get('notes', '')[:50]  # Truncate
+
+            table_data.append([year_display, total_display, status, notes])
+
+        table = Table(table_data, colWidths=[3*cm, 2.5*cm, 2*cm, 6.5*cm])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8)
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.3*cm))
+
+        return elements
+
+    def _build_apportionments_section(self) -> List:
+        """Build apportionments summary section"""
+        elements = []
+
+        apportionments = self.building_data.get('apportionments', [])
+        if not apportionments:
+            return elements
+
+        elements.append(Paragraph("🧮 Apportionments", self.styles['SectionHeader']))
+
+        # Detection status summary
+        units_mapped = len([a for a in apportionments if a.get('unit_id')])
+        status_text = f"✅ Apportionments mapped: {units_mapped}/{len(apportionments)} units"
+
+        elements.append(Paragraph(status_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.2*cm))
+
+        # Build table
+        table_data = [['Unit', 'Percentage', 'Schedule']]
+
+        # Calculate total
+        total_percentage = 0
+
+        for app in apportionments[:20]:  # Limit to 20
+            unit_id = app.get('unit_id')
+            # TODO: Look up unit name from unit_id
+            unit_display = unit_id[:8] if unit_id else 'Unknown'
+
+            percentage = app.get('percentage', 0)
+            total_percentage += percentage
+
+            schedule = app.get('schedule_name', 'N/A')
+
+            table_data.append([unit_display, f"{percentage:.3f}%", schedule])
+
+        # Add total row
+        total_status = "✅ Correct" if abs(total_percentage - 100.0) < 0.1 else f"⚠️ {total_percentage:.3f}%"
+        table_data.append(['TOTAL', f"{total_percentage:.3f}%", total_status])
+
+        table = Table(table_data, colWidths=[4*cm, 3*cm, 7*cm])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8)
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.3*cm))
+
+        return elements
+
+    def _build_fire_door_inspections_section(self) -> List:
+        """Build fire door inspections section"""
+        elements = []
+
+        inspections = self.building_data.get('fire_door_inspections', [])
+        if not inspections:
+            return elements
+
+        elements.append(Paragraph("🚪 Fire Door Inspections", self.styles['SectionHeader']))
+
+        # Build table
+        table_data = [['Location', 'Date', 'Status']]
+
+        for inspection in inspections[:20]:  # Limit to 20
+            location = inspection.get('location', 'Unknown')
+            inspection_date = inspection.get('inspection_date', 'N/A')
+            status = inspection.get('status', 'unknown')
+
+            # Status icon
+            status_icon = self.STATUS_ICONS.get(status, self.STATUS_ICONS['unknown'])
+            status_display = f"{status_icon} {status.title()}"
+
+            table_data.append([location, inspection_date, status_display])
+
+        table = Table(table_data, colWidths=[6*cm, 3*cm, 5*cm])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8)
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.3*cm))
+
+        # Summary stats
+        compliant = len([i for i in inspections if i.get('status') == 'compliant'])
+        non_compliant = len([i for i in inspections if i.get('status') == 'non-compliant'])
+
+        summary_text = f"Total: {len(inspections)} | Compliant: {compliant} | Non-Compliant: {non_compliant}"
+        elements.append(Paragraph(summary_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.5*cm))
+
+        return elements
+
+    def _build_staffing_section(self) -> List:
+        """Build staffing overview section"""
+        elements = []
+
+        staff_members = self.building_data.get('building_staff', [])
+        if not staff_members:
+            return elements
+
+        elements.append(Paragraph("👤 Building Staff", self.styles['SectionHeader']))
+
+        # Build table
+        table_data = [['Name', 'Role', 'Hours', 'Contact', 'Company']]
+
+        for staff in staff_members[:20]:  # Limit to 20
+            name = staff.get('name', 'Unknown')
+            role = staff.get('role', 'staff').title()
+            hours = staff.get('hours', 'N/A')
+            contact = staff.get('contact_info', 'N/A')
+            company = staff.get('company_name', 'N/A')
+
+            # Truncate long fields
+            if hours and len(hours) > 30:
+                hours = hours[:27] + '...'
+            if contact and len(contact) > 25:
+                contact = contact[:22] + '...'
+
+            table_data.append([name, role, hours, contact, company])
+
+        table = Table(table_data, colWidths=[3*cm, 2.5*cm, 3*cm, 3*cm, 2.5*cm])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8)
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.5*cm))
+
+        return elements
+
+    def _build_lease_summary_section(self) -> List:
+        """Build comprehensive lease summary section"""
+        elements = []
+
+        leases = self.building_data.get('leases', [])
+        if not leases:
+            return elements
+
+        elements.append(Paragraph("📜 Lease Summary Report", self.styles['SectionHeader']))
+        elements.append(Spacer(1, 0.3*cm))
+
+        # Add generation info
+        today = datetime.now().strftime('%d/%m/%Y')
+        info_text = f"<b>Generated:</b> {today} | <b>Total Leases:</b> {len(leases)}"
+        elements.append(Paragraph(info_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.4*cm))
+
+        # Process each lease
+        for idx, lease in enumerate(leases[:10], 1):  # Limit to 10 leases
+            # Extract lease data
+            leaseholder = lease.get('leaseholder_name', 'Not identified')
+            lessor = lease.get('lessor_name', 'Not identified')
+            term_years = lease.get('term_years')
+            term_start = lease.get('term_start', 'TBD')
+            expiry_date = lease.get('expiry_date', 'Not calculated')
+            ground_rent = lease.get('ground_rent')
+            rent_review = lease.get('rent_review_period')
+            source_doc = lease.get('source_document', 'Unknown')
+
+            # === Executive Summary ===
+            elements.append(Paragraph(f"<b>Lease #{idx}: {source_doc}</b>", self.styles['Heading2']))
+            elements.append(Spacer(1, 0.2*cm))
+
+            summary_parts = []
+            summary_parts.append(f"This lease is between <b>{lessor}</b> (Lessor) and <b>{leaseholder}</b> (Lessee). ")
+
+            if term_years:
+                summary_parts.append(f"The lease term is <b>{term_years} years</b> ")
+            else:
+                summary_parts.append("Lease term not clearly specified ")
+
+            if term_start and term_start != 'TBD':
+                summary_parts.append(f"starting from <b>{term_start}</b>. ")
+            else:
+                summary_parts.append("with start date TBD. ")
+
+            if ground_rent:
+                summary_parts.append(f"Ground rent: <b>£{ground_rent:.2f} per annum</b>. ")
+            else:
+                summary_parts.append("Ground rent terms not clearly stated. ")
+
+            elements.append(Paragraph(''.join(summary_parts), self.styles['BodyText']))
+            elements.append(Spacer(1, 0.3*cm))
+
+            # === Basic Property Details Table ===
+            elements.append(Paragraph("<b>Basic Property Details</b>", self.styles['Heading3']))
+            elements.append(Spacer(1, 0.1*cm))
+
+            details_data = [
+                ['Field', 'Value'],
+                ['Lessor', lessor],
+                ['Lessee', leaseholder],
+                ['Lease Term', f"{term_years} years" if term_years else "Not specified"],
+                ['Term Start', term_start if term_start != 'TBD' else "Not specified"],
+                ['Term End', expiry_date if expiry_date != 'Not calculated' else "Not calculated"],
+                ['Ground Rent', f"£{ground_rent:.2f} p.a." if ground_rent else "Not specified"],
+                ['Rent Review Period', f"{rent_review} years" if rent_review else "Not specified"]
+            ]
+
+            details_table = Table(details_data, colWidths=[5*cm, 9*cm])
+            details_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP')
+            ]))
+
+            elements.append(details_table)
+            elements.append(Spacer(1, 0.4*cm))
+
+            # === Key Lease Terms ===
+            elements.append(Paragraph("<b>Key Lease Terms & Obligations</b>", self.styles['Heading3']))
+            elements.append(Spacer(1, 0.1*cm))
+
+            # Standard lease clauses based on frontend lease report structure
+            clauses = [
+                {
+                    'title': 'Repair & Maintenance',
+                    'content': 'Tenant responsible for internal repairs and decorations. Landlord responsible for structural repairs and common parts.'
+                },
+                {
+                    'title': 'Service Charge',
+                    'content': 'Tenant to pay fair and reasonable proportion of building service costs including insurance, management, repairs, and reserve fund contributions.'
+                },
+                {
+                    'title': 'Alterations & Improvements',
+                    'content': 'No structural alterations without Landlord consent. Internal non-structural works may require notification.'
+                },
+                {
+                    'title': 'Subletting & Assignment',
+                    'content': 'Assignment permitted with Landlord consent (not to be unreasonably withheld). Subletting typically requires specific consent.'
+                },
+                {
+                    'title': 'Use Restrictions',
+                    'content': 'Property to be used as a private residence only. No business use, nuisance, or pets without consent (where applicable).'
+                },
+                {
+                    'title': 'Insurance',
+                    'content': 'Landlord insures building. Tenant to reimburse insurance premium as part of service charge. Tenant responsible for contents insurance.'
+                }
+            ]
+
+            for clause in clauses:
+                clause_text = f"<b>{clause['title']}:</b> {clause['content']}"
+                elements.append(Paragraph(clause_text, self.styles['BodyText']))
+                elements.append(Spacer(1, 0.15*cm))
+
+            elements.append(Spacer(1, 0.3*cm))
+
+            # === Important Notes ===
+            notes = lease.get('notes')
+            if notes:
+                elements.append(Paragraph("<b>Notes:</b>", self.styles['Heading3']))
+                elements.append(Paragraph(notes, self.styles['BodyText']))
+                elements.append(Spacer(1, 0.3*cm))
+
+            # Separator between leases
+            if idx < min(len(leases), 10):
+                elements.append(Spacer(1, 0.2*cm))
+                # Add a subtle divider line
+                line_data = [['', '']]
+                line_table = Table(line_data, colWidths=[14*cm])
+                line_table.setStyle(TableStyle([
+                    ('LINEABOVE', (0, 0), (-1, 0), 1, colors.grey)
+                ]))
+                elements.append(line_table)
+                elements.append(Spacer(1, 0.4*cm))
+
+        # === Disclaimer ===
+        elements.append(Spacer(1, 0.5*cm))
+        elements.append(Paragraph("<b>Disclaimer</b>", self.styles['Heading2']))
+        elements.append(Spacer(1, 0.2*cm))
+
+        disclaimer_text = (
+            "This is an AI-assisted lease summary based on automated document analysis. "
+            "It is not legal advice and should not be relied upon for legal decisions. "
+            "Please consult with a qualified legal professional for definitive interpretation. "
+            "Accuracy depends on document quality, legibility, and OCR extraction. "
+            "Clauses marked as 'Not explicitly stated' use standard lease covenant assumptions."
+        )
+
+        disclaimer_style = ParagraphStyle(
+            'Disclaimer',
+            parent=self.styles['BodyText'],
+            textColor=colors.HexColor('#666666'),
+            fontSize=8,
+            leading=10
+        )
+
+        elements.append(Paragraph(disclaimer_text, disclaimer_style))
+        elements.append(Spacer(1, 0.5*cm))
+
+        return elements
