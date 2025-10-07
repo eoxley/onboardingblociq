@@ -108,6 +108,11 @@ class LeaseExtractor:
     def _is_lease_document(self, file_name: str, text_content: str) -> bool:
         """Check if document is likely a lease"""
         file_name_lower = file_name.lower()
+
+        # Ensure text_content is a string
+        if not isinstance(text_content, str):
+            text_content = ''
+
         text_lower = text_content.lower() if text_content else ''
 
         # Check filename
