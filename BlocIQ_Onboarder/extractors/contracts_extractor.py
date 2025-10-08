@@ -183,18 +183,16 @@ class ContractsExtractor:
             return 'active'
 
     def _extract_contractor_details(self, text: str, company_name: str, service_type: Optional[str]) -> Dict:
-        """Extract detailed contractor information"""
+        """Extract detailed contractor information (matching actual Supabase schema)"""
         contractor = {
             'id': str(uuid.uuid4()),
-            'company_name': company_name,
-            'contact_person': self._extract_contact_person(text),
+            'name': company_name,  # Actual schema uses 'name' as NOT NULL, not 'company_name'
+            'company_name': company_name,  # Also populate company_name if it exists
             'email': self._extract_email(text),
             'phone': self._extract_phone(text),
             'address': self._extract_address(text),
-            'specialization': service_type,
-            'accreditations': self._extract_accreditations(text),
+            'trade': service_type,  # Schema uses 'trade' not 'specialization'
             'insurance_expiry': self._extract_insurance_expiry(text),
-            'vat_number': self._extract_vat_number(text),
             'notes': None
         }
         return contractor

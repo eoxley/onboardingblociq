@@ -146,16 +146,16 @@ class ExcelFinancialExtractor:
         # Generate period label from years or filename
         period = self._generate_period_label(year_start, year_end, file_name)
 
-        # Create budget record
+        # Create budget record (using actual Supabase schema column names)
         budget = {
             'id': str(uuid.uuid4()),
             'building_id': self.building_id,
             'period': period,
-            'year_start': year_start,
-            'year_end': year_end,
+            'start_date': year_start,  # Actual schema uses start_date not year_start
+            'end_date': year_end,      # Actual schema uses end_date not year_end
             'total_amount': total_amount,
-            'status': status,
-            'source_document': file_name
+            'confidence_score': 1.00,
+            'name': file_name[:100] if file_name else None  # Budget name from filename
         }
 
         # Only add if we have at least a year or total
@@ -262,16 +262,15 @@ class ExcelFinancialExtractor:
                     expiry_date = self._parse_date(expiry_value)
                 break
 
-        # Create insurance record if we have any data
+        # Create insurance record if we have any data (using actual Supabase schema)
         if provider or policy_number or expiry_date:
             insurance = {
                 'id': str(uuid.uuid4()),
                 'building_id': self.building_id,
                 'insurance_type': 'general',  # Required NOT NULL column
-                'provider': provider,
+                'insurer_name': provider,     # Actual schema uses insurer_name not provider
                 'policy_number': policy_number,
-                'expiry_date': expiry_date,
-                'source_document': file_name
+                'renewal_date': expiry_date,  # Actual schema uses renewal_date not expiry_date
             }
 
             self.insurance_records.append(insurance)
@@ -286,15 +285,14 @@ class ExcelFinancialExtractor:
         year_match = re.search(r'20(\d{2})', file_name)
         inferred_year = f"20{year_match.group(1)}" if year_match else None
 
-        # Create insurance record with metadata only
+        # Create insurance record with metadata only (using actual Supabase schema)
         insurance = {
             'id': str(uuid.uuid4()),
             'building_id': self.building_id,
             'insurance_type': 'general',  # Required NOT NULL column
-            'provider': None,
+            'insurer_name': None,
             'policy_number': None,
-            'expiry_date': None,
-            'source_document': file_name,
+            'renewal_date': None,
             'notes': f"PDF metadata only. Inferred year: {inferred_year}" if inferred_year else "PDF metadata only"
         }
 
