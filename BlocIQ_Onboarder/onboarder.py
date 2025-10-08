@@ -989,7 +989,7 @@ class BlocIQOnboarder:
                 print("\n  ℹ️  No building ID found, using temporary ID for report generation")
 
             print("\n📊 Generating Building Health Check Report...")
-            from reporting.building_health_check import BuildingHealthCheckGenerator
+            from reporting.building_health_check_simple import generate_simple_health_check
             import os
 
             # ALWAYS use local extracted data for onboarding health check
@@ -999,38 +999,29 @@ class BlocIQOnboarder:
             if not self.mapped_data or not isinstance(self.mapped_data, dict):
                 print("  ⚠️  No valid mapped data available, skipping health check")
             else:
-                # Generate comprehensive health check report using local data
-                print(f"  📊 Generating report with {len(self.mapped_data)} data sections...")
-                generator = BuildingHealthCheckGenerator(supabase_client=None)
-                report_file = generator.generate_report(
-                    building_id=building_id,
-                    output_dir=str(self.output_dir),
-                    local_data=self.mapped_data
+                # Generate simple, readable health check report using local data
+                print(f"  📊 Generating simple readable report with {len(self.mapped_data)} data sections...")
+                report_file = generate_simple_health_check(
+                    building_data=self.mapped_data,
+                    output_path=str(self.output_dir / 'building_health_check.pdf')
                 )
 
                 if report_file:
-                    # Also copy to main output directory for easier access
-                    import shutil
-                    main_pdf_path = self.output_dir / 'building_health_check.pdf'
-                    shutil.copy2(report_file, main_pdf_path)
-
                     print(f"\n  ✅ Building Health Check PDF Generated Successfully!")
-                    print(f"  📄 Location: {main_pdf_path}")
-                    print(f"  📄 Also saved at: {report_file}")
+                    print(f"  📄 Location: {report_file}")
                     print(f"\n  📊 Report includes:")
-                    print(f"     • Full letterhead template on all pages")
-                    print(f"     • Building summary and key metrics")
-                    print(f"     • Contractor overview with status icons")
-                    print(f"     • Asset register with compliance tracking")
-                    print(f"     • Compliance matrix by category")
-                    print(f"     • Auto-generated recommendations")
+                    print(f"     • Executive Summary with key metrics")
+                    print(f"     • Compliance Assets by category")
+                    print(f"     • Financial Overview (Budgets & Insurance)")
+                    print(f"     • Contractors & Contracts")
+                    print(f"     • Clean, readable text format")
                     
                     # Upload PDF to Supabase reports bucket if configured
                     if self.config.get('upload_to_supabase') and hasattr(self, 'supabase') and self.supabase:
                         print(f"\n  📤 Uploading PDF to Supabase reports bucket...")
                         uploader = SupabaseStorageUploader(self.supabase)
                         upload_result = uploader.upload_report_pdf(
-                            pdf_path=str(main_pdf_path),
+                            pdf_path=str(report_file),
                             building_id=building_id,
                             report_name=f"building_health_check_{datetime.now().strftime('%Y%m%d')}.pdf"
                         )
