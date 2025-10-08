@@ -985,44 +985,47 @@ class BlocIQOnboarder:
             if not building_id:
                 # Generate a temporary ID for the report
                 import uuid
-                building_id = str(uuid.uuid4())
+                building_id = 'temp-building-id'
                 print("\n  ℹ️  No building ID found, using temporary ID for report generation")
 
             print("\n📊 Generating Building Health Check Report...")
             from reporting.building_health_check import BuildingHealthCheckGenerator
             import os
 
-            # Try to connect to Supabase if credentials available
-            supabase_client = None
-            supabase_url = os.getenv('SUPABASE_URL')
-            supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_KEY')
+            # ALWAYS use local extracted data for onboarding health check
+            # This is a snapshot of what was found in the documents
+            print("  ℹ️  Using local extracted data (onboarding snapshot)")
 
-            if supabase_url and supabase_key:
-                try:
-                    from supabase import create_client
-                    supabase_client = create_client(supabase_url, supabase_key)
-                    print("  ✅ Connected to Supabase for live data")
-                except Exception as e:
-                    print(f"  ⚠️  Could not connect to Supabase: {e}")
-                    print("  ℹ️  Report will use local extracted data")
+            if not self.mapped_data or not isinstance(self.mapped_data, dict):
+                print("  ⚠️  No valid mapped data available, skipping health check")
+            else:
+                # Generate comprehensive health check report using local data
+                print(f"  📊 Generating report with {len(self.mapped_data)} data sections...")
+                generator = BuildingHealthCheckGenerator(supabase_client=None)
+                report_file = generator.generate_report(
+                    building_id=building_id,
+                    output_dir=str(self.output_dir),
+                    local_data=self.mapped_data
+                )
 
-            # Generate comprehensive health check report (using local data if no Supabase)
-            generator = BuildingHealthCheckGenerator(supabase_client=supabase_client)
-            report_file = generator.generate_report(
-                building_id=building_id,
-                output_dir=str(self.output_dir),
-                local_data=self.mapped_data if not supabase_client else None
-            )
+                if report_file:
+                    # Also copy to main output directory for easier access
+                    import shutil
+                    main_pdf_path = self.output_dir / 'building_health_check.pdf'
+                    shutil.copy2(report_file, main_pdf_path)
 
-            if report_file:
-                print(f"\n  ✅ Building Health Check Report: {report_file}")
-                print(f"  📄 Report includes:")
-                print(f"     • Full letterhead template on all pages")
-                print(f"     • Building summary and key metrics")
-                print(f"     • Contractor overview with status icons")
-                print(f"     • Asset register with compliance tracking")
-                print(f"     • Compliance matrix by category")
-                print(f"     • Auto-generated recommendations")
+                    print(f"\n  ✅ Building Health Check PDF Generated Successfully!")
+                    print(f"  📄 Location: {main_pdf_path}")
+                    print(f"  📄 Also saved at: {report_file}")
+                    print(f"\n  📊 Report includes:")
+                    print(f"     • Full letterhead template on all pages")
+                    print(f"     • Building summary and key metrics")
+                    print(f"     • Contractor overview with status icons")
+                    print(f"     • Asset register with compliance tracking")
+                    print(f"     • Compliance matrix by category")
+                    print(f"     • Auto-generated recommendations")
+                else:
+                    print("  ⚠️  PDF generation returned no file path")
 
         except ImportError as e:
             print(f"  ⚠️  Could not generate Building Health Check report: {e}")
