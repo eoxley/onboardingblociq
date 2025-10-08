@@ -571,12 +571,23 @@ class SQLWriter:
         self.sql_statements.append(f"-- Insert {len(budgets)} budgets")
 
         for budget in budgets:
-            # Ensure period field exists (required NOT NULL constraint)
-            if 'period' not in budget or not budget['period']:
-                budget['period'] = 'Unknown'
+            # Create a copy to avoid mutating original data
+            budget_data = budget.copy()
+
+            # CRITICAL: Ensure period field exists (NOT NULL constraint)
+            if 'period' not in budget_data or not budget_data['period']:
+                # Try to infer period from year fields or dates
+                if budget_data.get('year'):
+                    budget_data['period'] = str(budget_data['year'])
+                elif budget_data.get('year_start'):
+                    # Extract year from date string
+                    year_str = str(budget_data['year_start'])[:4]
+                    budget_data['period'] = year_str
+                else:
+                    budget_data['period'] = 'Unknown'
 
             self.sql_statements.append(
-                self._create_insert_statement('budgets', budget, use_upsert=False)
+                self._create_insert_statement('budgets', budget_data, use_upsert=False)
             )
 
         self.sql_statements.append("")
