@@ -143,10 +143,14 @@ class ExcelFinancialExtractor:
         # Determine status
         status = 'draft' if 'draft' in file_name.lower() else 'final'
 
+        # Generate period label from years or filename
+        period = self._generate_period_label(year_start, year_end, file_name)
+
         # Create budget record
         budget = {
             'id': str(uuid.uuid4()),
             'building_id': self.building_id,
+            'period': period,
             'year_start': year_start,
             'year_end': year_end,
             'total_amount': total_amount,
@@ -293,6 +297,43 @@ class ExcelFinancialExtractor:
         }
 
         self.insurance_records.append(insurance)
+
+    def _generate_period_label(self, year_start: Optional[str], year_end: Optional[str], file_name: str) -> str:
+        """Generate period label for budgets table (NOT NULL column)"""
+        # Try to generate from year_start and year_end
+        if year_start and year_end:
+            try:
+                # Extract years from dates
+                start_year = year_start[:4] if year_start else ''
+                end_year = year_end[:4] if year_end else ''
+                return f"{start_year}-{end_year}"
+            except:
+                pass
+        
+        # Try to extract from filename
+        # Pattern: "2025-26" or "2025-2026" or "YE25" or "Budget 2025"
+        year_patterns = [
+            r'(\d{4})[_\-](\d{2,4})',  # 2025-26 or 2025-2026
+            r'YE\s*(\d{2,4})',          # YE25
+            r'20(\d{2})',                # 2025
+        ]
+        
+        for pattern in year_patterns:
+            match = re.search(pattern, file_name, re.IGNORECASE)
+            if match:
+                if len(match.groups()) == 2:
+                    return f"{match.group(1)}-{match.group(2)}"
+                else:
+                    year = match.group(1)
+                    if len(year) == 2:
+                        year = f"20{year}"
+                    return f"YE{year}"
+        
+        # Fallback: use filename without extension
+        base_name = file_name.rsplit('.', 1)[0]
+        if len(base_name) > 50:
+            base_name = base_name[:50]
+        return base_name if base_name else 'Budget'
 
     def _extract_years(self, file_name: str, sheet_name: str) -> Tuple[Optional[str], Optional[str]]:
         """Extract year_start and year_end from filename or sheet name"""

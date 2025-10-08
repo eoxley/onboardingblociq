@@ -255,6 +255,7 @@ class SQLWriter:
             "CREATE TABLE IF NOT EXISTS budgets (",
             "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
             "  building_id uuid REFERENCES buildings(id),",
+            "  period text NOT NULL DEFAULT 'Unknown',",
             "  year_start date,",
             "  year_end date,",
             "  total_amount numeric(15,2),",
