@@ -20,6 +20,7 @@ echo "🔨 Building application..."
 python3 -m PyInstaller --onedir --windowed \
     --add-data "icon.png:." \
     --add-data "config:config" \
+    --add-data "assets:assets" \
     --icon "icon.png" \
     app.py --name BlocIQOnboarder --clean
 

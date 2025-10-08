@@ -260,11 +260,6 @@
     "confidence": 0.84
   },
   {
-    "file": "connaught apportionment.xlsx",
-    "category": "budgets",
-    "confidence": 0.77
-  },
-  {
     "file": "ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf",
     "category": "budgets",
     "confidence": 0.77
@@ -1143,11 +1138,6 @@
     "file": "Connaught Square Meeting Minutes 2.docx",
     "category": "uncategorized",
     "confidence": 0.9
-  },
-  {
-    "file": "connaught.xlsx",
-    "category": "uncategorized",
-    "confidence": 0.0
   },
   {
     "file": "matrix - pp.xlsx",

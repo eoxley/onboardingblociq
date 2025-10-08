@@ -1,28 +1,28 @@
 {
-  "timestamp": "2025-10-06T07:33:05.080860",
-  "client_folder": "/Users/ellie/Downloads/219.01 CONNAUGHT SQUARE",
+  "timestamp": "2025-10-08T09:28:02.117936",
+  "client_folder": "/Users/ellie/Desktop/BlocIQ Buildings/2.Connaught Square/219.01 CONNAUGHT SQUARE",
   "building_name": "Connaught Square",
   "statistics": {
-    "files_parsed": 318,
+    "files_parsed": 316,
     "buildings": 1,
     "units": 8,
     "leaseholders": 8,
-    "documents": 318
+    "documents": 316
   },
   "categories": {
     "units_leaseholders": 52,
-    "budgets": 7,
+    "budgets": 6,
     "compliance": 56,
     "contracts": 48,
     "major_works": 4,
     "insurance": 60,
-    "uncategorized": 91
+    "uncategorized": 90
   },
   "post_processing_summary": {
     "building_metadata_filled": 0,
     "addresses_extracted": 0,
     "major_works_tagged": 0,
-    "budget_placeholders_created": 8,
+    "budget_placeholders_created": 7,
     "building_intelligence_entries": 260
   },
   "building_intelligence": {
@@ -553,6 +553,5 @@
         "responsible_party": null
       }
     ]
-  },
-  "report_file": "output/summary_report.pdf"
+  }
 }

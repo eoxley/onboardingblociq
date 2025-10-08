@@ -111,7 +111,10 @@ class LeaseExtractor:
 
         # Ensure text_content is a string
         if not isinstance(text_content, str):
-            text_content = ''
+            if isinstance(text_content, list):
+                text_content = ' '.join(str(item) for item in text_content)
+            else:
+                text_content = ''
 
         text_lower = text_content.lower() if text_content else ''
 
