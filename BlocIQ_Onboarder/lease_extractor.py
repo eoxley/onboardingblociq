@@ -10,6 +10,10 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 
 class LeaseExtractor:
@@ -21,9 +25,14 @@ class LeaseExtractor:
         'assignment', 'demise', 'lessor', 'lessee'
     ]
 
-    # OCR Service configuration (from BlocIQ frontend)
-    RENDER_OCR_URL = os.getenv('RENDER_OCR_URL', 'https://ocr-server-2-ykmk.onrender.com/upload')
-    RENDER_OCR_TOKEN = os.getenv('RENDER_OCR_TOKEN', 'blociq-dev-token-2024')
+    # OCR Service configuration - Load after dotenv is called
+    @property
+    def RENDER_OCR_URL(self):
+        return os.getenv('RENDER_OCR_URL', 'https://ocr-server-2-ykmk.onrender.com/upload')
+
+    @property
+    def RENDER_OCR_TOKEN(self):
+        return os.getenv('RENDER_OCR_TOKEN', 'blociq-dev-token-2024')
 
     def __init__(self, parsed_files: List[Dict], mapped_data: Dict):
         """
