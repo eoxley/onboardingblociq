@@ -116,12 +116,12 @@ class SQLWriter:
         if 'building_title_deeds' in mapped_data:
             self._generate_building_title_deeds_inserts(mapped_data['building_title_deeds'])
 
-        # New tables: contractors, contracts, assets, maintenance_schedules
+        # New tables: contractors, contractor_contracts, building_contractors, assets, maintenance_schedules
         if 'contractors' in mapped_data:
             self._generate_contractors_inserts(mapped_data['contractors'])
 
-        if 'contracts' in mapped_data:
-            self._generate_contracts_inserts(mapped_data['contracts'])
+        if 'contractor_contracts' in mapped_data:
+            self._generate_contractor_contracts_inserts(mapped_data['contractor_contracts'])
 
         if 'building_contractor_links' in mapped_data:
             self._generate_building_contractor_links_inserts(mapped_data['building_contractor_links'])
@@ -152,13 +152,19 @@ class SQLWriter:
     def _add_header(self):
         """Add migration header with agency placeholder block and schema migrations"""
         self.sql_statements.extend([
-            "-- BlocIQ Onboarder - Auto-generated Migration",
+            "-- ============================================================",
+            "-- PATCHED: BlocIQ Onboarder - Auto-generated Migration (Schema-Corrected)",
             f"-- Generated at: {self._now()}",
-            "-- Review this script before executing!",
+            "-- ============================================================",
             "",
             "-- =====================================",
             "-- REQUIRED: Replace AGENCY_ID_PLACEHOLDER with your agency UUID",
             "-- =====================================",
+            "",
+            "-- =====================================",
+            "-- EXTENSION: Ensure UUID generation",
+            "-- =====================================",
+            "CREATE EXTENSION IF NOT EXISTS pgcrypto;",
             "",
             "-- =====================================",
             "-- SCHEMA MIGRATIONS: Add missing columns if they don't exist",
@@ -173,7 +179,7 @@ class SQLWriter:
             "-- Add unit_number to leaseholders (if not exists)",
             "ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS unit_number VARCHAR(50);",
             "",
-            "-- Add year_start and year_end to budgets (if not exists)",
+            "-- Add year_start and year_end to budgets (if not exists) - ensure before index",
             "ALTER TABLE budgets ADD COLUMN IF NOT EXISTS year_start DATE;",
             "ALTER TABLE budgets ADD COLUMN IF NOT EXISTS year_end DATE;",
             "",
@@ -254,9 +260,9 @@ class SQLWriter:
             "CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_building ON fire_door_inspections(building_id);",
             "CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_status ON fire_door_inspections(status);",
             "",
-            "-- Budgets",
+            "-- Budgets (leave existing and rely on ALTERs above)",
             "CREATE TABLE IF NOT EXISTS budgets (",
-            "  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
             "  building_id uuid REFERENCES buildings(id),",
             "  document_id uuid,",
             "  period text NOT NULL,",
@@ -275,6 +281,7 @@ class SQLWriter:
             "  created_at timestamptz DEFAULT now()",
             ");",
             "",
+            "-- Safe now to index year_start",
             "CREATE INDEX IF NOT EXISTS idx_budgets_building ON budgets(building_id);",
             "CREATE INDEX IF NOT EXISTS idx_budgets_year ON budgets(year_start);",
             "",
@@ -352,6 +359,28 @@ class SQLWriter:
             "CREATE INDEX IF NOT EXISTS idx_leases_expiry ON leases(expiry_date);",
             "",
             "-- =====================================",
+            "-- CONTRACTOR_CONTRACTS: Ensure service_category allows 'unspecified'",
+            "-- =====================================",
+            "DO $$",
+            "BEGIN",
+            "  -- Drop existing CHECK constraint if present",
+            "  IF EXISTS (",
+            "    SELECT 1 FROM pg_constraint",
+            "    WHERE conname = 'contractor_contracts_service_category_check'",
+            "  ) THEN",
+            "    ALTER TABLE contractor_contracts DROP CONSTRAINT contractor_contracts_service_category_check;",
+            "  END IF;",
+            "",
+            "  -- Add CHECK constraint allowing 'unspecified' sentinel",
+            "  ALTER TABLE contractor_contracts",
+            "    ADD CONSTRAINT contractor_contracts_service_category_check",
+            "    CHECK (service_category IN ('lifts','security','fire_alarm','cleaning','maintenance','insurance','legal','utilities','grounds','waste','other','unspecified'));",
+            "EXCEPTION WHEN undefined_table THEN",
+            "  -- Table doesn't exist yet, will be created with constraint later",
+            "  NULL;",
+            "END $$;",
+            "",
+            "-- =====================================",
             "-- DATA MIGRATION: Insert building data",
             "-- =====================================",
             "",
@@ -412,30 +441,61 @@ class SQLWriter:
         self.sql_statements.append("")
 
     def _generate_units_inserts(self, units: List[Dict]):
-        """Generate INSERTs for units table"""
+        """Generate bulk INSERT for units table"""
         if not units:
             return
 
         self.sql_statements.append(f"-- Insert {len(units)} units")
 
-        for unit in units:
-            self.sql_statements.append(
-                self._create_insert_statement('units', unit, use_upsert=False)
-            )
+        # Use bulk multi-row VALUES syntax for efficiency
+        if len(units) <= 10:  # Use bulk insert for reasonable sizes
+            values_rows = []
+            for unit in units:
+                validated = self.schema_mapper.validate_data('units', unit)
+                id_val = self._format_value(validated.get('id'))
+                building_id_val = self._format_value(validated.get('building_id'))
+                unit_number_val = self._format_value(validated.get('unit_number'))
+                values_rows.append(f"({id_val}, {building_id_val}, {unit_number_val})")
+
+            bulk_insert = "INSERT INTO units (id, building_id, unit_number) VALUES\n" + ",\n".join(values_rows)
+            bulk_insert += "\nON CONFLICT (id) DO NOTHING;"
+            self.sql_statements.append(bulk_insert)
+        else:
+            # Fall back to individual inserts for very large sets
+            for unit in units:
+                self.sql_statements.append(
+                    self._create_insert_statement('units', unit, use_upsert=False)
+                )
 
         self.sql_statements.append("")
 
     def _generate_leaseholders_inserts(self, leaseholders: List[Dict]):
-        """Generate INSERTs for leaseholders table"""
+        """Generate bulk INSERT for leaseholders table"""
         if not leaseholders:
             return
 
-        self.sql_statements.append(f"-- Insert {len(leaseholders)} leaseholders")
+        self.sql_statements.append(f"-- Insert {len(leaseholders)} leaseholders (schema has building_id and unit_number)")
 
-        for leaseholder in leaseholders:
-            self.sql_statements.append(
-                self._create_insert_statement('leaseholders', leaseholder, use_upsert=False)
-            )
+        # Use bulk multi-row VALUES syntax
+        if len(leaseholders) <= 20:  # Reasonable bulk size
+            values_rows = []
+            for lh in leaseholders:
+                validated = self.schema_mapper.validate_data('leaseholders', lh)
+                id_val = self._format_value(validated.get('id'))
+                building_id_val = self._format_value(validated.get('building_id'))
+                unit_id_val = self._format_value(validated.get('unit_id'))
+                unit_number_val = self._format_value(validated.get('unit_number'))
+                name_val = self._format_value(validated.get('name') or validated.get('first_name', '') + ' ' + validated.get('last_name', ''))
+                values_rows.append(f"({id_val}, {building_id_val}, {unit_id_val}, {unit_number_val}, {name_val})")
+
+            bulk_insert = "INSERT INTO leaseholders (id, building_id, unit_id, unit_number, name) VALUES\n" + ",\n".join(values_rows)
+            bulk_insert += "\nON CONFLICT (id) DO NOTHING;"
+            self.sql_statements.append(bulk_insert)
+        else:
+            for leaseholder in leaseholders:
+                self.sql_statements.append(
+                    self._create_insert_statement('leaseholders', leaseholder, use_upsert=False)
+                )
 
         self.sql_statements.append("")
 
@@ -511,6 +571,10 @@ class SQLWriter:
         self.sql_statements.append(f"-- Insert {len(budgets)} budgets")
 
         for budget in budgets:
+            # Ensure period field exists (required NOT NULL constraint)
+            if 'period' not in budget or not budget['period']:
+                budget['period'] = 'Unknown'
+
             self.sql_statements.append(
                 self._create_insert_statement('budgets', budget, use_upsert=False)
             )
@@ -609,6 +673,10 @@ class SQLWriter:
         self.sql_statements.append(f"-- Insert {len(insurance_records)} insurance records")
 
         for record in insurance_records:
+            # Ensure insurance_type field exists (required NOT NULL constraint)
+            if 'insurance_type' not in record or not record['insurance_type']:
+                record['insurance_type'] = 'general'
+
             self.sql_statements.append(
                 self._create_insert_statement('building_insurance', record, use_upsert=False)
             )
@@ -739,6 +807,8 @@ class SQLWriter:
             'building_documents': ['id', 'building_id', 'category', 'file_name', 'storage_path'],
             'compliance_assets': ['id', 'building_id', 'asset_name', 'asset_type'],
             'budgets': ['id', 'building_id', 'period'],
+            'building_insurance': ['id', 'building_id', 'insurance_type'],
+            'contractors': ['id', 'name'],
             'major_works_projects': ['id', 'building_id', 'project_name']
         }
 
@@ -807,39 +877,211 @@ class SQLWriter:
         return insert_sql
 
     def _generate_contractors_inserts(self, contractors: List[Dict]):
-        """Generate INSERT statements for contractors table"""
+        """Generate INSERT statements for contractors table (use 'name' field)"""
         if not contractors:
             return
 
-        self.sql_statements.append(f"-- Insert {len(contractors)} contractors")
-        for contractor in contractors:
-            self.sql_statements.append(
-                self._create_insert_statement('contractors', contractor, use_upsert=False)
-            )
+        self.sql_statements.append(f"-- ===========================")
+        self.sql_statements.append(f"-- CONTRACTORS")
+        self.sql_statements.append(f"-- ===========================")
         self.sql_statements.append("")
 
-    def _generate_contracts_inserts(self, contracts: List[Dict]):
-        """Generate INSERT statements for contracts table"""
+        for contractor in contractors:
+            validated = self.schema_mapper.validate_data('contractors', contractor)
+
+            # Build INSERT with only non-NULL values
+            columns = []
+            values = []
+
+            if validated.get('id'):
+                columns.append('id')
+                values.append(self._format_value(validated['id']))
+
+            # IMPORTANT: Use 'name' instead of 'company_name' (NOT NULL constraint)
+            if validated.get('name'):
+                columns.append('name')
+                values.append(self._format_value(validated['name']))
+            elif validated.get('company_name'):
+                columns.append('name')
+                values.append(self._format_value(validated['company_name']))
+
+            if validated.get('email'):
+                columns.append('email')
+                values.append(self._format_value(validated['email']))
+
+            if validated.get('phone'):
+                columns.append('phone')
+                values.append(self._format_value(validated['phone']))
+
+            if validated.get('address'):
+                columns.append('address')
+                values.append(self._format_value(validated['address']))
+
+            if columns and 'name' in columns:  # Only insert if we have name
+                cols_str = ', '.join(columns)
+                vals_str = ', '.join(values)
+                self.sql_statements.append(f"INSERT INTO contractors ({cols_str}) VALUES")
+                self.sql_statements.append(f"({vals_str})")
+                self.sql_statements.append(f"ON CONFLICT (id) DO NOTHING;")
+                self.sql_statements.append("")
+
+        self.sql_statements.append("")
+
+    def _generate_contractor_contracts_inserts(self, contracts: List[Dict]):
+        """
+        Generate INSERT statements for contractor_contracts table
+        Uses SELECT subqueries to lookup contractor_id by name
+        Handles NULL service_category by using 'unspecified' default
+        """
         if not contracts:
             return
 
-        self.sql_statements.append(f"-- Insert {len(contracts)} contracts")
+        self.sql_statements.append(f"-- ===========================")
+        self.sql_statements.append(f"-- CONTRACTS -> CONTRACTOR_CONTRACTS")
+        self.sql_statements.append(f"-- ===========================")
+        self.sql_statements.append(f"-- Map:")
+        self.sql_statements.append(f"--   contractor_name -> contractor_id (lookup by contractors.name)")
+        self.sql_statements.append(f"--   service_type -> service_category")
+        self.sql_statements.append(f"--   frequency -> payment_frequency")
+        self.sql_statements.append(f"--   contract_status -> is_active (active -> TRUE; expired/others -> FALSE)")
+        self.sql_statements.append(f"--   NULL service_category -> 'unspecified'")
+        self.sql_statements.append("")
+
         for contract in contracts:
-            self.sql_statements.append(
-                self._create_insert_statement('contracts', contract, use_upsert=False)
-            )
+            # Don't validate contractor_contracts (not in schema yet) - preserve all fields
+            # validated = self.schema_mapper.validate_data('contractor_contracts', contract)
+
+            # Skip if no contractor_name (can't lookup contractor_id)
+            contractor_name = contract.get('contractor_name')
+            if not contractor_name:
+                self.sql_statements.append(f"-- Skipped contract {contract.get('id', 'unknown')} - no contractor_name")
+                continue
+
+            # Extract fields
+            contract_id = contract.get('id')
+            building_id = contract.get('building_id')
+            service_category = contract.get('service_category') or contract.get('service_type') or 'unspecified'
+            payment_frequency = contract.get('payment_frequency') or contract.get('frequency')
+            start_date = contract.get('start_date') or contract.get('contract_start')
+            end_date = contract.get('end_date') or contract.get('contract_end')
+
+            # CRITICAL: start_date and end_date are NOT NULL in contractor_contracts schema
+            # Use current date as default if not provided
+            if not start_date:
+                start_date = 'CURRENT_DATE'  # Use PostgreSQL function for default
+
+            # CRITICAL: end_date is also NOT NULL - default to 1 year from start_date
+            if not end_date:
+                if start_date == 'CURRENT_DATE':
+                    end_date = "CURRENT_DATE + INTERVAL '1 year'"
+                else:
+                    # If we have a specific start_date, add 1 year to it
+                    end_date = f"DATE '{start_date}' + INTERVAL '1 year'"
+
+            # Map contract_status to is_active
+            contract_status = contract.get('contract_status', 'active').lower()
+            is_active = 'TRUE' if contract_status == 'active' else 'FALSE'
+
+            # Build INSERT with SELECT subquery
+            insert_parts = []
+            insert_parts.append("INSERT INTO contractor_contracts (")
+
+            # ALWAYS include start_date and end_date (NOT NULL constraints)
+            columns = ['id', 'building_id', 'contractor_id', 'service_category', 'start_date', 'end_date']
+            if payment_frequency:
+                columns.append('payment_frequency')
+            columns.append('is_active')
+
+            insert_parts.append(f"  {', '.join(columns)}")
+            insert_parts.append(")")
+            insert_parts.append("SELECT")
+
+            # Build SELECT values
+            select_values = [
+                f"  {self._format_value(contract_id)}",
+                f"  {self._format_value(building_id)}",
+                f"  c.id",
+                f"  {self._format_value(service_category)}",
+                f"  {start_date if start_date in ['CURRENT_DATE', 'NULL'] else self._format_value(start_date)}",  # Don't quote PostgreSQL functions
+                f"  {end_date if 'CURRENT_DATE' in str(end_date) or 'INTERVAL' in str(end_date) else self._format_value(end_date)}"  # Don't quote date expressions
+            ]
+            if payment_frequency:
+                select_values.append(f"  {self._format_value(payment_frequency)}")
+            select_values.append(f"  {is_active}")
+
+            insert_parts.append(",\n".join(select_values))
+            insert_parts.append(f"FROM contractors c WHERE c.name = {self._format_value(contractor_name)}")
+
+            # Add ON CONFLICT for idempotency (use id as primary key)
+            insert_parts.append("ON CONFLICT (id) DO NOTHING;")
+
+            self.sql_statements.append("\n".join(insert_parts))
+            self.sql_statements.append("")
+
         self.sql_statements.append("")
 
     def _generate_building_contractor_links_inserts(self, links: List[Dict]):
-        """Generate INSERT statements for building_contractors junction table"""
+        """
+        Generate INSERT statements for building_contractors table
+        Maps to schema: id, building_id, contractor_type, company_name, contact_person,
+        phone, email, contract_start, contract_end, document_id, notes, created_at,
+        retender_status, retender_due_date, next_review_date, renewal_notice_period
+        """
         if not links:
             return
 
-        self.sql_statements.append(f"-- Insert {len(links)} building-contractor links")
+        self.sql_statements.append(f"-- ===========================")
+        self.sql_statements.append(f"-- BUILDING_CONTRACTORS")
+        self.sql_statements.append(f"-- ===========================")
+        self.sql_statements.append("")
+
         for link in links:
-            self.sql_statements.append(
-                self._create_insert_statement('building_contractors', link, use_upsert=False)
-            )
+            # Preserve all fields without validation
+            # validated = self.schema_mapper.validate_data('building_contractors', link)
+
+            # Build INSERT with non-NULL values
+            columns = []
+            values = []
+
+            if link.get('id'):
+                columns.append('id')
+                values.append(self._format_value(link['id']))
+
+            if link.get('building_id'):
+                columns.append('building_id')
+                values.append(self._format_value(link['building_id']))
+
+            # contractor_type defaults to 'service_provider'
+            contractor_type = link.get('contractor_type', 'service_provider')
+            columns.append('contractor_type')
+            values.append(self._format_value(contractor_type))
+
+            # company_name is required for building_contractors
+            company_name = link.get('company_name') or link.get('name')
+            if company_name:
+                columns.append('company_name')
+                values.append(self._format_value(company_name))
+
+            if link.get('email'):
+                columns.append('email')
+                values.append(self._format_value(link['email']))
+
+            if link.get('phone'):
+                columns.append('phone')
+                values.append(self._format_value(link['phone']))
+
+            if link.get('notes'):
+                columns.append('notes')
+                values.append(self._format_value(link['notes']))
+
+            if columns:
+                cols_str = ', '.join(columns)
+                vals_str = ', '.join(values)
+                self.sql_statements.append(f"INSERT INTO building_contractors ({cols_str})")
+                self.sql_statements.append(f"VALUES ({vals_str})")
+                self.sql_statements.append(f"ON CONFLICT (id) DO NOTHING;")
+                self.sql_statements.append("")
+
         self.sql_statements.append("")
 
     def _generate_assets_inserts(self, assets: List[Dict]):
