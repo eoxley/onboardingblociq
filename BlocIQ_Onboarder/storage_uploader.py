@@ -251,3 +251,70 @@ class SupabaseStorageUploader:
         except Exception as e:
             print(f"  ✗ Error deleting bucket '{bucket_name}': {e}")
             return False
+
+    def upload_report_pdf(self, pdf_path: str, building_id: str, report_name: str = "building_health_check.pdf") -> Optional[Dict]:
+        """
+        Upload a report PDF to the reports bucket
+        
+        Args:
+            pdf_path: Path to the PDF file
+            building_id: UUID of the building
+            report_name: Name of the report file
+            
+        Returns:
+            Dict with upload info or None if failed
+        """
+        if not os.path.exists(pdf_path):
+            print(f"  ✗ PDF not found: {pdf_path}")
+            return None
+            
+        bucket_name = "reports"
+        storage_path = f"{building_id}/{report_name}"
+        
+        try:
+            # Ensure reports bucket exists (create if needed)
+            try:
+                buckets = self.supabase.storage.list_buckets()
+                existing = [b for b in buckets if b['name'] == bucket_name]
+                
+                if not existing:
+                    self.supabase.storage.create_bucket(
+                        bucket_name,
+                        options={'public': False, 'file_size_limit': 52428800}
+                    )
+                    print(f"  ✓ Created '{bucket_name}' bucket")
+            except Exception as e:
+                if 'already exists' not in str(e).lower():
+                    print(f"  ⚠️  Bucket check: {e}")
+            
+            # Read PDF content
+            with open(pdf_path, 'rb') as f:
+                pdf_content = f.read()
+            
+            # Upload to Supabase Storage
+            result = self.supabase.storage.from_(bucket_name).upload(
+                path=storage_path,
+                file=pdf_content,
+                file_options={
+                    'content-type': 'application/pdf',
+                    'upsert': 'true'
+                }
+            )
+            
+            # Get public URL
+            public_url = self.supabase.storage.from_(bucket_name).get_public_url(storage_path)
+            
+            upload_info = {
+                'bucket': bucket_name,
+                'path': storage_path,
+                'url': public_url,
+                'file_name': report_name,
+                'building_id': building_id
+            }
+            
+            print(f"  ✅ Uploaded report to: {bucket_name}/{storage_path}")
+            return upload_info
+            
+        except Exception as e:
+            print(f"  ✗ Error uploading report: {e}")
+            return None

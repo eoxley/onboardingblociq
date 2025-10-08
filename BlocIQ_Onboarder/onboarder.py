@@ -1024,6 +1024,20 @@ class BlocIQOnboarder:
                     print(f"     • Asset register with compliance tracking")
                     print(f"     • Compliance matrix by category")
                     print(f"     • Auto-generated recommendations")
+                    
+                    # Upload PDF to Supabase reports bucket if configured
+                    if self.config.get('upload_to_supabase') and hasattr(self, 'supabase') and self.supabase:
+                        print(f"\n  📤 Uploading PDF to Supabase reports bucket...")
+                        uploader = SupabaseStorageUploader(self.supabase)
+                        upload_result = uploader.upload_report_pdf(
+                            pdf_path=str(main_pdf_path),
+                            building_id=building_id,
+                            report_name=f"building_health_check_{datetime.now().strftime('%Y%m%d')}.pdf"
+                        )
+                        if upload_result:
+                            print(f"  ✅ PDF uploaded to: {upload_result['bucket']}/{upload_result['path']}")
+                        else:
+                            print(f"  ⚠️  PDF upload failed, but local copy is available")
                 else:
                     print("  ⚠️  PDF generation returned no file path")
 
