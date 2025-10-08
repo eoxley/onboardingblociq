@@ -1241,9 +1241,9 @@ class BuildingHealthCheckGenerator:
                     pass
 
             table_data.append([
-                policy.get('insurer', 'N/A')[:20],
-                policy.get('policy_number', 'N/A')[:15],
-                policy.get('cover_type', 'N/A')[:15],
+                (policy.get('insurer') or 'N/A')[:20],
+                (policy.get('policy_number') or 'N/A')[:15],
+                (policy.get('cover_type') or 'N/A')[:15],
                 f"£{sum_insured:,.0f}" if sum_insured else 'N/A',
                 end_date_str or 'N/A',
                 f'<font color="{status_color}">{status}</font>'
