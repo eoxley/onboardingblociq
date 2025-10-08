@@ -106,6 +106,44 @@ class BuildingHealthCheckGenerator:
                 "missing": "❓"
             }
         }
+    
+    def _format_date(self, date_value: any, default: str = "Not recorded") -> str:
+        """Format date value for display"""
+        if not date_value or date_value == 'N/A':
+            return default
+        
+        # If already a string in readable format
+        if isinstance(date_value, str):
+            try:
+                # Try to parse and reformat
+                dt = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+                return dt.strftime('%d/%m/%Y')
+            except:
+                return date_value
+        
+        # If datetime object
+        try:
+            return date_value.strftime('%d/%m/%Y')
+        except:
+            return str(date_value)
+    
+    def _format_currency(self, amount: any, default: str = "Not specified") -> str:
+        """Format currency value for display"""
+        if amount is None or amount == '' or amount == 'N/A':
+            return default
+        
+        try:
+            value = float(amount)
+            return f"£{value:,.2f}"
+        except:
+            return default
+    
+    def _safe_get(self, data: dict, key: str, default: str = "Not recorded") -> str:
+        """Safely get value from dict with meaningful default"""
+        value = data.get(key)
+        if value is None or value == '' or value == 'N/A':
+            return default
+        return str(value)
 
     def _setup_custom_styles(self):
         """Setup custom paragraph styles"""
@@ -299,22 +337,31 @@ class BuildingHealthCheckGenerator:
 
     def _prepare_local_data(self, building_id: str, mapped_data: Dict) -> Dict:
         """Prepare local mapped_data for report generation"""
+        # Ensure building has all required fields
+        building = mapped_data.get('building', {})
+        if not building:
+            building = {}
+        
+        building.setdefault('id', building_id)
+        building.setdefault('name', 'Property Name Not Specified')
+        building.setdefault('address', 'Address Not Available')
+        
         data = {
-            'building': mapped_data.get('building', {'id': building_id, 'name': 'Unknown', 'address': 'Unknown'}),
+            'building': building,
             'compliance_assets': mapped_data.get('compliance_assets', []),
-            'insurance_policies': mapped_data.get('building_insurance', []),
-            'contracts': mapped_data.get('building_contractors', []),
-            'utilities': [],
-            'meetings': [],
-            'client_money': [],
+            'insurance_policies': mapped_data.get('insurance_policies', []) or mapped_data.get('building_insurance', []),
+            'contracts': mapped_data.get('contracts', []) or mapped_data.get('building_contractors', []),
+            'utilities': mapped_data.get('utilities', []),
+            'meetings': mapped_data.get('meetings', []),
+            'client_money': mapped_data.get('client_money', []),
             'units_count': len(mapped_data.get('units', [])),
-            'assets': mapped_data.get('compliance_assets', []),
-            'contractors': mapped_data.get('building_contractors', []),
-            'maintenance_schedules': [],
+            'assets': mapped_data.get('assets', []) or mapped_data.get('compliance_assets', []),
+            'contractors': mapped_data.get('contractors', []) or mapped_data.get('building_contractors', []),
+            'maintenance_schedules': mapped_data.get('maintenance_schedules', []),
             'apportionments': mapped_data.get('apportionments', []),
             'budgets': mapped_data.get('budgets', []),
             'building_insurance': mapped_data.get('building_insurance', []),
-            'fire_door_inspections': [],
+            'fire_door_inspections': mapped_data.get('fire_door_inspections', []),
             'leaseholders': mapped_data.get('leaseholders', []),
             'building_staff': mapped_data.get('building_staff', []),
             'leases': mapped_data.get('leases', [])
@@ -719,7 +766,13 @@ class BuildingHealthCheckGenerator:
         apportionments = self.building_data.get('apportionments', [])
         if apportionments:
             # Check if totals equal 100%
-            total_pct = sum(a.get('percentage', 0) for a in apportionments)
+            total_pct = 0
+            for a in apportionments:
+                pct = a.get('percentage', 0)
+                try:
+                    total_pct += float(pct) if pct else 0
+                except (ValueError, TypeError):
+                    pass
             apport_score = 100 if abs(total_pct - 100) < 0.1 else 70
             score += apport_score * 0.3
             weights.append(0.3)
@@ -957,24 +1010,57 @@ class BuildingHealthCheckGenerator:
         contracts = self.building_data.get('contracts', [])
 
         if not contractors and not contracts:
-            elements.append(Paragraph("No contractor data available.", self.styles['BodyText']))
+            elements.append(Paragraph(
+                "No contractor information has been identified during onboarding. "
+                "This section will be populated when contractor agreements and service contracts are provided.",
+                self.styles['BodyText']
+            ))
             elements.append(Spacer(1, 0.3*inch))
             return elements
 
+        # Summary stats
+        active_contracts = len([c for c in contracts if c.get('contract_status') == 'active'])
+        total_contractors = len(set(c.get('contractor_name') or c.get('company_name') for c in contracts if c.get('contractor_name') or c.get('company_name')))
+        
+        summary_text = f"<b>Active Contractors:</b> {total_contractors} | <b>Active Contracts:</b> {active_contracts}/{len(contracts)}"
+        elements.append(Paragraph(summary_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.2*inch))
+
         # List contractors and their contracts
-        for contract in contracts:
-            contractor_name = contract.get('contractor_name', 'Unknown Contractor')
-            service_type = contract.get('service_type', 'N/A').replace('_', ' ').title()
-            frequency = contract.get('frequency', 'N/A').title()
-            end_date = contract.get('end_date', 'N/A')
+        for contract in contracts[:15]:  # Limit to 15 for readability
+            contractor_name = self._safe_get(contract, 'contractor_name', 'Contractor name not recorded')
+            if contractor_name == 'Contractor name not recorded':
+                contractor_name = self._safe_get(contract, 'company_name', 'Unknown Contractor')
+            
+            service_type = contract.get('service_type', 'general_services')
+            service_type = service_type.replace('_', ' ').title() if service_type else 'General Services'
+            
+            frequency = contract.get('frequency') or contract.get('service_frequency', '')
+            frequency_display = frequency.replace('_', ' ').title() if frequency else 'As required'
+            
+            end_date = self._format_date(contract.get('end_date') or contract.get('contract_end'), 'Date not specified')
             status = contract.get('contract_status', 'unknown')
 
             # Status icon
-            status_icon = self.STATUS_ICONS.get(status, self.STATUS_ICONS.get('unknown'))
+            if status == 'active':
+                status_icon = '✅'
+                status_text = 'Active'
+            elif status == 'expired':
+                status_icon = '❌'
+                status_text = 'Expired'
+            elif status == 'expiring_soon':
+                status_icon = '⚠️'
+                status_text = 'Expiring Soon'
+            else:
+                status_icon = '❔'
+                status_text = 'Status Unknown'
 
-            contractor_line = f"{status_icon} <b>{contractor_name}</b> – {service_type} – {frequency} – Next Due: {end_date}"
+            contractor_line = f"{status_icon} <b>{contractor_name}</b> – {service_type} – {frequency_display} – Contract End: {end_date}"
             elements.append(Paragraph(contractor_line, self.styles['BodyText']))
             elements.append(Spacer(1, 0.1*inch))
+
+        if len(contracts) > 15:
+            elements.append(Paragraph(f"<i>... and {len(contracts) - 15} more contractors</i>", self.styles['BodyText']))
 
         elements.append(Spacer(1, 0.2*inch))
         return elements
@@ -990,72 +1076,93 @@ class BuildingHealthCheckGenerator:
         compliance_assets = {c.get('id'): c.get('compliance_status', 'unknown') for c in self.building_data.get('compliance_assets', [])}
 
         if not assets:
-            elements.append(Paragraph("No asset data available.", self.styles['BodyText']))
+            elements.append(Paragraph(
+                "Asset register is being compiled. This section tracks all building equipment, "
+                "systems and components requiring maintenance or compliance monitoring.",
+                self.styles['BodyText']
+            ))
             elements.append(Spacer(1, 0.3*inch))
             return elements
 
+        # Summary
+        summary_text = f"Total Assets Identified: <b>{len(assets)}</b>"
+        elements.append(Paragraph(summary_text, self.styles['BodyText']))
+        elements.append(Spacer(1, 0.2*inch))
+
         # Asset table
-        table_data = [['Asset', 'Contractor', 'Frequency', 'Last Service', 'Next Due', 'Compliance', 'Status']]
+        table_data = [['Asset Name', 'Type', 'Service Frequency', 'Last Serviced', 'Next Due', 'Status']]
 
         for asset in assets[:15]:  # First 15 assets
-            asset_name = asset.get('asset_name') or asset.get('asset_type', 'N/A').replace('_', ' ').title()
-            contractor_id = asset.get('contractor_id')
-            contractor_name = contractors.get(contractor_id, 'N/A')
-            frequency = asset.get('service_frequency', 'N/A')
-            last_service = asset.get('last_service_date', 'N/A')
-            next_due = asset.get('next_due_date', 'N/A')
-
-            # Get compliance status
-            compliance_id = asset.get('compliance_asset_id')
-            compliance_status = compliance_assets.get(compliance_id, 'unknown')
-            compliance_category = asset.get('compliance_category', 'N/A').replace('_', ' ').title()
+            asset_name = asset.get('asset_name')
+            if not asset_name or asset_name == 'N/A':
+                asset_type = asset.get('asset_type', 'asset').replace('_', ' ').title()
+                asset_name = f"{asset_type} (ID on file)"
+            
+            # Truncate long names
+            if len(asset_name) > 35:
+                asset_name = asset_name[:32] + '...'
+            
+            asset_type = asset.get('asset_type', 'general').replace('_', ' ').title()
+            
+            frequency = asset.get('service_frequency') or asset.get('frequency', '')
+            frequency_display = frequency.replace('_', ' ').title() if frequency else 'As required'
+            
+            last_service = self._format_date(
+                asset.get('last_service_date') or asset.get('last_inspection_date'),
+                'Not recorded'
+            )
+            next_due = self._format_date(
+                asset.get('next_due_date') or asset.get('next_inspection_date'),
+                'To be scheduled'
+            )
 
             # Determine status icon
-            if next_due and next_due != 'N/A':
+            status_icon = '❔'
+            next_due_raw = asset.get('next_due_date') or asset.get('next_inspection_date')
+            if next_due_raw and next_due_raw != 'N/A':
                 try:
-                    next_date = datetime.fromisoformat(next_due).date()
+                    next_date = datetime.fromisoformat(str(next_due_raw)).date()
                     today = datetime.now().date()
                     days_until = (next_date - today).days
 
                     if days_until < 0:
-                        status_icon = self.STATUS_ICONS['overdue']
+                        status_icon = '❌'
                     elif days_until < 30:
-                        status_icon = self.STATUS_ICONS['due_soon']
+                        status_icon = '⚠️'
                     else:
-                        status_icon = self.STATUS_ICONS['compliant']
+                        status_icon = '✅'
                 except:
-                    status_icon = self.STATUS_ICONS['unknown']
-            else:
-                status_icon = self.STATUS_ICONS['unknown']
+                    pass
 
             table_data.append([
                 asset_name,
-                contractor_name,
-                frequency,
+                asset_type,
+                frequency_display,
                 last_service,
                 next_due,
-                compliance_category,
                 status_icon
             ])
 
-        asset_table = Table(table_data, colWidths=[1.2*inch, 1.1*inch, 0.9*inch, 0.9*inch, 0.9*inch, 1.0*inch, 0.5*inch])
+        asset_table = Table(table_data, colWidths=[2.0*inch, 1.3*inch, 1.2*inch, 1.0*inch, 1.0*inch, 0.6*inch])
         asset_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 8),
             ('FONTSIZE', (0, 1), (-1, -1), 7),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.white])
         ]))
 
         elements.append(asset_table)
 
         if len(assets) > 15:
             elements.append(Spacer(1, 0.1*inch))
-            elements.append(Paragraph(f"<i>... and {len(assets) - 15} more assets</i>", self.styles['BodyText']))
+            elements.append(Paragraph(f"<i>... and {len(assets) - 15} additional assets on record</i>", self.styles['BodyText']))
 
         elements.append(Spacer(1, 0.3*inch))
         return elements
@@ -1149,27 +1256,52 @@ class BuildingHealthCheckGenerator:
         assets = self.building_data.get('compliance_assets', [])
 
         if not assets:
-            elements.append(Paragraph("No compliance data available.", self.styles['BodyText']))
+            elements.append(Paragraph(
+                "Compliance tracking is being established. This section monitors statutory inspections, "
+                "certifications and regulatory requirements for the building.",
+                self.styles['BodyText']
+            ))
             return elements
 
         # Summary stats
         compliant = sum(1 for a in assets if a.get('compliance_status') == 'compliant')
         overdue = sum(1 for a in assets if a.get('compliance_status') == 'overdue')
         due_soon = sum(1 for a in assets if a.get('compliance_status') == 'due_soon')
+        unknown = len(assets) - compliant - overdue - due_soon
 
         summary = f"""
-        <b>Total Assets:</b> {len(assets)}<br/>
-        <b><font color="green">Compliant:</font></b> {compliant} ({compliant/len(assets)*100:.0f}%)<br/>
-        <b><font color="red">Overdue:</font></b> {overdue}<br/>
-        <b><font color="orange">Due Soon:</font></b> {due_soon}
+        <b>Total Compliance Items:</b> {len(assets)}<br/>
+        <b><font color="green">✅ Compliant:</font></b> {compliant} ({compliant/len(assets)*100:.0f}%)<br/>
+        <b><font color="red">❌ Overdue:</font></b> {overdue} ({overdue/len(assets)*100:.0f}%)<br/>
+        <b><font color="orange">⚠️ Due Soon:</font></b> {due_soon}<br/>
+        <b><font color="gray">❔ Status Unknown:</font></b> {unknown}
         """
         elements.append(Paragraph(summary, self.styles['BodyText']))
         elements.append(Spacer(1, 0.2*inch))
 
         # Table of assets
-        table_data = [['Asset', 'Last Inspection', 'Next Due', 'Contractor', 'Status']]
+        table_data = [['Asset/Certificate', 'Last Inspection', 'Next Due', 'Responsible Party', 'Status']]
 
         for asset in assets[:10]:  # First 10
+            asset_name = asset.get('asset_name') or asset.get('name', 'Compliance Item')
+            if len(asset_name) > 30:
+                asset_name = asset_name[:27] + '...'
+            
+            last_inspection = self._format_date(
+                asset.get('inspection_date') or asset.get('last_inspection_date'),
+                'Not recorded'
+            )
+            next_due = self._format_date(
+                asset.get('reinspection_date') or asset.get('next_due_date'),
+                'To be scheduled'
+            )
+            
+            responsible = asset.get('inspection_contractor') or asset.get('responsible_party', '')
+            if responsible and len(responsible) > 20:
+                responsible = responsible[:17] + '...'
+            elif not responsible:
+                responsible = 'Not assigned'
+            
             status = asset.get('compliance_status', 'unknown')
             status_color = {
                 'compliant': 'green',
@@ -1177,27 +1309,36 @@ class BuildingHealthCheckGenerator:
                 'overdue': 'red',
                 'unknown': 'gray'
             }.get(status, 'black')
+            
+            status_display = status.replace('_', ' ').title()
 
             table_data.append([
-                asset.get('asset_name', 'N/A')[:30],
-                asset.get('inspection_date', 'N/A'),
-                asset.get('reinspection_date', 'N/A'),
-                asset.get('inspection_contractor', 'N/A')[:20],
-                f'<font color="{status_color}">{status.upper()}</font>'
+                asset_name,
+                last_inspection,
+                next_due,
+                responsible,
+                f'<font color="{status_color}"><b>{status_display}</b></font>'
             ])
 
-        compliance_table = Table(table_data, colWidths=[2*inch, 1*inch, 1*inch, 1.5*inch, 1*inch])
+        compliance_table = Table(table_data, colWidths=[2.0*inch, 1.2*inch, 1.2*inch, 1.5*inch, 1.0*inch])
         compliance_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.white])
         ]))
 
         elements.append(compliance_table)
+        
+        if len(assets) > 10:
+            elements.append(Spacer(1, 0.1*inch))
+            elements.append(Paragraph(f"<i>... and {len(assets) - 10} additional compliance items</i>", self.styles['BodyText']))
+        
         elements.append(Spacer(1, 0.3*inch))
 
         return elements
@@ -1211,53 +1352,81 @@ class BuildingHealthCheckGenerator:
         policies = self.building_data.get('insurance_policies', [])
 
         if not policies:
-            elements.append(Paragraph("No insurance data available.", self.styles['BodyText']))
+            elements.append(Paragraph(
+                "Insurance policy information is being compiled. This section will track building insurance, "
+                "liability cover, and other relevant policies including renewal dates and coverage levels.",
+                self.styles['BodyText']
+            ))
             return elements
 
+        # Summary
+        elements.append(Paragraph(f"<b>Policies on Record:</b> {len(policies)}", self.styles['BodyText']))
+        elements.append(Spacer(1, 0.2*inch))
+
         # Policy table
-        table_data = [['Insurer', 'Policy No.', 'Cover Type', 'Sum Insured', 'Expires', 'Status']]
+        table_data = [['Insurer', 'Policy Number', 'Cover Type', 'Sum Insured', 'Renewal Date', 'Status']]
 
         today = datetime.now().date()
 
         for policy in policies:
-            sum_insured = policy.get('sum_insured', 0) or 0
-            end_date_str = policy.get('end_date')
+            insurer = self._safe_get(policy, 'insurer', 'Insurer not recorded')
+            if len(insurer) > 20:
+                insurer = insurer[:17] + '...'
+            
+            policy_number = self._safe_get(policy, 'policy_number', 'Not recorded')
+            if len(policy_number) > 15:
+                policy_number = policy_number[:12] + '...'
+            
+            cover_type = self._safe_get(policy, 'cover_type', 'Buildings')
+            if len(cover_type) > 15:
+                cover_type = cover_type[:12] + '...'
+            
+            sum_insured = policy.get('sum_insured', 0) or policy.get('premium_amount', 0) or 0
+            sum_insured_display = self._format_currency(sum_insured, 'Not specified')
+            
+            end_date_str = policy.get('end_date') or policy.get('expiry_date')
+            expiry_date = self._format_date(end_date_str, 'Not recorded')
 
             status = '✅ Active'
             status_color = 'green'
 
             if end_date_str:
                 try:
-                    end_date = datetime.fromisoformat(end_date_str).date() if isinstance(end_date_str, str) else end_date_str
+                    end_date = datetime.fromisoformat(str(end_date_str)).date() if isinstance(end_date_str, str) else end_date_str
                     days_until = (end_date - today).days
 
                     if days_until < 0:
-                        status = '🔴 Expired'
+                        status = '❌ Expired'
                         status_color = 'red'
                     elif days_until < 30:
-                        status = f'🟠 {days_until}d'
+                        status = f'⚠️ {days_until} days'
                         status_color = 'orange'
+                    else:
+                        status = '✅ Current'
                 except:
-                    pass
+                    status = '❔ Unknown'
+                    status_color = 'gray'
 
             table_data.append([
-                (policy.get('insurer') or 'N/A')[:20],
-                (policy.get('policy_number') or 'N/A')[:15],
-                (policy.get('cover_type') or 'N/A')[:15],
-                f"£{sum_insured:,.0f}" if sum_insured else 'N/A',
-                end_date_str or 'N/A',
-                f'<font color="{status_color}">{status}</font>'
+                insurer,
+                policy_number,
+                cover_type,
+                sum_insured_display,
+                expiry_date,
+                f'<font color="{status_color}"><b>{status}</b></font>'
             ])
 
-        insurance_table = Table(table_data, colWidths=[1.5*inch, 1.2*inch, 1*inch, 1*inch, 1*inch, 1*inch])
+        insurance_table = Table(table_data, colWidths=[1.5*inch, 1.3*inch, 1.0*inch, 1.2*inch, 1.1*inch, 1.0*inch])
         insurance_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.white])
         ]))
 
         elements.append(insurance_table)
@@ -1408,14 +1577,16 @@ class BuildingHealthCheckGenerator:
         table_data = [['Asset Type', 'Name', 'Location', 'Condition', 'Last Service', 'Next Due']]
 
         for asset in assets[:20]:  # Limit to 20 assets
-            asset_type = asset.get('asset_type', 'N/A').replace('_', ' ').title()
-            asset_name = asset.get('asset_name', 'N/A')
-            location = asset.get('location_description', 'N/A')
-            if len(location) > 30:
-                location = location[:27] + '...'
+            asset_type = asset.get('asset_type', 'general').replace('_', ' ').title()
+            asset_name = asset.get('asset_name', 'Asset')
+            location = asset.get('location_description') or asset.get('location', 'Not specified')
+            if location and len(str(location)) > 30:
+                location = str(location)[:27] + '...'
+            elif not location:
+                location = 'Not specified'
             condition = asset.get('condition_rating', 'Unknown')
-            last_service = asset.get('last_service_date', 'N/A')
-            next_due = asset.get('next_due_date', 'N/A')
+            last_service = self._format_date(asset.get('last_service_date') or asset.get('last_inspection_date'), 'Not recorded')
+            next_due = self._format_date(asset.get('next_due_date') or asset.get('next_inspection_date'), 'To be scheduled')
 
             # Color code by condition
             if condition and condition.lower() == 'poor':
@@ -1585,47 +1756,65 @@ class BuildingHealthCheckGenerator:
         elements.append(Paragraph("💰 Budgets", self.styles['SectionHeader']))
 
         # Detection status summary
-        budgets_with_totals = len([b for b in budgets if b.get('total_amount')])
-        budgets_missing_totals = len(budgets) - budgets_with_totals
-
-        status_text = f"✅ Budgets detected: {len(budgets)}"
-        if budgets_missing_totals > 0:
-            status_text += f" | ⚠️ Missing totals in {budgets_missing_totals}/{len(budgets)} docs"
+        budgets_with_totals = len([b for b in budgets if b.get('total_amount') or b.get('total')])
+        
+        status_text = f"<b>Budget Documents Identified:</b> {len(budgets)}"
+        if budgets_with_totals < len(budgets):
+            status_text += f" | ⚠️ {len(budgets) - budgets_with_totals} require total calculation"
 
         elements.append(Paragraph(status_text, self.styles['BodyText']))
         elements.append(Spacer(1, 0.2*cm))
 
         # Build table
-        table_data = [['Year', 'Total', 'Status', 'Notes']]
+        table_data = [['Financial Year', 'Total Budget', 'Status', 'Notes']]
 
         for budget in budgets[:10]:  # Limit to 10
             year_start = budget.get('year_start', '')
             year_end = budget.get('year_end', '')
 
             if year_start and year_end:
+                # Format dates if they're date objects
+                try:
+                    if isinstance(year_start, str) and '-' in year_start:
+                        year_start = datetime.fromisoformat(year_start).strftime('%Y')
+                    if isinstance(year_end, str) and '-' in year_end:
+                        year_end = datetime.fromisoformat(year_end).strftime('%Y')
+                except:
+                    pass
                 year_display = f"{year_start} - {year_end}"
             else:
-                year_display = 'N/A'
+                year_display = 'Year not specified'
 
-            total = budget.get('total', 0)
-            total_display = f"£{total:,.0f}" if total else 'N/A'
+            total = budget.get('total_amount') or budget.get('total', 0)
+            total_display = self._format_currency(total, 'To be calculated')
 
-            status = budget.get('status', 'unknown').title()
-            notes = budget.get('notes', '')[:50]  # Truncate
+            status = budget.get('status', 'draft')
+            status_display = {
+                'draft': '📝 Draft',
+                'final': '✅ Final',
+                'approved': '✅ Approved'
+            }.get(status, status.title())
 
-            table_data.append([year_display, total_display, status, notes])
+            notes = budget.get('notes', budget.get('source_document', ''))
+            if notes and len(notes) > 50:
+                notes = notes[:47] + '...'
+            elif not notes:
+                notes = '-'
 
-        table = Table(table_data, colWidths=[3*cm, 2.5*cm, 2*cm, 6.5*cm])
+            table_data.append([year_display, total_display, status_display, notes])
+
+        table = Table(table_data, colWidths=[3*cm, 2.5*cm, 2.5*cm, 6*cm])
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_HEADER),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('FONTSIZE', (0, 1), (-1, -1), 8)
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.white])
         ]))
 
         elements.append(table)
@@ -1662,11 +1851,16 @@ class BuildingHealthCheckGenerator:
             unit_display = unit_id[:8] if unit_id else 'Unknown'
 
             percentage = app.get('percentage', 0)
-            total_percentage += percentage
+            try:
+                pct_value = float(percentage) if percentage else 0
+                total_percentage += pct_value
+                pct_display = f"{pct_value:.3f}%"
+            except (ValueError, TypeError):
+                pct_display = str(percentage) if percentage else "0.000%"
 
             schedule = app.get('schedule_name', 'N/A')
 
-            table_data.append([unit_display, f"{percentage:.3f}%", schedule])
+            table_data.append([unit_display, pct_display, schedule])
 
         # Add total row
         total_status = "✅ Correct" if abs(total_percentage - 100.0) < 0.1 else f"⚠️ {total_percentage:.3f}%"
