@@ -267,6 +267,7 @@ class ExcelFinancialExtractor:
             insurance = {
                 'id': str(uuid.uuid4()),
                 'building_id': self.building_id,
+                'insurance_type': 'general',  # Required NOT NULL column
                 'provider': provider,
                 'policy_number': policy_number,
                 'expiry_date': expiry_date,
@@ -289,6 +290,7 @@ class ExcelFinancialExtractor:
         insurance = {
             'id': str(uuid.uuid4()),
             'building_id': self.building_id,
+            'insurance_type': 'general',  # Required NOT NULL column
             'provider': None,
             'policy_number': None,
             'expiry_date': None,

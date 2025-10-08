@@ -272,6 +272,7 @@ class SQLWriter:
             "CREATE TABLE IF NOT EXISTS building_insurance (",
             "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
             "  building_id uuid REFERENCES buildings(id),",
+            "  insurance_type text NOT NULL DEFAULT 'general',",
             "  provider text,",
             "  policy_number text,",
             "  expiry_date date,",
