@@ -146,7 +146,7 @@ class BuildingIntelligenceEngine:
                         status = 'overdue'
                     elif days_until < 30:
                         status = 'due_soon'
-        else:
+                    else:
                         status = 'compliant'
                 except:
                     pass
