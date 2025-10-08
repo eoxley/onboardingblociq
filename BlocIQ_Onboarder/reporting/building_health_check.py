@@ -146,7 +146,7 @@ class BuildingIntelligenceEngine:
                         status = 'overdue'
                     elif days_until < 30:
                         status = 'due_soon'
-                    else:
+        else:
                         status = 'compliant'
                 except:
                     pass
@@ -219,7 +219,7 @@ class BuildingIntelligenceEngine:
                             'message': f"{asset_name} overdue by {days_overdue} days",
                             'priority': days_overdue  # Higher = more urgent
                         })
-                except:
+        except:
                     if status == 'overdue':
                         risks.append({
                             'asset': asset_name,
@@ -243,7 +243,7 @@ class BuildingIntelligenceEngine:
                             'message': f"{asset_name} due in {days_until} days",
                             'priority': 30 - days_until  # Sooner = higher priority
                         })
-                except:
+        except:
                     pass
         
         # Sort by priority (highest first) and take top 10
@@ -296,7 +296,7 @@ class BuildingIntelligenceEngine:
                             'title': 'Insurance Renewal Due',
                             'message': f"Policy {policy.get('policy_number', 'Unknown')} expires in {days_until} days. Begin renewal process."
                         })
-                except:
+        except:
                     pass
         
         # Contract recommendations
@@ -318,7 +318,7 @@ class BuildingIntelligenceEngine:
                         })
                 except:
                     pass
-        
+
         # Budget recommendations
         current_year = datetime.now().year
         has_current_budget = any(
@@ -441,7 +441,7 @@ class BuildingHealthCheckGenerator:
         if local_data:
             print("   📊 Using local data")
             self.building_data = local_data
-        else:
+                else:
             print("   📊 Querying database")
             self.building_data = self._query_building_data(building_id)
         
@@ -491,7 +491,7 @@ class BuildingHealthCheckGenerator:
     def _build_cover_page(self) -> List:
         """Build professional cover page with BlocIQ branding"""
         elements = []
-        
+
         building = self.building_data.get('building', {})
         building_name = building.get('name', 'Unknown Building')
         building_address = building.get('address', '')
@@ -501,7 +501,7 @@ class BuildingHealthCheckGenerator:
         if logo_path.exists():
             try:
                 logo = Image(str(logo_path), width=2.5*inch, height=1*inch)
-                elements.append(logo)
+                    elements.append(logo)
                 elements.append(Spacer(1, 0.3*inch))
             except:
                 pass
@@ -513,12 +513,12 @@ class BuildingHealthCheckGenerator:
             )
             elements.append(Spacer(1, 0.5*inch))
             elements.append(blociq_title)
-            elements.append(Spacer(1, 0.2*inch))
-        
+                    elements.append(Spacer(1, 0.2*inch))
+
         # Title
         elements.append(Paragraph("Building Intelligence Report", self.styles['BlocIQTitle']))
         elements.append(Spacer(1, 0.3*inch))
-        
+
         # Building name
         building_name_p = Paragraph(
             f'<para alignment="center" fontSize="20" fontName="Helvetica-Bold">{building_name}</para>',
@@ -566,9 +566,9 @@ class BuildingHealthCheckGenerator:
             self.styles['BodyText']
         )
         elements.append(footer_p)
-        
+
         return elements
-    
+
     def _create_score_bar(self, score: float) -> Optional[str]:
         """Create horizontal score bar with gradient"""
         try:
@@ -663,7 +663,7 @@ class BuildingHealthCheckGenerator:
                     status = '🟢 Good'
                 elif score >= 40:
                     status = '⚠️ Monitor'
-                else:
+            else:
                     status = '🔴 Critical'
                 
                 category_name = category.replace('_', ' ').title()
@@ -672,18 +672,18 @@ class BuildingHealthCheckGenerator:
             category_table = Table(category_data, colWidths=[2*inch, 1.2*inch, 1*inch, 1.3*inch])
             category_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(BlocIQBrandColors.PURPLE)),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, -1), 9),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                 ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(BlocIQBrandColors.GREY_LIGHT)])
-            ]))
-            
+        ]))
+
             elements.append(category_table)
-            elements.append(Spacer(1, 0.3*inch))
-        
+        elements.append(Spacer(1, 0.3*inch))
+
         # Top 3 urgent risks
         if self.engine.risk_items:
             elements.append(Paragraph("⚠️  Top Urgent Risks", self.styles['SubSection']))
@@ -693,16 +693,16 @@ class BuildingHealthCheckGenerator:
                 risk_text = f"{icon} <b>{risk['message']}</b>"
                 elements.append(Paragraph(risk_text, self.styles['BodyText']))
                 elements.append(Spacer(1, 0.1*inch))
-        
+
         return elements
-    
+
     def _build_category_breakdown(self) -> List:
         """Build visual category breakdown with charts"""
         elements = []
-        
+
         elements.append(Paragraph("Category Breakdown", self.styles['SectionHeader']))
         elements.append(Spacer(1, 0.2*inch))
-        
+
         # Create pie chart
         chart_path = self._create_compliance_pie_chart()
         if chart_path:
@@ -715,10 +715,10 @@ class BuildingHealthCheckGenerator:
         if category_chart_path:
             category_img = Image(category_chart_path, width=6*inch, height=3.5*inch)
             elements.append(category_img)
-            elements.append(Spacer(1, 0.3*inch))
-        
+        elements.append(Spacer(1, 0.3*inch))
+
         return elements
-    
+
     def _create_compliance_pie_chart(self) -> Optional[str]:
         """Create pie chart of compliance status distribution"""
         try:
@@ -807,14 +807,14 @@ class BuildingHealthCheckGenerator:
     def _build_compliance_table(self) -> List:
         """Build condensed compliance table"""
         elements = []
-        
+
         elements.append(Paragraph("Detailed Compliance Overview", self.styles['SectionHeader']))
         elements.append(Spacer(1, 0.2*inch))
         
         if not self.engine.compliance_assets:
             elements.append(Paragraph("No compliance data available.", self.styles['BodyText']))
             return elements
-        
+
         # Build table with top 25 assets
         table_data = [['Category', 'Asset', 'Last Inspection', 'Next Due', 'Status']]
         
@@ -870,18 +870,18 @@ class BuildingHealthCheckGenerator:
             elements.append(Spacer(1, 0.1*inch))
             remaining = len(self.engine.compliance_assets) - 25
             elements.append(Paragraph(f"<i>... and {remaining} additional compliance items</i>", self.styles['BodyText']))
-        
+
         elements.append(Spacer(1, 0.3*inch))
-        
+
         return elements
-    
+
     def _build_insurance_contractors(self) -> List:
         """Build insurance and contractors overview"""
         elements = []
-        
+
         elements.append(Paragraph("Insurance & Service Providers", self.styles['SectionHeader']))
-        elements.append(Spacer(1, 0.2*inch))
-        
+            elements.append(Spacer(1, 0.2*inch))
+
         # Insurance summary
         if self.engine.insurance:
             elements.append(Paragraph("Current Insurance Coverage", self.styles['SubSection']))
@@ -913,12 +913,12 @@ class BuildingHealthCheckGenerator:
             ins_table = Table(ins_data, colWidths=[3.5*cm, 3*cm, 3*cm, 2.5*cm])
             ins_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(BlocIQBrandColors.PURPLE)),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, -1), 9),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                 ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(BlocIQBrandColors.GREY_LIGHT)])
             ]))
             
@@ -950,24 +950,24 @@ class BuildingHealthCheckGenerator:
             contract_table = Table(contract_data, colWidths=[5*cm, 4*cm, 3*cm])
             contract_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(BlocIQBrandColors.PURPLE)),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, -1), 9),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                 ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor(BlocIQBrandColors.GREY_LIGHT)])
-            ]))
-            
+        ]))
+
             elements.append(contract_table)
             elements.append(Spacer(1, 0.3*inch))
-        
+
         return elements
-    
+
     def _build_major_works_budget(self) -> List:
         """Build major works and budget summary"""
         elements = []
-        
+
         # Major works
         if self.engine.major_works:
             elements.append(Paragraph("Major Works Projects", self.styles['SubSection']))
@@ -989,20 +989,20 @@ class BuildingHealthCheckGenerator:
             budget_text = f"Budget documents on record: {len(self.engine.budgets)}"
             elements.append(Paragraph(budget_text, self.styles['BodyText']))
             elements.append(Spacer(1, 0.3*inch))
-        
+
         return elements
-    
+
     def _build_recommendations(self) -> List:
         """Build action recommendations section"""
         elements = []
-        
+
         elements.append(Paragraph("Recommended Actions", self.styles['SectionHeader']))
         elements.append(Spacer(1, 0.2*inch))
         
         if not self.engine.recommendations:
             elements.append(Paragraph("No urgent actions required at this time.", self.styles['BodyText']))
             return elements
-        
+
         for rec in self.engine.recommendations:
             icon = rec['icon']
             title = rec['title']
@@ -1011,13 +1011,13 @@ class BuildingHealthCheckGenerator:
             rec_text = f"{icon} <b>{title}</b><br/>{message}"
             elements.append(Paragraph(rec_text, self.styles['RecommendationItem']))
             elements.append(Spacer(1, 0.15*inch))
-        
+
         return elements
-    
+
     def _build_appendix(self) -> List:
         """Build technical appendix with AI disclosure"""
         elements = []
-        
+
         elements.append(Paragraph("Technical Appendix", self.styles['SectionHeader']))
         elements.append(Spacer(1, 0.2*inch))
         
