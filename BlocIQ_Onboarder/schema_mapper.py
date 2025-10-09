@@ -53,6 +53,7 @@ class SupabaseSchemaMapper:
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'unit_id': 'uuid REFERENCES units(id)',
                 'building_id': 'uuid REFERENCES buildings(id)',
+                'unit_number': 'varchar(50)',  # Direct unit number reference
                 'name': 'text',
                 'email': 'text',
                 'correspondence_address': 'text',
@@ -132,8 +133,10 @@ class SupabaseSchemaMapper:
                 'document_id': 'uuid REFERENCES building_documents(id)',
                 'schedule_id': 'uuid REFERENCES schedules(id)',  # Link to schedule
                 'period': 'text NOT NULL',  # e.g., '2024-2025', 'YE2024'
-                'start_date': 'date',  # Budget period start
-                'end_date': 'date',  # Budget period end
+                'year_start': 'date',  # Budget year start
+                'year_end': 'date',  # Budget year end
+                'start_date': 'date',  # Budget period start (legacy)
+                'end_date': 'date',  # Budget period end (legacy)
                 'demand_date_1': 'date',  # First service charge demand date
                 'demand_date_2': 'date',  # Second service charge demand date (if applicable)
                 'year_end_date': 'date',  # Financial year end date
@@ -232,6 +235,7 @@ class SupabaseSchemaMapper:
                 'insurer_name': 'text',
                 'policy_number': 'text',
                 'renewal_date': 'date',
+                'expiry_date': 'date',  # Policy expiry date
                 'coverage_amount': 'numeric',
                 'premium_amount': 'numeric',
                 'document_id': 'uuid REFERENCES building_documents(id)',
@@ -326,7 +330,8 @@ class SupabaseSchemaMapper:
             },
             'contractors': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
-                'company_name': 'text NOT NULL',
+                'name': 'text NOT NULL',  # Supabase uses 'name' not 'company_name'
+                'company_name': 'text',  # Legacy alias
                 'contact_person': 'text',
                 'email': 'text',
                 'phone': 'text',
@@ -730,6 +735,7 @@ class SupabaseSchemaMapper:
                 'id': str(uuid.uuid4()),
                 'building_id': building_id,
                 'unit_id': unit_id,
+                'unit_number': unit_number,  # Add direct unit number reference
                 'name': name.strip(),
                 'email': self._extract_field_from_row(row, ['email', 'email address']),
                 'correspondence_address': correspondence_address
@@ -899,6 +905,7 @@ class SupabaseSchemaMapper:
                 'id': str(uuid.uuid4()),
                 'building_id': building_id,
                 'unit_id': unit_id,
+                'unit_number': unit_number,  # Add direct unit number reference
                 'name': leaseholder_name,
                 'email': None,
                 'correspondence_address': None
@@ -1871,7 +1878,7 @@ class SupabaseSchemaMapper:
                     'id': str(uuid.uuid4()),
                     'building_id': building_id,
                     'contractor_type': contractor_type,
-                    'company_name': company_name,
+                    'name': company_name,  # Use 'name' for Supabase compatibility
                     'notes': f'Extracted from property form'
                 }
 

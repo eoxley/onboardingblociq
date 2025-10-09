@@ -144,6 +144,40 @@ class SQLWriter:
         if 'leases' in mapped_data:
             self._generate_leases_inserts(mapped_data['leases'])
 
+        # Comprehensive Lease Extraction (28 Index Points)
+        if 'document_texts' in mapped_data:
+            self._generate_document_texts_inserts(mapped_data['document_texts'])
+
+        if 'lease_parties' in mapped_data:
+            self._generate_lease_parties_inserts(mapped_data['lease_parties'])
+
+        if 'lease_demise' in mapped_data:
+            self._generate_lease_demise_inserts(mapped_data['lease_demise'])
+
+        if 'lease_financial_terms' in mapped_data:
+            self._generate_lease_financial_terms_inserts(mapped_data['lease_financial_terms'])
+
+        if 'lease_insurance_terms' in mapped_data:
+            self._generate_lease_insurance_terms_inserts(mapped_data['lease_insurance_terms'])
+
+        if 'lease_covenants' in mapped_data:
+            self._generate_lease_covenants_inserts(mapped_data['lease_covenants'])
+
+        if 'lease_restrictions' in mapped_data:
+            self._generate_lease_restrictions_inserts(mapped_data['lease_restrictions'])
+
+        if 'lease_rights' in mapped_data:
+            self._generate_lease_rights_inserts(mapped_data['lease_rights'])
+
+        if 'lease_enforcement' in mapped_data:
+            self._generate_lease_enforcement_inserts(mapped_data['lease_enforcement'])
+
+        if 'lease_clauses' in mapped_data:
+            self._generate_lease_clauses_inserts(mapped_data['lease_clauses'])
+
+        if 'building_safety_reports' in mapped_data:
+            self._generate_building_safety_reports_inserts(mapped_data['building_safety_reports'])
+
         # Footer
         self._add_footer()
 
@@ -1248,6 +1282,142 @@ def generate_document_log_csv(documents: List[Dict]) -> str:
         csv_lines.append(','.join(row))
 
     return '\n'.join(csv_lines)
+
+    # =========================================
+    # COMPREHENSIVE LEASE EXTRACTION METHODS (28 Index Points)
+    # =========================================
+
+    def _generate_document_texts_inserts(self, documents: List[Dict]):
+        """Generate INSERT statements for document_texts table (OCR storage)"""
+        if not documents:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(documents)} document_texts records (OCR storage)")
+        for doc in documents:
+            self.sql_statements.append(
+                self._create_insert_statement('document_texts', doc, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_parties_inserts(self, parties: List[Dict]):
+        """Generate INSERT statements for lease_parties table (Index Point 3)"""
+        if not parties:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(parties)} lease_parties records (Lessor, Lessee, Management Co.)")
+        for party in parties:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_parties', party, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_demise_inserts(self, demise_records: List[Dict]):
+        """Generate INSERT statements for lease_demise table (Index Point 5)"""
+        if not demise_records:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(demise_records)} lease_demise records (Demise Definition)")
+        for demise in demise_records:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_demise', demise, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_financial_terms_inserts(self, financial_terms: List[Dict]):
+        """Generate INSERT statements for lease_financial_terms table (Index Points 12-14, 21-24)"""
+        if not financial_terms:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(financial_terms)} lease_financial_terms records")
+        for terms in financial_terms:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_financial_terms', terms, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_insurance_terms_inserts(self, insurance_terms: List[Dict]):
+        """Generate INSERT statements for lease_insurance_terms table (Index Point 14)"""
+        if not insurance_terms:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(insurance_terms)} lease_insurance_terms records")
+        for terms in insurance_terms:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_insurance_terms', terms, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_covenants_inserts(self, covenants: List[Dict]):
+        """Generate INSERT statements for lease_covenants table (Index Points 6, 8-11)"""
+        if not covenants:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(covenants)} lease_covenants records (Repair, Use, etc.)")
+        for covenant in covenants:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_covenants', covenant, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_restrictions_inserts(self, restrictions: List[Dict]):
+        """Generate INSERT statements for lease_restrictions table (Index Points 9-11, 17-19)"""
+        if not restrictions:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(restrictions)} lease_restrictions records (Pets, Subletting, RMC, etc.)")
+        for restriction in restrictions:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_restrictions', restriction, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_rights_inserts(self, rights: List[Dict]):
+        """Generate INSERT statements for lease_rights table (Index Point 20)"""
+        if not rights:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(rights)} lease_rights records (Access, Easements)")
+        for right in rights:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_rights', right, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_enforcement_inserts(self, enforcement: List[Dict]):
+        """Generate INSERT statements for lease_enforcement table (Index Points 15-16)"""
+        if not enforcement:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(enforcement)} lease_enforcement records (Forfeiture, Remedies)")
+        for record in enforcement:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_enforcement', record, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_clauses_inserts(self, clauses: List[Dict]):
+        """Generate INSERT statements for lease_clauses table (Index Point 25)"""
+        if not clauses:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(clauses)} lease_clauses records (Clause References for Traceability)")
+        for clause in clauses:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_clauses', clause, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_building_safety_reports_inserts(self, reports: List[Dict]):
+        """Generate INSERT statements for building_safety_reports table"""
+        if not reports:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(reports)} building_safety_reports records (FRAs, BSCs)")
+        for report in reports:
+            self.sql_statements.append(
+                self._create_insert_statement('building_safety_reports', report, use_upsert=False)
+            )
+        self.sql_statements.append("")
 
 
 def _csv_escape(value: str) -> str:

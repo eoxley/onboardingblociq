@@ -151,8 +151,10 @@ class ExcelFinancialExtractor:
             'id': str(uuid.uuid4()),
             'building_id': self.building_id,
             'period': period,
-            'start_date': year_start,  # Actual schema uses start_date not year_start
-            'end_date': year_end,      # Actual schema uses end_date not year_end
+            'year_start': year_start,  # Budget year start
+            'year_end': year_end,      # Budget year end
+            'start_date': year_start,  # Legacy field
+            'end_date': year_end,      # Legacy field
             'total_amount': total_amount,
             'confidence_score': 1.00,
             'name': file_name[:100] if file_name else None  # Budget name from filename

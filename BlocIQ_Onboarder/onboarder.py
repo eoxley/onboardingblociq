@@ -988,8 +988,8 @@ class BlocIQOnboarder:
                 building_id = 'temp-building-id'
                 print("\n  ℹ️  No building ID found, using temporary ID for report generation")
 
-            print("\n📊 Generating Building Health Check Report...")
-            from reporting.building_health_check_simple import generate_simple_health_check
+            print("\n📊 Generating BlocIQ Building Intelligence Report...")
+            from reporting.building_health_check import generate_building_intelligence_report
             import os
 
             # ALWAYS use local extracted data for onboarding health check
@@ -999,11 +999,12 @@ class BlocIQOnboarder:
             if not self.mapped_data or not isinstance(self.mapped_data, dict):
                 print("  ⚠️  No valid mapped data available, skipping health check")
             else:
-                # Generate simple, readable health check report using local data
-                print(f"  📊 Generating simple readable report with {len(self.mapped_data)} data sections...")
-                report_file = generate_simple_health_check(
-                    building_data=self.mapped_data,
-                    output_path=str(self.output_dir / 'building_health_check.pdf')
+                # Generate professional BlocIQ-branded intelligence report
+                print(f"  📊 Generating professional BlocIQ-branded report with {len(self.mapped_data)} data sections...")
+                report_file = generate_building_intelligence_report(
+                    building_id=building_id,
+                    output_dir=str(self.output_dir),
+                    local_data=self.mapped_data
                 )
 
                 if report_file:

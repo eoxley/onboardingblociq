@@ -19,10 +19,17 @@ load_dotenv()
 class LeaseExtractor:
     """Extract lease data from documents using OCR"""
 
-    # Lease detection keywords
+    # Document detection keywords
     LEASE_KEYWORDS = [
         'lease', 'leasehold', 'tenancy', 'official copy', 'transfer',
-        'assignment', 'demise', 'lessor', 'lessee'
+        'assignment', 'demise', 'lessor', 'lessee', 'head lease', 'underlease'
+    ]
+
+    SAFETY_KEYWORDS = [
+        'fire safety', 'bsc', 'safety case', 'gateway 3',
+        'building safety certificate', 'principal accountable person',
+        'fire risk assessment', 'fra', 'building safety act',
+        'fire strategy', 'accountable person'
     ]
 
     # OCR Service configuration - Load after dotenv is called
@@ -32,7 +39,7 @@ class LeaseExtractor:
 
     @property
     def RENDER_OCR_TOKEN(self):
-        return os.getenv('RENDER_OCR_TOKEN', 'blociq-dev-token-2024')
+        return os.getenv('RENDER_OCR_TOKEN', '1')
 
     def __init__(self, parsed_files: List[Dict], mapped_data: Dict):
         """
@@ -58,13 +65,13 @@ class LeaseExtractor:
     def extract_all(self) -> Dict:
         """
         Extract all lease data from documents
-        Limited to 1 OCR operation per run to avoid timeouts
+        Limited to 5 OCR operations per run to avoid timeouts
 
         Returns:
             Dictionary with extracted lease data and errors
         """
         print("  📜 Extracting lease information...")
-        ocr_limit = 1
+        ocr_limit = 5
         ocr_count = 0
 
         for parsed_file in self.parsed_files:
@@ -227,7 +234,7 @@ class LeaseExtractor:
                     files=files,
                     data=data,
                     headers=headers,
-                    timeout=60
+                    timeout=180
                 )
 
                 if response.status_code == 200:
