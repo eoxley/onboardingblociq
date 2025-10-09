@@ -1,0 +1,114 @@
+{
+  "building": {
+    "id": "uuid-123",
+    "name": "Connaught Square",
+    "address": "219.01 Connaught Square, London W2 2HL",
+    "year_built": 1999,
+    "units_count": 8,
+    "portfolio": "BlocIQ Portfolio",
+    "last_updated": "2025-10-09T10:00:00Z"
+  },
+  "leases": [
+    {
+      "unit": "Flat 1",
+      "term_start": "1992-01-01",
+      "term_years": 125,
+      "expiry": "2116-12-31",
+      "ground_rent": 350,
+      "sc_year": "Apr-Mar"
+    },
+    {
+      "unit": "Flat 2",
+      "term_start": "1992-01-01",
+      "term_years": 125,
+      "expiry": "2116-12-31",
+      "ground_rent": 350,
+      "sc_year": "Apr-Mar"
+    }
+  ],
+  "insurance": [
+    {
+      "provider": "Zurich",
+      "policy_number": "ZUR-21901-2025",
+      "period": "01/04/25-31/03/26",
+      "sum_insured": 32000000,
+      "premium": 12500,
+      "status": "active"
+    }
+  ],
+  "budgets": [
+    {
+      "heading": "Cleaning",
+      "budget": 7500,
+      "actual": 7100,
+      "comment": "Reduced hours contract"
+    },
+    {
+      "heading": "Lift Maintenance",
+      "budget": 12000,
+      "actual": 12500,
+      "comment": "Inflation increase"
+    }
+  ],
+  "compliance": [
+    {
+      "type": "FRA",
+      "date": "2024-12-07",
+      "next_due": "2025-12-07",
+      "status": "compliant",
+      "responsible": "GDA Surveying"
+    },
+    {
+      "type": "EICR",
+      "date": "2023-09-14",
+      "next_due": "2028-09-14",
+      "status": "compliant",
+      "responsible": "Satisfactory Ltd"
+    },
+    {
+      "type": "Asbestos",
+      "date": "2022-06-14",
+      "next_due": "2024-06-14",
+      "status": "overdue",
+      "responsible": "Tetra Consulting"
+    }
+  ],
+  "contractors": [
+    {
+      "service": "Cleaning",
+      "name": "Ace Cleaning",
+      "contact": "info@acecleaning.co.uk",
+      "renewal": "2025-06-30",
+      "status": "Active"
+    },
+    {
+      "service": "Lifts",
+      "name": "ISS Lifts Ltd",
+      "contact": "service@isslifts.co.uk",
+      "renewal": "2025-12-31",
+      "status": "Active"
+    }
+  ],
+  "majorWorks": [
+    {
+      "project": "Lift Replacement",
+      "status": "In Progress",
+      "budget": 75000,
+      "description": "Replacement of both passenger lifts"
+    }
+  ],
+  "documents": [
+    {
+      "filename": "Official Copy NGL827422.pdf",
+      "category": "Lease",
+      "uploaded": "2024-03-02",
+      "ocr_status": "Complete"
+    },
+    {
+      "filename": "Zurich_Certificate_2025.pdf",
+      "category": "Insurance",
+      "uploaded": "2025-04-01",
+      "ocr_status": "Complete"
+    }
+  ]
+}
