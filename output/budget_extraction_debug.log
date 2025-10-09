@@ -1,4 +1,6 @@
-Found 6 budget files
+Found 7 budget files
+Processing: connaught apportionment.xlsx, has_data: True
+  Extracted: 8 units from connaught apportionment.xlsx
 Processing: ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf, has_data: False
   Extracted: 0 units from ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf
 Processing: Connaught Square Budget 2025-6 Draft.xlsx, has_data: True

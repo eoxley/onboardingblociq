@@ -1,14 +1,23 @@
--- BlocIQ Onboarder - Auto-generated Migration
--- Generated at: 2025-10-08T09:28:01.647002
--- Review this script before executing!
+-- ============================================================
+-- PATCHED: BlocIQ Onboarder - Auto-generated Migration (Schema-Corrected)
+-- Generated at: 2025-10-09T17:19:58.080793
+-- ============================================================
 
 -- =====================================
 -- REQUIRED: Replace AGENCY_ID_PLACEHOLDER with your agency UUID
 -- =====================================
 
 -- =====================================
+-- EXTENSION: Ensure UUID generation
+-- =====================================
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- =====================================
 -- SCHEMA MIGRATIONS: Add missing columns if they don't exist
 -- =====================================
+
+-- Remove deprecated role column from building_staff (if exists)
+ALTER TABLE building_staff DROP COLUMN IF EXISTS role;
 
 -- Add building_id to leaseholders (if not exists)
 ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS building_id uuid;
@@ -16,7 +25,7 @@ ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS building_id uuid;
 -- Add unit_number to leaseholders (if not exists)
 ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS unit_number VARCHAR(50);
 
--- Add year_start and year_end to budgets (if not exists)
+-- Add year_start and year_end to budgets (if not exists) - ensure before index
 ALTER TABLE budgets ADD COLUMN IF NOT EXISTS year_start DATE;
 ALTER TABLE budgets ADD COLUMN IF NOT EXISTS year_end DATE;
 
@@ -87,31 +96,43 @@ CREATE TABLE IF NOT EXISTS fire_door_inspections (
 CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_building ON fire_door_inspections(building_id);
 CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_status ON fire_door_inspections(status);
 
--- Budgets
+-- Budgets (leave existing and rely on ALTERs above)
 CREATE TABLE IF NOT EXISTS budgets (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   building_id uuid REFERENCES buildings(id),
-  year_start date,
-  year_end date,
-  total_amount numeric(15,2),
-  status text CHECK (status IN ('draft','final','approved')),
-  source_document text,
-  notes text,
+  document_id uuid,
+  period text NOT NULL,
+  start_date date,
+  end_date date,
+  total_amount numeric,
+  demand_date_1 date,
+  demand_date_2 date,
+  year_end_date date,
+  budget_type text,
+  agency_id uuid,
+  schedule_id uuid,
+  year integer,
+  name text,
+  confidence_score numeric DEFAULT 1.00,
   created_at timestamptz DEFAULT now()
 );
 
+-- Safe now to index year_start
 CREATE INDEX IF NOT EXISTS idx_budgets_building ON budgets(building_id);
 CREATE INDEX IF NOT EXISTS idx_budgets_year ON budgets(year_start);
 
 -- Building Insurance
 CREATE TABLE IF NOT EXISTS building_insurance (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  building_id uuid REFERENCES buildings(id),
-  provider text,
+  building_id uuid NOT NULL REFERENCES buildings(id),
+  insurance_type text NOT NULL,
+  broker_name text,
+  insurer_name text,
   policy_number text,
-  expiry_date date,
-  premium_amount numeric(15,2),
-  source_document text,
+  renewal_date date,
+  coverage_amount numeric,
+  premium_amount numeric,
+  document_id uuid,
   notes text,
   created_at timestamptz DEFAULT now()
 );
@@ -122,20 +143,19 @@ CREATE INDEX IF NOT EXISTS idx_building_insurance_expiry ON building_insurance(e
 -- Building Staff
 CREATE TABLE IF NOT EXISTS building_staff (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  building_id uuid REFERENCES buildings(id),
-  name text NOT NULL,
-  role text,
-  contact_info text,
-  hours text,
-  company_name text,
-  contractor_id uuid REFERENCES building_contractors(id),
-  source_document text,
+  building_id uuid NOT NULL REFERENCES buildings(id),
+  staff_type text,
+  description text,
+  employee_name text,
+  position text,
+  start_date date,
+  end_date date,
+  document_id uuid,
   notes text,
   created_at timestamptz DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_building_staff_building ON building_staff(building_id);
-CREATE INDEX IF NOT EXISTS idx_building_staff_role ON building_staff(role);
 
 -- Timeline Events (for error logging and audit trail)
 CREATE TABLE IF NOT EXISTS timeline_events (
@@ -175,957 +195,1005 @@ CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);
 CREATE INDEX IF NOT EXISTS idx_leases_expiry ON leases(expiry_date);
 
 -- =====================================
+-- CONTRACTOR_CONTRACTS: Ensure service_category allows 'unspecified'
+-- =====================================
+DO $$
+BEGIN
+  -- Drop existing CHECK constraint if present
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'contractor_contracts_service_category_check'
+  ) THEN
+    ALTER TABLE contractor_contracts DROP CONSTRAINT contractor_contracts_service_category_check;
+  END IF;
+
+  -- Add CHECK constraint allowing 'unspecified' sentinel
+  ALTER TABLE contractor_contracts
+    ADD CONSTRAINT contractor_contracts_service_category_check
+    CHECK (service_category IN ('lifts','security','fire_alarm','cleaning','maintenance','insurance','legal','utilities','grounds','waste','other','unspecified'));
+EXCEPTION WHEN undefined_table THEN
+  -- Table doesn't exist yet, will be created with constraint later
+  NULL;
+END $$;
+
+-- =====================================
 -- DATA MIGRATION: Insert building data
 -- =====================================
 
--- Example: INSERT INTO agencies (id, name) VALUES ('AGENCY_ID_PLACEHOLDER', 'My Agency')
--- ON CONFLICT (id) DO NOTHING;
+-- Insert agency (required for portfolios foreign key)
+-- NOTE: Replace 'AGENCY_ID_PLACEHOLDER' with your actual agency UUID
+-- and 'Your Agency Name' with your agency name
+INSERT INTO agencies (id, name)
+VALUES ('AGENCY_ID_PLACEHOLDER', 'Your Agency Name')
+ON CONFLICT (id) DO NOTHING;
 
+-- Insert portfolio (linked to agency above)
 INSERT INTO portfolios (id, agency_id, name)
-VALUES ('b29b1193-cd46-49cd-ba4f-154426f3a2d6', 'AGENCY_ID_PLACEHOLDER', 'Default Portfolio')
+VALUES ('eb0ba9ba-f405-4617-8abf-7864c4a9ccf9', 'AGENCY_ID_PLACEHOLDER', 'Default Portfolio')
 ON CONFLICT (id) DO NOTHING;
 
 BEGIN;
 
 -- Insert building
-INSERT INTO buildings (id, name, address, portfolio_id) VALUES ('40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Connaught Square', 'CONNAUGHT SQUARE', 'b29b1193-cd46-49cd-ba4f-154426f3a2d6');
+INSERT INTO buildings (id, name, address, portfolio_id) VALUES ('e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Connaught Square', 'CONNAUGHT SQUARE', 'eb0ba9ba-f405-4617-8abf-7864c4a9ccf9');
 
 -- Insert 1 schedule(s)
-INSERT INTO schedules (id, building_id, name, description) VALUES ('3eb1227e-ae2e-40bc-a370-f340160710e7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Main Schedule', 'Auto-detected schedule from onboarding');
+INSERT INTO schedules (id, building_id, name, description) VALUES ('2c922416-3e98-400d-84a4-f7ecc3c37b01', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Main Schedule', 'Auto-detected schedule from onboarding');
 -- Created schedules: Main Schedule
 
 -- Insert 8 units
-INSERT INTO units (id, building_id, unit_number) VALUES ('13e33089-159c-461e-8762-2b92f28ce547', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 1');
-INSERT INTO units (id, building_id, unit_number) VALUES ('feaca086-682c-49af-ac7b-3069e34c7e24', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 2');
-INSERT INTO units (id, building_id, unit_number) VALUES ('588e2e89-7aad-433c-8171-c3205294f0de', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 3');
-INSERT INTO units (id, building_id, unit_number) VALUES ('be9d2886-65f6-4487-97eb-36944aae2876', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 4');
-INSERT INTO units (id, building_id, unit_number) VALUES ('b868cbb5-dad2-48ad-88c7-599293313bcb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 5');
-INSERT INTO units (id, building_id, unit_number) VALUES ('b3c8d092-0d38-4675-824c-ac9d1ecfeca6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 6');
-INSERT INTO units (id, building_id, unit_number) VALUES ('0e7a4791-11c1-4271-b488-40aa037ad885', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 7');
-INSERT INTO units (id, building_id, unit_number) VALUES ('87aecef5-ce1d-4667-abb2-02a54c0ab467', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Flat 8');
+INSERT INTO units (id, building_id, unit_number) VALUES
+('ce5de5a6-3d9c-4811-a865-689a9b76b273', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 1'),
+('34d05e69-2f83-4ea2-91ae-21ed12c2f1e7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 2'),
+('f88a8907-3e75-433d-9520-5669b52b5360', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 3'),
+('1e7ab66f-fa59-43a5-9444-915b30444fda', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 4'),
+('51d6aa42-b827-4614-9c6c-8a9dc00e1bd5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 5'),
+('7dbcae82-a59a-496d-8e70-51dc0f838d06', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 6'),
+('36633f77-4543-417c-8dde-9bd3f29bdfe6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 7'),
+('6caa675e-81ab-4a87-a842-32a5d71aa33e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Flat 8')
+ON CONFLICT (id) DO NOTHING;
 
--- Insert 8 leaseholders
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('d10a70f2-f4e8-4363-abc9-8dc9cf68281e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '13e33089-159c-461e-8762-2b92f28ce547', 'Marmotte Holdings Limited');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('63494781-324a-4bdd-83c1-542ec3740cab', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'feaca086-682c-49af-ac7b-3069e34c7e24', 'Ms V Rebulla');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('1f8fe882-9231-44f9-848b-d22dcc54b292', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '588e2e89-7aad-433c-8171-c3205294f0de', 'Ms V Rebulla');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('a0c0a3c2-c45b-4f51-8af3-3bb8e8c2b85d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'be9d2886-65f6-4487-97eb-36944aae2876', 'Mr P J J Reynish & Ms C A O''Loughlin');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('b340bd6d-6324-4c74-b629-c1a4e2f9910d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'b868cbb5-dad2-48ad-88c7-599293313bcb', 'Mr & Mrs M D Samworth');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('1eba360d-1349-4cd1-ac21-ebf98a5b4bd3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'b3c8d092-0d38-4675-824c-ac9d1ecfeca6', 'Mr M D & Mrs C P Samworth');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('a1064b59-e678-4097-b334-0039b2c45288', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '0e7a4791-11c1-4271-b488-40aa037ad885', 'Ms J Gomm');
-INSERT INTO leaseholders (id, building_id, unit_id, name) VALUES ('d414b493-e572-4fde-840e-ee8298e8fa69', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '87aecef5-ce1d-4667-abb2-02a54c0ab467', 'Miss T V Samwoth & Miss G E Samworth');
+-- Insert 8 leaseholders (schema has building_id and unit_number)
+INSERT INTO leaseholders (id, building_id, unit_id, unit_number, name) VALUES
+('00ecce67-5327-461e-85db-32a8e2c1b3bb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'ce5de5a6-3d9c-4811-a865-689a9b76b273', 'Flat 1', 'Marmotte Holdings Limited'),
+('80256cf0-60f4-4216-93e6-147a2498a6b3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '34d05e69-2f83-4ea2-91ae-21ed12c2f1e7', 'Flat 2', 'Ms V Rebulla'),
+('07731af1-61f0-47ee-bbee-91748835ef9e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'f88a8907-3e75-433d-9520-5669b52b5360', 'Flat 3', 'Ms V Rebulla'),
+('28e4cd96-6d9a-45eb-8f88-8e66a0fb46d5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '1e7ab66f-fa59-43a5-9444-915b30444fda', 'Flat 4', 'Mr P J J Reynish & Ms C A O''Loughlin'),
+('062d5d4e-f4b6-466a-b667-8df3506e5532', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '51d6aa42-b827-4614-9c6c-8a9dc00e1bd5', 'Flat 5', 'Mr & Mrs M D Samworth'),
+('e2059b17-3d80-4efa-8379-c58f500b87b9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '7dbcae82-a59a-496d-8e70-51dc0f838d06', 'Flat 6', 'Mr M D & Mrs C P Samworth'),
+('6e58cebb-df1c-4026-9885-ace07a82c677', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '36633f77-4543-417c-8dde-9bd3f29bdfe6', 'Flat 7', 'Ms J Gomm'),
+('91bd3921-0b48-47fe-b8d4-c106ae1ec969', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '6caa675e-81ab-4a87-a842-32a5d71aa33e', 'Flat 8', 'Miss T V Samwoth & Miss G E Samworth')
+ON CONFLICT (id) DO NOTHING;
 
 -- Insert 56 compliance assets
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('b2c12569-9c86-485e-a01e-15a51d18d3aa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 2024 Directors Meeting-Notes.docx', 'Compliance Asset', 'general', '12 months', '2024-01-01', '2025-01-01', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, location, is_active) VALUES ('ca76d921-926d-400c-9495-43149ceb0edd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Communal) Inspection (11m +) (7).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', 'Communal', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('11773620-8c18-4091-9285-fd87d58608a6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (13).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('404df702-1212-403e-8ee0-e598c4cbaced', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (18).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('b0a20d2f-9490-49c3-8dd1-df3f168ad65f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (14).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('c009aef8-e891-4eea-9c1d-4d9fc79ec6a1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from EICR Cuanku 32-34 conaught square.pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('53652672-8b71-45f1-a98d-7d881cc2e011', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (15).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('eb0a8d07-4418-4891-86b2-280bdbe629c7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('027edbc2-b264-4c1b-9d1b-c9b9ed5b72b6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (19).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('c41de099-f132-43d9-835e-2a20ed128c86', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 001132-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('5c5578b1-3beb-46c4-a428-f3c13d626758', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Compliance Asset', 'general', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('a38f107e-e979-478b-9433-8143ac1772d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('3830ad0a-01d3-4467-9ca5-b65c7825a2dc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (16).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('caf06cb3-d8e8-4bd9-8598-6ae8b14ea27f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (17).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('245d1df3-018c-4b5a-90f7-ef70d1937812', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from WHM Legionella Risk Assessment 07.06.22.pdf', 'Legionella Risk Assessment', 'water_safety', '24 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('a9250478-5aa8-4fbc-8619-3391267216f0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from EICR Report Cunaku SATISFACTORY 2023 .pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', '2023-01-01', '2028-01-01', 'compliant', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('a29db49e-34da-4483-b56f-e7a0c4148f4e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 2024 Directors Meeting-Notes.docx', 'Compliance Asset', 'general', '12 months', '2024-01-01', '2025-01-01', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('31b7ecfb-a22b-4b70-8667-79fc4857d92b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 001457-3234-Connaught-Square-London Certificate.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('504ff3ac-20e9-4301-b332-bc01a03a94ff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from TC0001V31 General Terms and Conditions.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('4d8cf27e-a941-4ca4-8693-b3d131b8a11a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Jobcard_For_Job_No_28992_24-01-2025_1545.pdf', 'Compliance Asset', 'general', '12 months', '2025-01-24', '2026-01-24', 'compliant', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('db5703da-c264-43ae-a74c-108747317b78', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Connaught Square (32-34) - 09.12.24 LRA.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('dc4b2a83-8aad-47d0-9aaa-16e8e36553c7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from SC Certificate - 10072023.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, location, is_active) VALUES ('93936f73-e8fb-4bd5-bce6-cf5d89c729a6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Communal) Inspection (11m +) (7).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', 'Communal', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('6b5c3d29-4281-4628-ac6b-ad17b58f7af0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (13).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('c246ff91-cab1-4d6c-9cb6-32a755d08b2d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (18).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('0240ef66-8246-42ad-9dd9-a66cf6445093', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (14).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('570a3518-0e71-46ce-8be4-e390aaf92ab5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (15).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('bcca537d-981a-4621-8e9f-7e52c2203eb8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (19).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('0ffc32f9-cb7b-44f7-a98b-43f3cb0956ef', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (16).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('bdc46c82-d0eb-4e0d-9f00-1b30abb56bed', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) (17).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('ef8938b8-ec16-4f32-b2a3-8bdec73a6e7d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('3a533d1d-c6e0-41de-93e0-521a8d52b89e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('7547664b-6404-4ec7-b2dc-90b6de0ec0fd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Connaught Square (32-34) - 15.11.23 (886) wa.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('5ac99679-153e-42cd-b976-aebe5b6e9c1d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('095e68aa-233b-42c4-9b92-4dabc99cb0aa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, location, is_active) VALUES ('fe868683-772e-4bbb-9713-c3e69bd0d52a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', 'Communal', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('6c6bbad3-b8c4-4490-983f-1b3d23b7bc44', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('7bc27476-9cdb-4f5a-9aba-973bed6ad0dd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('5194adc0-dee1-40f6-85a1-ba262b5ecb3c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'Compliance Asset', 'general', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('3481bfbb-b905-4b1f-b562-4a2c0dac417f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('21881f27-f48d-4811-9812-7653c50861ba', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Hsfra1-L-422971-210225 32-34 Connaught Square.pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('70846469-7734-4beb-8ab0-81295b6ffc4b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Hsfra1-L-422971-210225 32-34 Connaught Square.docx', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('f526cbdf-f288-4bf5-89dd-e8ce1fb2c943', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('5c276c33-c477-4191-9b31-990ae8f018b6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Compliance Asset', 'general', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('57c590dd-27dc-4f5d-bd80-f1658448fee0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from FRA-Connaught Square Reccommendations.xlsx', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('b8d8529a-d4c2-4536-b6ba-1ddc40a6acbd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 001534-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('e2f68b0e-a402-4ab1-b155-93f9b49c9da9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from C1047 - Job card.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('623696ff-b2d1-4a40-bfe7-c0ccc483b13a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from WHM Legionella Risk Assessment 09.12.25.pdf', 'Legionella Risk Assessment', 'water_safety', '24 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('595185b0-6f62-4da6-948d-d0ec19abf826', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from WHM Legionella Risk Assessment 07.06.22.pdf', 'Legionella Risk Assessment', 'water_safety', '24 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('eed515a2-4a99-479a-b196-7b47a92b0840', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from Connaught Square (32-34) - 29.05.25 (201) wa.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('db0b8070-37ae-4f1f-9064-344f2ee43493', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from EICR Cuanku 32-34 conaught square.pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('95b895fc-07ea-48cf-a9cd-612c60c71f98', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from EICR Report Cunaku SATISFACTORY 2023 .pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', '2023-01-01', '2028-01-01', 'compliant', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('69087942-465f-4a60-92b5-a012b8411a4d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 001132-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('f22a6ccf-cc02-492c-abd5-a87375cbfe87', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from 001534-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('ac223efa-1c76-47f0-83e3-a855bd56b991', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
-INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('b467c371-8e1c-4bb9-a771-13ad269fb466', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Extracted from TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('5ca83e99-40d9-48cf-8d35-c72f05b3ce94', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 2024 Directors Meeting-Notes.docx', 'Compliance Asset', 'general', '12 months', '2024-01-01', '2025-01-01', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, location, is_active) VALUES ('df46879d-9224-4d5a-9c91-df8ebab00db9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Communal) Inspection (11m +) (7).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', 'Communal', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('fad3292e-a57d-4c84-8f72-3a5967669012', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (13).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('db221dae-173b-4c18-81c9-20916654c5df', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (18).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('bc41afeb-d85c-4970-87d3-9e53707c219f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (14).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('1f22a32d-8f22-4295-b7f6-dbcef6f6263e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from EICR Cuanku 32-34 conaught square.pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('2aa48fc6-af3c-4e62-bc1b-a8c740b9fd66', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (15).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('b71adc07-5192-4608-b672-33770344e9dc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('66b930cd-f8fb-4c4d-b98f-095f0c603b5f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (19).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('247d2f1a-dae4-432a-bc23-5b16b230df9e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 001132-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('3ae9e695-9bc3-4a51-b439-9a09fdfaaa60', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Compliance Asset', 'general', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('7906df7a-13e9-44c1-88cd-f91487a58022', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('00c3eedb-aaea-4d1e-b1f6-39aa0196ba65', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (16).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('cdae0416-1de9-488b-8369-634d035f70f1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (17).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('57c990a1-9aef-46a8-bfdc-3b19d84ab39e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from WHM Legionella Risk Assessment 07.06.22.pdf', 'Legionella Risk Assessment', 'water_safety', '24 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('8d62c047-5e07-4635-b0ea-3b21265a061d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from EICR Report Cunaku SATISFACTORY 2023 .pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', '2023-01-01', '2028-01-01', 'compliant', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('cd1539f6-1261-47cb-a0fd-18ec3f18b4b7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 2024 Directors Meeting-Notes.docx', 'Compliance Asset', 'general', '12 months', '2024-01-01', '2025-01-01', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('56e62bfb-8644-46de-b8f0-7379b7c3b6a9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 001457-3234-Connaught-Square-London Certificate.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('a3a26b20-969b-4618-bfcf-e78014bc3d0d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from TC0001V31 General Terms and Conditions.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('73a91837-178a-462b-bcb5-fa91184ae482', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Jobcard_For_Job_No_28992_24-01-2025_1545.pdf', 'Compliance Asset', 'general', '12 months', '2025-01-24', '2026-01-24', 'compliant', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('edbd5680-76ad-4cbb-857d-a70f0765ab72', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Connaught Square (32-34) - 09.12.24 LRA.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('1a52dae6-9cd9-4fa6-8cd1-50d2d4bf5e6f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from SC Certificate - 10072023.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, location, is_active) VALUES ('eac9f41e-c213-4ce4-873a-4639c0da81dc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Communal) Inspection (11m +) (7).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', 'Communal', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('02f13562-9c43-4982-826a-52185efdf40d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (13).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('80cda00b-bb3f-49ad-b3ee-c62d3c4eff21', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (18).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('880a4890-25de-4a9e-92b9-40aee75e6fb3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (14).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('2dacd6bf-cf23-474f-bb14-6c17e9c0d462', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (15).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('d0947519-7893-440f-ab53-ecfbc1e19831', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (19).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('2cc3402a-775a-453f-958c-33c6413e565a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (16).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('f143e6bf-b107-4035-8612-1681197b67d3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) (17).pdf', 'Fire Door Inspection', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('26d8a580-5dce-4911-a8ac-3fd736b1bb24', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('7b32663e-056b-4578-899d-475cf57eedc7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('a60d1042-102c-4f16-8e75-9b7015e98483', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Connaught Square (32-34) - 15.11.23 (886) wa.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('5f4dfb92-2ae8-4b47-bcd0-6592c7613642', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('06a414dd-a735-4b96-8a22-3f0cc6f686bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, location, is_active) VALUES ('dfe36e9f-c954-4a77-ae18-81ad457a2e22', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', 'Communal', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('f2957112-a5c1-4b65-96e4-c0fb88db6172', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('1db76f63-fee8-425b-8f92-57ef59a55475', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('3152b66f-c1ff-4fa7-9499-d8ad04982166', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'Compliance Asset', 'general', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('06d36d15-b0b3-4170-99d9-d2715caaf0c1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf', 'Fire Door Inspection', 'fire_safety', '12 months', '2024-01-24', '2025-01-24', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('df55713d-a74d-40f7-af42-efbe20fe972f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Hsfra1-L-422971-210225 32-34 Connaught Square.pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('29a2946d-2bea-4c2e-be80-6fffa408d5a2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Hsfra1-L-422971-210225 32-34 Connaught Square.docx', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('40419323-f51c-489d-bfad-4943c4132056', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('1782f2c8-4696-4290-b982-a8446ce55aa2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'Compliance Asset', 'general', '12 months', '2024-01-02', '2025-01-02', 'overdue', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('8c317290-1a17-4d87-8335-f34380ccf626', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from FRA-Connaught Square Reccommendations.xlsx', 'Fire Risk Assessment (FRA)', 'fire_safety', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('a0d3b8cb-bc05-479d-b090-fe3fe1c7f7d3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 001534-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('9924adfe-a5d4-46b9-a427-b8de70d78522', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from C1047 - Job card.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('fa82ed27-f507-4420-9733-89e6f9a648fd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from WHM Legionella Risk Assessment 09.12.25.pdf', 'Legionella Risk Assessment', 'water_safety', '24 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('fc44604d-7b72-49fa-95a7-4283a9b26171', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from WHM Legionella Risk Assessment 07.06.22.pdf', 'Legionella Risk Assessment', 'water_safety', '24 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('5f7ccbda-1c55-488c-b64d-4f782a8480b8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from Connaught Square (32-34) - 29.05.25 (201) wa.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('0cbf35d8-253c-476e-a74d-3f482fce02b8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from EICR Cuanku 32-34 conaught square.pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, last_inspection_date, next_due_date, compliance_status, is_active) VALUES ('1bbf46c2-0ec7-466a-b44a-fd877c42923c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from EICR Report Cunaku SATISFACTORY 2023 .pdf', 'Electrical Installation Condition Report (EICR)', 'electrical', '60 months', '2023-01-01', '2028-01-01', 'compliant', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('6858c1b4-47bc-4ecc-a043-41cabe1bba2d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 001132-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('c34c3526-78d7-40ac-93a4-f53ffdd76ba0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from 001534-3234-Connaught-Square-London.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('dd3a24eb-a4eb-4381-aa93-3d11d2dfd318', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
+INSERT INTO compliance_assets (id, building_id, description, asset_name, asset_type, inspection_frequency, compliance_status, is_active) VALUES ('f5a8d6b0-8cc8-49c9-9f48-257c3100a8ca', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Extracted from TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'Compliance Asset', 'general', '12 months', 'unknown', TRUE);
 
 -- Insert 4 major works projects
-INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('3af3687e-5aca-435e-860b-8f92694276c6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'External Decoration - 2025', 'planned', '2025-01-01');
-INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('6419f392-3050-453d-8c13-b9d457337002', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Section 20 Consultation (SOE) - 2025', 'planned', '2025-01-01');
-INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('1d62f9bd-c7b0-4e6d-bdcd-edf5127235c7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Lift - Section 20 (NOI) - 2025', 'planned', '2025-01-01');
-INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('b1381e8f-88bc-47f4-b40b-ab04353308d5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Major Works Project - 2025', 'planned', '2025-01-01');
+INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('0ddb9bb7-348a-4636-b3fa-19267e0688e9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'External Decoration - 2025', 'planned', '2025-01-01');
+INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('994e8cc5-0c4a-4161-9bd8-edf52c0a0e4b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Section 20 Consultation (SOE) - 2025', 'planned', '2025-01-01');
+INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('1ca52d11-f6be-4317-9340-de3f3e98a337', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Lift - Section 20 (NOI) - 2025', 'planned', '2025-01-01');
+INSERT INTO major_works_projects (id, building_id, project_name, status, start_date) VALUES ('35a9ab5a-0fdd-47ee-82f6-d02665e7adf1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Major Works Project - 2025', 'planned', '2025-01-01');
 
 -- Insert 22 budgets
-INSERT INTO budgets (id, building_id) VALUES ('94f32da6-d963-4298-9582-ea8325453ece', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('2f22dcf3-d44e-4aee-b906-a7b3863fc263', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('94c3a8de-193b-464e-84a7-5c25894e98ec', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('2d2adfea-5911-43eb-b18b-65f69037bb75', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('be424008-ac3c-4571-af12-1ebcbf5d40e3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('f4ca6385-0799-46d3-8af7-6af323e5fb06', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('c9a75b5d-a2bf-456e-b74b-b2403e54ddb9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('59068ce6-ac68-4312-9d1a-96ae22212c87', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('be4e269a-d818-4663-874b-7fe67ed49674', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('d2e8c5c1-c2f3-4488-aabf-eaba0dfcfea0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('6513a93d-07f2-4ec8-ac2b-342ead68f387', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('5dd25a62-4118-4052-b8ca-5300f6cfea6f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('f3fe2442-1865-4510-9cde-52f6173578c1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('bf0967c1-d5a0-4961-b222-c970d45df3d1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('1158255f-3b27-4f85-b2bd-b7993d01e545', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('67c861d5-3d8b-4808-a5c3-c4a7c02fc5e6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('ee9075af-c889-4dc2-a26d-3afa96802463', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('71523fe8-5c3c-427b-8f05-f31f12427e86', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('1f037a24-93d4-4172-9b1c-2837f9d32d22', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('b6ef849b-26ea-4145-8352-e32739556f7b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('519d46bb-27c1-4ec3-bb03-f0e59360b32c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO budgets (id, building_id) VALUES ('9f032c93-5320-41ca-b60d-cede7cb11826', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('b875c2f5-1c5f-423a-b7b0-a47d6d374b17', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('be9d6c8c-440b-42db-b2e7-16b5c00530f7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('803dafdd-102a-4e81-b441-0f1aada8eecf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('30ce5e44-b860-4a91-8c2c-c93800d497c7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('d9a71ea2-c817-48a2-abfb-8492835d1850', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('b27f0744-7de0-4e5c-8dde-11657d51f27c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('db7bc062-6b77-4256-992a-e1f0b2001689', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('c8417294-26da-4882-aee7-fa7ff1d054ce', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('0b05f70f-db40-48f8-896d-95d4a22c6ac9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('06918f5a-9310-4dd0-8af1-7b732d374637', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('abe75575-6c5a-42b4-ac28-31cbfed1a7e6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('b110be35-3919-4182-a2ce-8c7bded6ad63', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('c5dad7f0-f2b9-498f-b1e9-af29bd583ece', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('297f6f79-bf03-47ed-af96-cb28606f9039', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('c4761802-58c1-4b1e-ba0e-7c5b822fd426', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('db787f99-6e7f-45ca-ad60-ad1925fefc63', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('fcc72930-30d1-473d-8608-f588617e2830', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('072a39c4-bd25-4ec7-8c8d-346cc0d6eeff', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('ef9c7ea8-f5dc-400c-94b1-3b540b75ad2c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('a11d9729-6ba9-4bc6-870e-2724c75c137b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('86c643ab-949d-4600-b5e0-06babfd650a6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
+INSERT INTO budgets (id, building_id, year_start, year_end, period) VALUES ('aa10e50b-073b-490b-95d6-b3a343c65faa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2025-04-01', '2026-03-31', '2025');
 
--- Insert 316 document records
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('53a49509-fd17-4660-a3bc-c2341d041d90', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Important Information .pdf', 'lease/Important Information .pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('be550639-fbba-4f6f-8ea9-3aed75f6485e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c76dd562-7d24-4496-9440-bab082526a66', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf', 'lease/Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4051075f-497d-49dc-b44d-1bb8e079353f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf', 'lease/Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('44ae79e0-e3f8-47b6-9f76-3f9061b7e88b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Official Copy (Lease) 13.06.2003 - NGL827422.pdf', 'lease/Official Copy (Lease) 13.06.2003 - NGL827422.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1d62c03a-7fc6-49ee-9cff-658d1d88b3fd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Official Copy (Lease) 04.08.2022 - NGL809841.pdf', 'lease/Official Copy (Lease) 04.08.2022 - NGL809841.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f2444344-01aa-41e9-bc1f-1cc4f99f191a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Signed April 2025 Arrears Collection Procedure.pdf', 'lease/Signed April 2025 Arrears Collection Procedure.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('257dd282-8a80-4279-829c-d48195076d22', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'WP0005V17 Welcome Pack.pdf', 'lease/WP0005V17 Welcome Pack.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('92dc292e-97b8-4657-aa6a-30ec3a2ffd9b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_33844_07-04-2025_1143.pdf', 'lease/Jobcard_For_Job_No_33844_07-04-2025_1143.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3b859327-a2fe-4c81-a8d0-bb42812d3db6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_37675_25-07-2025_1549.pdf', 'lease/Jobcard_For_Job_No_37675_25-07-2025_1549.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3d636fb1-3598-4a7d-a8f3-125aac450c30', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_34012_01-05-2025_1616.pdf', 'lease/Jobcard_For_Job_No_34012_01-05-2025_1616.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('53d10871-c3e2-429f-a144-aed893bb5db4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_32759_17-03-2025_1145.pdf', 'lease/Jobcard_For_Job_No_32759_17-03-2025_1145.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('effb487d-7d25-49cf-a611-4f92c00fdd33', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_32810_17-03-2025_1311.pdf', 'lease/Jobcard_For_Job_No_32810_17-03-2025_1311.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f5d44f4e-7a4c-4701-b732-589c1f41f795', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf', 'contracts/Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5b15186b-de32-46cf-99b5-1a9f2102b669', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Licence_Document_352024.pdf', 'lease/Licence_Document_352024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7fb1d716-67cb-463d-a741-138925f515b3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-12-09-2024.pdf', 'lease/JLGServiceVisit-M00813-12-09-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2328feeb-a24f-4886-bf6e-fe5e58ab6e5a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-13-11-2024.pdf', 'lease/JLGServiceVisit-M00813-13-11-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('097e6139-8bd1-4776-9f7a-5d3ad548c5b2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-02-12-2024.pdf', 'lease/JLGServiceVisit-M00813-02-12-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('56db6fa9-e36d-464a-b92f-14bea8c44f4a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-08-07-2024.pdf', 'lease/JLGServiceVisit-M00813-08-07-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('88c0033f-7555-4803-bd2b-09d182581d5b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-08-10-2024.pdf', 'lease/JLGServiceVisit-M00813-08-10-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('135afdd5-a64d-4f77-92da-346361f0c707', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-12-02-2025.pdf', 'lease/JLGServiceVisit-M00813-12-02-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1d5c71ae-eae2-40d2-b6bc-df2f5e9c7983', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-17-03-2025.pdf', 'lease/JLGServiceVisit-M00813-17-03-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ab0044cb-f9e2-40c3-96e6-d24bdd230685', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-14-04-2025.pdf', 'lease/JLGServiceVisit-M00813-14-04-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d7bd5891-f7fc-4d1d-9abc-f64948d4fffc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'REP-40343473-L1.pdf', 'lease/REP-40343473-L1.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('06234b26-f533-436b-818f-2f3589dc86ff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'JLGServiceVisit-M00813-13-05-2025.pdf', 'lease/JLGServiceVisit-M00813-13-05-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c7c7e919-ad86-4d8f-a48b-dacc5d92ff78', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Communal Cleaning-First Port.pdf', 'lease/Communal Cleaning-First Port.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('de2cdb13-e411-46d3-9e69-8db80c541015', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'SC Health and Safety Product - Accredited 10072023.pdf', 'lease/SC Health and Safety Product - Accredited 10072023.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('320df57b-051e-4858-9d2c-1d63a933b60e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Tenancy Schedule by Property.pdf', 'lease/Tenancy Schedule by Property.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('aa7c8ecf-30ca-42ae-ad27-115e64bbb3d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'Accounts YE 31.03.2022 32-34 Connaught Square MJP.pdf', 'finance/Accounts YE 31.03.2022 32-34 Connaught Square MJP.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('04035f63-6747-45ad-a688-c8927adb093a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', '197-YE 31.03.22 SC Accs FINAL MAY 2023.pdf', 'finance/197-YE 31.03.22 SC Accs FINAL MAY 2023.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2d564b06-7769-4d92-a11f-5853376a1fbb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8509660d-f375-48c8-a3b8-ba25435afb20', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', '27039 Accounts Pack - YE 2023.pdf', 'finance/27039 Accounts Pack - YE 2023.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('94af0675-e001-4050-b437-b2b239a2add1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'Connaught Sq SC YE 23.pdf', 'finance/Connaught Sq SC YE 23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ab8fb58e-3553-4d41-a4df-c188f6c2e290', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Connaught Square-House Rules.docx', 'lease/Connaught Square-House Rules.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('80f750a6-3ddb-4c91-b96b-b573a0a1068f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Garden Notice-Connaught Square.docx', 'correspondence/Garden Notice-Connaught Square.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('10959d27-c287-45bb-aa58-029bdcac3481', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Connaught Square-Key Cut Authorisation Letter.docx', 'correspondence/Connaught Square-Key Cut Authorisation Letter.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('01afb3dd-c757-49a1-baa4-6bca2c86fb4b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'House Rules-Connaught Square.pdf', 'lease/House Rules-Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7524be36-efca-4639-859d-25de4f864a6f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'REP-39659654.pdf', 'lease/REP-39659654.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c464ec9b-31b2-468b-95f8-7a480038e27d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Important Information .pdf', 'lease/Important Information .pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0b8be2eb-e677-4727-933a-83f52dd96c0d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'lease/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ee8cb2ab-af24-4152-a02b-ee3df49eba59', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'CM434.AnnualServiceAgreement2025-2026.pdf', 'contracts/CM434.AnnualServiceAgreement2025-2026.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('297782a8-ab7c-4647-8f72-f23d1111dcda', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'CM434.AnnualServiceAgreement2024-2025.pdf', 'contracts/CM434.AnnualServiceAgreement2024-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('15840937-2521-47da-b451-2d931ed6b48b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'REP-40324834-E3.pdf', 'lease/REP-40324834-E3.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dffab708-0a01-4342-a3e5-c1e37ebf63a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Ellie@mihproperty.co.uk - BES Group - E-Report.pdf', 'lease/Ellie@mihproperty.co.uk - BES Group - E-Report.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('176a8f04-7d84-4353-9475-e340f572355f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_38609_26-08-2025_0741.pdf', 'lease/Jobcard_For_Job_No_38609_26-08-2025_0741.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cd2555e2-c549-45ac-bf10-c746a27b85c6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_28737_25-11-2024_0907.pdf', 'lease/Jobcard_For_Job_No_28737_25-11-2024_0907.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('63c12922-86d8-492f-b80b-1efbfafc9cd6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_35402_03-06-2025_0916.pdf', 'lease/Jobcard_For_Job_No_35402_03-06-2025_0916.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7da116cc-2ccd-4d54-bc58-167558c5bc5d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_35654_03-06-2025_0911.pdf', 'lease/Jobcard_For_Job_No_35654_03-06-2025_0911.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4f5a5a80-b5ca-4917-8bd5-2eec911b6850', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_37675_25-07-2025_1549.pdf', 'lease/Jobcard_For_Job_No_37675_25-07-2025_1549.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e692d815-d1a0-4b46-b6fa-7511984658ea', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_35146_03-06-2025_0906.pdf', 'lease/Jobcard_For_Job_No_35146_03-06-2025_0906.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5b3a71dc-cad0-4294-9a2c-8be953c43759', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_31162_30-01-2025_1602.pdf', 'lease/Jobcard_For_Job_No_31162_30-01-2025_1602.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bc29592e-0d3d-475f-8e0e-a1a10baf0d2e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Jobcard_For_Job_No_36465_20-06-2025_1037.pdf', 'lease/Jobcard_For_Job_No_36465_20-06-2025_1037.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('21ee75ba-0c42-4381-9771-5651527b87b4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'budget', '6c32cff3-541a-48b4-ad84-5fad072f6363');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('bcd92669-c176-4ac7-9581-cae6dc4e5a19', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'Connaught Square Budget 2025-6 Draft.xlsx', 'finance/Connaught Square Budget 2025-6 Draft.xlsx', 'budget', 'dd09f23b-b113-483d-889a-75935e5af65e');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('55ef6361-4816-4cba-9838-dfe7a911347e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'Connaught Square Budget 2025-Final.pdf', 'finance/Connaught Square Budget 2025-Final.pdf', 'budget', '17906837-f0d1-41b1-a08e-216cea71d392');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('007904c0-eef2-455d-9fae-a944159d02f0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'Connaught Square Budget 2025-Final.xlsx', 'finance/Connaught Square Budget 2025-Final.xlsx', 'budget', 'f02110a1-789a-482a-a886-e8e54365e4a3');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('8b774a1b-564f-4de5-91fc-17f98b031596', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'budget', '2b5b6436-214c-48e9-bf47-27c3560d89e9');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1bb61018-2c6d-4dd8-8f99-81193d7d33a2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'Connaught Square YE 24 Accounts.pdf', 'finance/Connaught Square YE 24 Accounts.pdf', 'budget', 'ce495b09-6dfe-469f-97d4-b332ad37e29a');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('94a7d07c-c01f-45c7-8e0e-022dbfd6da56', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '2024 Directors Meeting-Notes.docx', 'compliance/2024 Directors Meeting-Notes.docx', 'compliance_asset', 'b2c12569-9c86-485e-a01e-15a51d18d3aa');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('66cbbe65-8e86-481d-8eb9-75153afe969c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance/Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance_asset', 'ca76d921-926d-400c-9495-43149ceb0edd');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('8205ac8c-03ff-4a9f-b380-cdbcb5b9d5d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance_asset', '11773620-8c18-4091-9285-fd87d58608a6');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('ab9c6ace-10fb-4d26-a6ac-b66961dc4d15', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance_asset', '404df702-1212-403e-8ee0-e598c4cbaced');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('ba7cea99-9809-4285-8806-6406969bd9c0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance_asset', 'b0a20d2f-9490-49c3-8dd1-df3f168ad65f');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('20ebf0f8-6cbf-477a-b92d-6ed8fcdedad0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'EICR Cuanku 32-34 conaught square.pdf', 'compliance/EICR Cuanku 32-34 conaught square.pdf', 'compliance_asset', 'c009aef8-e891-4eea-9c1d-4d9fc79ec6a1');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('d3c37a4e-a46a-4865-9dee-fd7ab42fa603', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance_asset', '53652672-8b71-45f1-a98d-7d881cc2e011');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('30fe709b-9081-490a-ba74-cc744f2994ed', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', 'eb0a8d07-4418-4891-86b2-280bdbe629c7');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('3b15dcff-722e-459d-8186-c1d142a6cac3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance_asset', '027edbc2-b264-4c1b-9d1b-c9b9ed5b72b6');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('79b93cc2-43f5-4a6a-bdc5-b07e38514ebb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '001132-3234-Connaught-Square-London.pdf', 'compliance/001132-3234-Connaught-Square-London.pdf', 'compliance_asset', 'c41de099-f132-43d9-835e-2a20ed128c86');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1e22ca40-985b-4dde-ab9d-a2fbe61a7c5a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', '5c5578b1-3beb-46c4-a428-f3c13d626758');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('0af0e42f-2046-4c9e-bfe5-95efd869b0dc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance/TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance_asset', 'a38f107e-e979-478b-9433-8143ac1772d9');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('67b67e2e-3c6f-42d2-9c11-424ebe496ef2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance_asset', '3830ad0a-01d3-4467-9ca5-b65c7825a2dc');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1601ef81-4932-40c5-bf51-f5f0d75f6bea', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance_asset', 'caf06cb3-d8e8-4bd9-8598-6ae8b14ea27f');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('194f8e59-cc7c-4c7f-b2a7-8dbd6d4f7343', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance/WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance_asset', '245d1df3-018c-4b5a-90f7-ef70d1937812');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('de72cb87-097f-4f0f-b2b3-dca5bbdff447', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance/EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance_asset', 'a9250478-5aa8-4fbc-8619-3391267216f0');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('b69141c5-135c-43cf-8bdd-fb6d38cc458a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '2024 Directors Meeting-Notes.docx', 'compliance/2024 Directors Meeting-Notes.docx', 'compliance_asset', 'a29db49e-34da-4483-b56f-e7a0c4148f4e');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('9ac55562-155b-4d68-b575-96f8ab10ffa1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '001457-3234-Connaught-Square-London Certificate.pdf', 'compliance/001457-3234-Connaught-Square-London Certificate.pdf', 'compliance_asset', '31b7ecfb-a22b-4b70-8667-79fc4857d92b');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('ab9c042e-267e-4add-a06a-ed0beb5fe2c7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'TC0001V31 General Terms and Conditions.pdf', 'compliance/TC0001V31 General Terms and Conditions.pdf', 'compliance_asset', '504ff3ac-20e9-4301-b332-bc01a03a94ff');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c635a9ec-3656-40f7-ad36-6cc132f675da', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Jobcard_For_Job_No_28992_24-01-2025_1545.pdf', 'compliance/Jobcard_For_Job_No_28992_24-01-2025_1545.pdf', 'compliance_asset', '4d8cf27e-a941-4ca4-8693-b3d131b8a11a');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('4ef972dc-4571-4a30-9b88-eadf395ef104', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Connaught Square (32-34) - 09.12.24 LRA.pdf', 'compliance/Connaught Square (32-34) - 09.12.24 LRA.pdf', 'compliance_asset', 'db5703da-c264-43ae-a74c-108747317b78');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('78f10169-e569-4ff8-927d-fd605f338503', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'SC Certificate - 10072023.pdf', 'compliance/SC Certificate - 10072023.pdf', 'compliance_asset', 'dc4b2a83-8aad-47d0-9aaa-16e8e36553c7');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('020bb227-1369-453d-b75e-898c657311b3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance/Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance_asset', '93936f73-e8fb-4bd5-bce6-cf5d89c729a6');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('30d60f06-80bc-4a41-ad6f-da6cdff29b5d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance_asset', '6b5c3d29-4281-4628-ac6b-ad17b58f7af0');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('b68e4eee-7e33-4a0c-8449-db16652b9662', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance_asset', 'c246ff91-cab1-4d6c-9cb6-32a755d08b2d');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('05283633-c658-4d27-b5b9-8642d60c0bcc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance_asset', '0240ef66-8246-42ad-9dd9-a66cf6445093');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('a30cbd89-02b6-407d-a38d-2d544086ae81', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance_asset', '570a3518-0e71-46ce-8be4-e390aaf92ab5');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c4297b92-1e70-4583-9cf1-bdf18ca47a97', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance_asset', 'bcca537d-981a-4621-8e9f-7e52c2203eb8');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('49cbf860-3bce-4611-85ee-dfb69aa580bc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance_asset', '0ffc32f9-cb7b-44f7-a98b-43f3cb0956ef');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('510a631e-a2c0-43d3-a2a3-e787469538f8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance_asset', 'bdc46c82-d0eb-4e0d-9f00-1b30abb56bed');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('df7fbe38-13ea-4704-a8d0-fce4c7348d10', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance_asset', 'ef8938b8-ec16-4f32-b2a3-8bdec73a6e7d');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('cf244733-98cd-4e11-a9e0-e1b02078230a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf', 'compliance_asset', '3a533d1d-c6e0-41de-93e0-521a8d52b89e');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('77460ff4-a7e9-452a-89c9-ab3576c8bd97', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Connaught Square (32-34) - 15.11.23 (886) wa.pdf', 'compliance/Connaught Square (32-34) - 15.11.23 (886) wa.pdf', 'compliance_asset', '7547664b-6404-4ec7-b2dc-90b6de0ec0fd');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('37a5c758-76ff-4205-be70-e81e49b480ee', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf', 'compliance_asset', '5ac99679-153e-42cd-b976-aebe5b6e9c1d');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('38d79666-c040-4e79-a438-568ae425c753', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf', 'compliance_asset', '095e68aa-233b-42c4-9b92-4dabc99cb0aa');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('cd3e89f0-6339-4c79-a062-c776fab3d830', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf', 'compliance/Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf', 'compliance_asset', 'fe868683-772e-4bbb-9713-c3e69bd0d52a');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('2a6b1613-5fe4-463e-ad18-13bc1237e9b8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf', 'compliance_asset', '6c6bbad3-b8c4-4490-983f-1b3d23b7bc44');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('16a956a1-68c0-4d76-a24f-b72fe257bc5a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf', 'compliance_asset', '7bc27476-9cdb-4f5a-9aba-973bed6ad0dd');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('528e7d88-8e34-467c-b1c6-507e4ddb3290', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance/221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance_asset', '5194adc0-dee1-40f6-85a1-ba262b5ecb3c');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c8244f22-364a-4a81-8a78-b54911b8aa91', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf', 'compliance_asset', '3481bfbb-b905-4b1f-b562-4a2c0dac417f');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('9e8bb64a-7412-4d47-b663-367781821420', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Hsfra1-L-422971-210225 32-34 Connaught Square.pdf', 'compliance/Hsfra1-L-422971-210225 32-34 Connaught Square.pdf', 'compliance_asset', '21881f27-f48d-4811-9812-7653c50861ba');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('978cb8d1-9c8a-4856-892c-69923e713037', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Hsfra1-L-422971-210225 32-34 Connaught Square.docx', 'compliance/Hsfra1-L-422971-210225 32-34 Connaught Square.docx', 'compliance_asset', '70846469-7734-4beb-8ab0-81295b6ffc4b');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('55426371-bd66-4b69-853b-297cd14fd357', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', 'f526cbdf-f288-4bf5-89dd-e8ce1fb2c943');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('a4271427-c397-4745-8202-cbbd6997236d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', '5c276c33-c477-4191-9b31-990ae8f018b6');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('f44daa77-c693-48b6-b77a-4893924af03d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'FRA-Connaught Square Reccommendations.xlsx', 'compliance/FRA-Connaught Square Reccommendations.xlsx', 'compliance_asset', '57c590dd-27dc-4f5d-bd80-f1658448fee0');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('8fd8e388-afaa-43fb-8211-0afdff822cdb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '001534-3234-Connaught-Square-London.pdf', 'compliance/001534-3234-Connaught-Square-London.pdf', 'compliance_asset', 'b8d8529a-d4c2-4536-b6ba-1ddc40a6acbd');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('24ea22d2-5505-45c6-8179-1a2e867d0a7d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'C1047 - Job card.pdf', 'compliance/C1047 - Job card.pdf', 'compliance_asset', 'e2f68b0e-a402-4ab1-b155-93f9b49c9da9');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('14410c38-240b-4be6-aac8-c836cc64614d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'WHM Legionella Risk Assessment 09.12.25.pdf', 'compliance/WHM Legionella Risk Assessment 09.12.25.pdf', 'compliance_asset', '623696ff-b2d1-4a40-bfe7-c0ccc483b13a');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('24a8b117-723c-46fa-bfc7-479059fca124', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance/WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance_asset', '595185b0-6f62-4da6-948d-d0ec19abf826');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('15d0606d-87cb-4965-a45f-aea4844433a7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Connaught Square (32-34) - 29.05.25 (201) wa.pdf', 'compliance/Connaught Square (32-34) - 29.05.25 (201) wa.pdf', 'compliance_asset', 'eed515a2-4a99-479a-b196-7b47a92b0840');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c2a75f7d-c0c8-411d-9e6e-91e3d4bef206', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'EICR Cuanku 32-34 conaught square.pdf', 'compliance/EICR Cuanku 32-34 conaught square.pdf', 'compliance_asset', 'db0b8070-37ae-4f1f-9064-344f2ee43493');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('76b1d3e2-cc40-4071-af6f-6bafb2ec6164', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance/EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance_asset', '95b895fc-07ea-48cf-a9cd-612c60c71f98');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('21847d7f-60d9-4e3d-badc-8cb9745e78e2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '001132-3234-Connaught-Square-London.pdf', 'compliance/001132-3234-Connaught-Square-London.pdf', 'compliance_asset', '69087942-465f-4a60-92b5-a012b8411a4d');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('13a48046-59d0-4429-879d-8689653cc6a4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '001534-3234-Connaught-Square-London.pdf', 'compliance/001534-3234-Connaught-Square-London.pdf', 'compliance_asset', 'f22a6ccf-cc02-492c-abd5-a87375cbfe87');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('59d3cb67-dad8-4efd-b6c2-1ce0e35f1393', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf', 'compliance/FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf', 'compliance_asset', 'ac223efa-1c76-47f0-83e3-a855bd56b991');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('fb893c46-0100-4a24-8e27-d37255dcada7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance/TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance_asset', 'b467c371-8e1c-4bb9-a771-13ad269fb466');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('67bb04d1-12be-4c93-80d7-f286ac83a78e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'British Gas Invoice-862451083.pdf', 'finance/British Gas Invoice-862451083.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4dd49329-69d1-4291-8b7b-f91ae551febe', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Signed 2025 Connaught Square Management Agreement.docx.pdf', 'contracts/Signed 2025 Connaught Square Management Agreement.docx.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('46f2001a-780e-49cb-803f-e930ab74bc7b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Connaught Square Management Agreement.docx', 'contracts/Connaught Square Management Agreement.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('22a6d09a-c4cd-4a24-b1a0-861b3817f4df', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', '2025 Connaught Square Management Agreement.docx', 'contracts/2025 Connaught Square Management Agreement.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ce2dd259-faee-4041-9424-d35f00c8cbc1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Signed Connaught Square Management Agreement.pdf', 'contracts/Signed Connaught Square Management Agreement.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1f72602a-454f-417c-974f-63f53c4ce245', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Contractors list.xlsx', 'contracts/Contractors list.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b0eeed06-1a8c-4b89-b8d3-d1a2874f4f0c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Contractors list.xlsx', 'contracts/Contractors list.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a80988a1-75c7-4c0d-acf3-36d711cca3e4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'EMERGENCY CALL OUT DETAILS 2024.pdf', 'contracts/EMERGENCY CALL OUT DETAILS 2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d9ff1642-8d9d-4e11-9e77-f251305c1218', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'CM434.PRO 2024-2025.pdf', 'contracts/CM434.PRO 2024-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0363796f-3b4f-433f-9d76-959c96097d65', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'CM434.PRO.pdf', 'contracts/CM434.PRO.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b8a01578-a22f-4dba-9186-0d7e990f4de2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Gas Contract 24-5.pdf', 'contracts/Gas Contract 24-5.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2d3b9c15-a1b4-405f-b09a-c8a282fb77a7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Contract_10-03-2025.pdf', 'contracts/Contract_10-03-2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ffe37d3e-9946-46dd-bd64-5335290c9c74', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Gas Contract 25-26.pdf', 'contracts/Gas Contract 25-26.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e79e942c-6ac1-44ea-8459-094c0cb72e0e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Welcome Letter - CG1885574.pdf', 'correspondence/Welcome Letter - CG1885574.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('45c38e12-e344-4f28-a7f3-426a3b51c6ea', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Job 67141.pdf', 'contracts/Job 67141.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2598c32e-8f61-4617-aad5-b69eca330184', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('577b0b03-b7fc-45a1-b57e-67ab50af0786', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('20501656-aa08-49e6-8a16-4ef231881c05', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('41094fee-d2a0-41b1-ab67-2c95c9e51d14', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('21849c83-9fb1-4795-8039-0c3d839970c1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5212d0c8-4aa0-4f4f-a5c2-050153768621', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a62a339f-9877-49b8-b628-935394043c77', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Jobcard_For_Job_No_27067_07-10-2024_1147.pdf', 'contracts/Jobcard_For_Job_No_27067_07-10-2024_1147.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1b910324-41aa-4e53-8ad2-0611550725c1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Jobcard_For_Job_No_19665_28-03-2024_0936.pdf', 'contracts/Jobcard_For_Job_No_19665_28-03-2024_0936.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1408853f-1675-417f-859d-8dc0fa87da76', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Jobcard_For_Job_No_22634_03-07-2024_1649.pdf', 'contracts/Jobcard_For_Job_No_22634_03-07-2024_1649.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0f2a7bad-ba1b-4995-93ce-c2ce213363be', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Jobcard_For_Job_No_25732_03-10-2024_1337.pdf', 'contracts/Jobcard_For_Job_No_25732_03-10-2024_1337.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8576de2b-b198-43a5-b351-bfb8236fada3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Lift Contract-Jacksons lift.pdf', 'contracts/Lift Contract-Jacksons lift.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('99d4ff8b-8bb8-4d67-ba02-73ceb7388f9e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'JLGCalloutVisit-5455045-12-07-2024.pdf', 'contracts/JLGCalloutVisit-5455045-12-07-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('74fbb54f-0d28-42cc-8324-a65e8a66dd07', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'JLGCalloutVisit-5483206-26-10-2024.pdf', 'contracts/JLGCalloutVisit-5483206-26-10-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('60b50561-3d28-4810-b8c5-fa1cdb9bfdd7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'JLGCalloutVisit-5498439-16-12-2024.pdf', 'contracts/JLGCalloutVisit-5498439-16-12-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f1188a4f-d878-4579-8153-bd639b0fbb99', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'JLGCalloutVisit-5455462-16-07-2024.pdf', 'contracts/JLGCalloutVisit-5455462-16-07-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('632db395-2b0f-4688-8962-a7719f2f2632', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'JLGCalloutVisit-5497480-13-12-2024.pdf', 'contracts/JLGCalloutVisit-5497480-13-12-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dac21b68-c191-42b2-a10a-0178de25aea3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Engineering Report - 32-34 CONNAUGHT SQUARE.pdf', 'contracts/Engineering Report - 32-34 CONNAUGHT SQUARE.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8624c5a7-765c-42ac-be24-194b81ec7a5f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Arch Directors and Officers Liability Insurance for Residents Associations (12.22).pdf', 'contracts/Arch Directors and Officers Liability Insurance for Residents Associations (12.22).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e52bd7dd-15e9-4025-9025-fc35ec5db36d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf', 'contracts/StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8ce710ef-4034-4eb7-b0cb-f3eb7c3e50cb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Extinguisher Signed Contract- Connaught Square.pdf', 'compliance/Fire Extinguisher Signed Contract- Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('589a9821-e131-4695-8ab4-890cb76d4f35', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Q51691 - 32-34 Connaught Square Contract.pdf', 'contracts/Q51691 - 32-34 Connaught Square Contract.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('37dab825-8ec6-4b68-a0b1-bd43625af884', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Engineering Report - 32-34 CONNAUGHT SQUARE.pdf', 'contracts/Engineering Report - 32-34 CONNAUGHT SQUARE.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6d5d4e19-e53c-46d3-86ee-97f2da7dc03a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Alarm+Emergency Lighting Signed Contract-3234 Connaught Square.pdf', 'compliance/Fire Alarm+Emergency Lighting Signed Contract-3234 Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2f46ee7b-6dd6-4612-abbf-0b64e015ce87', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Fire Alarm+Emergency Lighting Contract Connaught Square.pdf', 'compliance/Fire Alarm+Emergency Lighting Contract Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('701b35a8-03b3-4a5b-a519-a355eb0b2ea6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'BT3205 03072025.pdf', 'contracts/BT3205 03072025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ba09ec9a-090e-41bd-9743-e76c553eb0d3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'FA7817 SERVICE 08042025.pdf', 'contracts/FA7817 SERVICE 08042025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('14178bed-b20a-48af-becd-1819ae2b16dd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Engineer Report - 32-34 Connaught Square Flat 5.pdf', 'contracts/Engineer Report - 32-34 Connaught Square Flat 5.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3e73142f-0b0a-4cb6-8b16-a725dfb6a250', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Engineering Report - 32-34 CONNAUGHT SQUARE.pdf', 'contracts/Engineering Report - 32-34 CONNAUGHT SQUARE.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('256a5d32-56fc-463e-8024-ebddda2ec5ce', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Jobcard_For_Job_No_22171_14-05-2024_1202.pdf', 'contracts/Jobcard_For_Job_No_22171_14-05-2024_1202.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d9b86c5a-0b3e-4c89-91bf-41bcba6ec11e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'British Gas Invoice-862451083.pdf', 'finance/British Gas Invoice-862451083.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5d4ec261-24dd-4fbd-a407-b81c145c19a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'MT8825 03072025.pdf', 'contracts/MT8825 03072025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8464146e-e059-4abb-88e6-3a5d595d1b06', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'January Monthly Test For EL-Connaught Square.pdf', 'contracts/January Monthly Test For EL-Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3df85b4f-f303-45a5-897c-c6c6a34a4f43', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'February Monthly Test For EL-Connaught Square.pdf', 'contracts/February Monthly Test For EL-Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('597a60ab-e3b0-4b1e-bfce-2f971b43806d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'major_works', 'External Decorations SOI - 28042025.docx', 'major_works/External Decorations SOI - 28042025.docx', 'major_works_project', '3af3687e-5aca-435e-860b-8f92694276c6');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('b6b457c8-d385-4b3c-9558-040d40962aac', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'major_works', 'External Dec SOE 03072025.docx', 'major_works/External Dec SOE 03072025.docx', 'major_works_project', '6419f392-3050-453d-8c13-b9d457337002');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('e90ff582-8f48-4b00-9b78-526e42000699', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'major_works', 'Notice of intention for lift.docx', 'major_works/Notice of intention for lift.docx', 'major_works_project', '1d62f9bd-c7b0-4e6d-bdcd-edf5127235c7');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('ed67863d-f918-4511-a3e9-7c5d46eebcd3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'major_works', 'Connaught Square (32-34) - 09.12.24 Schematic.pdf', 'major_works/Connaught Square (32-34) - 09.12.24 Schematic.pdf', 'major_works_project', 'b1381e8f-88bc-47f4-b40b-ab04353308d5');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0bb48b73-251e-4bc4-b549-c63b2ca391e4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'CGBI3964546XB6-Cunaku Construction Ltd-Business-Certificate of insurance.pdf', 'compliance/CGBI3964546XB6-Cunaku Construction Ltd-Business-Certificate of insurance.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('58afa937-9a13-4fe1-b9d5-7136cf0d26c7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'CGBI3964546XB7-Cunaku Construction Ltd-Business-Certificate of insurance.pdf', 'compliance/CGBI3964546XB7-Cunaku Construction Ltd-Business-Certificate of insurance.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('54c7619d-ba00-4c9f-bae3-4cb37b9e5548', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Real Estate Insurance NTP (01.23).pdf', 'compliance/Real Estate Insurance NTP (01.23).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('feb5de2f-8fd6-4b6d-b24b-8626dc12b770', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Real Estate Policy (01.23).pdf', 'compliance/Real Estate Policy (01.23).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('daa2783c-2848-4117-943e-5ce45b7def49', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Summary of Cover (01.23).pdf', 'compliance/Summary of Cover (01.23).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('55351106-07ae-49b6-ac91-fafe69677f24', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf', 'compliance/2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('43e4e3bb-d7cf-42fb-88f7-03c1102af504', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', '2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf', 'correspondence/2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f25ce57d-4a72-4e2c-95f1-e3a18dfbef8c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf', 'compliance/32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('722edbde-75a3-4362-9129-3ca38a43f83e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '32-34 Connaught Sq Buildings Insurance 2023-2024.pdf', 'compliance/32-34 Connaught Sq Buildings Insurance 2023-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('26657c45-f044-4ed6-a924-3e97cea012e1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Policy Limits Document.pdf', 'compliance/Policy Limits Document.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6ae61183-f2ee-46f0-a2af-9a1235bb9855', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lease', 'Official Copy (Lease) 13.06.2003 - NGL823646-Flat 4.pdf', 'lease/Official Copy (Lease) 13.06.2003 - NGL823646-Flat 4.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e49721d8-acf7-48f3-9c10-e8092a67dfb4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Letter of Authority - Connaught Square.doc.pdf', 'correspondence/Letter of Authority - Connaught Square.doc.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a5879d9d-7afc-44a8-a32b-b45160b74f7b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Letter to report - Connaught Square.doc.pdf', 'correspondence/Letter to report - Connaught Square.doc.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('aca86b06-7c81-4734-997f-ad4f17d92d78', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Pricing Quote - 32_34 Connaught Square Freehold Ltd - 109 - Gas - 10.03.2025.pdf', 'contracts/Pricing Quote - 32_34 Connaught Square Freehold Ltd - 109 - Gas - 10.03.2025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cb36d573-46e0-499a-babb-f0a15588b49a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Allianz - Lift Report 14.03.23.pdf', 'compliance/Allianz - Lift Report 14.03.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c45dc011-9861-4254-b877-4005b30311db', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Allianz-Lift Report 18.03.2024.pdf', 'compliance/Allianz-Lift Report 18.03.2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f432602f-6daa-443f-8e7f-48e4716949c0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Allianz - Lift Report - 15.09.21.pdf', 'compliance/Allianz - Lift Report - 15.09.21.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b0a9836e-9c65-494b-baee-1cfbbede76f0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Allianz - Lift Report 27.09.23.pdf', 'compliance/Allianz - Lift Report 27.09.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7b97f894-92ca-40f3-9cdf-e13b5329cf10', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Allianz - Lift Report 10.03.22.pdf', 'compliance/Allianz - Lift Report 10.03.22.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('affe8d38-e6fb-4769-bccd-3c12480957aa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Allianz - Lift Report 09.09.22.pdf', 'compliance/Allianz - Lift Report 09.09.22.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a0e1359b-dfcc-4ae6-8f12-0444e6920dc4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'LXBI3559280XB2-NEW STEP-Business-Certificate of insurance.pdf', 'compliance/LXBI3559280XB2-NEW STEP-Business-Certificate of insurance.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8e2611e0-7732-41ba-af87-7dc1611397bf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf', 'compliance/2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a53f432b-9283-4f56-81b7-e9b857d06a33', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', '2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf', 'correspondence/2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('98149b48-c526-4bad-9117-8c8675914413', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'MO - Policy Wording - NZ0411.pdf', 'compliance/MO - Policy Wording - NZ0411.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('76690806-58ca-4ad3-a785-2d4b5939797d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Feature and Benefits of Allianz Engineering Inspection Service.pdf', 'compliance/Feature and Benefits of Allianz Engineering Inspection Service.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('66121ea9-3744-4df3-bc33-b2c087d3ff0b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('44146a2c-62b1-449c-bd82-08816c51a6a9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e6ea1dcd-7e3a-406f-9b9f-ef53505b47c2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('07c0dbf2-76d0-4a9c-82a4-5d3a3103d089', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e10369d0-b2cf-497d-8bf2-22d13e8bac8c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('206dfe01-b455-4c83-a425-d61bf7e24c9d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('85f54869-0788-4926-bf19-8cf5c0369afd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('de6dd98a-b433-47c8-81b0-d46515364b55', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b3c72ace-b7c8-4c62-ba5f-4ba17b8d9695', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7e375cdb-7147-4443-8bd3-9c7b6fd1d390', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3f90afc8-decd-4bb8-9241-4ecc94983452', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'StG_Invoice_32-34 Connaught Square Freehold Limited.pdf', 'finance/StG_Invoice_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('05c25ba7-54e3-4125-bee4-24b03996b40b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf', 'compliance/32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ba78b57e-6c25-4cbb-b525-9852f021c1c5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Certificate_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Certificate_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d24fb435-ebb5-4043-ad20-2f5ee6f1982e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Policy Wording_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Policy Wording_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8727dfa5-5e8f-4d59-9e34-26809b6fcd95', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_D&O Endorsements_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_D&O Endorsements_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d1dba8b0-7719-4e76-bc95-a8da4ab7eab2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'StG_Demands & Needs_32-34 Connaught Square Freehold Limited.pdf', 'finance/StG_Demands & Needs_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ae0f7511-4bd0-4c20-a870-c5889ba1b0a1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'StG_Quote_32-34 Connaught Square Freehold Limited.pdf', 'contracts/StG_Quote_32-34 Connaught Square Freehold Limited.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d5f7699f-e809-4279-976e-b6bdf2fb1916', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('fb56ec1f-69da-47e0-93d3-c83881724350', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'FBR113382303-20230405-B.pdf', 'compliance/FBR113382303-20230405-B.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0d24d2b1-7615-4748-9179-6df3da9e9f7f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Real Estate Insurance NTP (01.23).pdf', 'compliance/Real Estate Insurance NTP (01.23).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4367b2a4-1d28-45e0-882a-bad2cbca6c56', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Real Estate Policy (01.23).pdf', 'compliance/Real Estate Policy (01.23).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('88854cba-2b59-4342-94d1-004ab5ac826f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Summary of Cover (01.23).pdf', 'compliance/Summary of Cover (01.23).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('58dc01e9-1e47-4bb5-8bd9-efd0d4f85a5f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', '32-34 Connaught Sq Buildings Insurance 2023-2024.pdf', 'compliance/32-34 Connaught Sq Buildings Insurance 2023-2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('60dc5d27-da87-4707-b3a5-6f9182574746', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Policy Limits Document.pdf', 'compliance/Policy Limits Document.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('73d7105c-647a-4cae-8f51-44a314494273', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Zurich Real Estate Policy Summary.pdf', 'compliance/Zurich Real Estate Policy Summary.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a1e84f9d-711b-4e8a-b30a-71218dd91879', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Zurich Real Estate Policy Wording.pdf', 'compliance/Zurich Real Estate Policy Wording.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d6744db0-53ae-46f3-97b7-e6c5f95b7b51', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'Zurich Real Estate Insurance NTP (01.23) ZCYP895.02.pdf', 'compliance/Zurich Real Estate Insurance NTP (01.23) ZCYP895.02.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a9ad9dbe-31eb-48f5-b99e-77e83d4764f8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dbe4cc98-2ea0-4cf8-b246-7ee705081250', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('41b6aef8-ca03-4b84-ae13-9fa736bfa867', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Supporting Docs_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Supporting Docs_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a0d68e96-c811-4a27-89e1-ad59befbc416', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('656db523-332b-4b89-a653-31227ce6c0a1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('12dfa8ed-7a0d-42f8-ac53-c55823a3a577', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b696fa6b-d6b8-4ac6-ad66-8db00425dc39', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('402a768e-6723-4428-944e-a6ef36018277', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'compliance', 'StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('284061bf-68de-4ca9-a592-4957ff0ca8e9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square New property information.xlsx', 'uncategorised/Connaught Square New property information.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('886d6f56-b74f-44c5-af49-82a2f51f29a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square Meeting Minutes 2.docx', 'uncategorised/Connaught Square Meeting Minutes 2.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('de31905b-e6b1-4b84-94fc-e43007231aaa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'matrix - pp.xlsx', 'uncategorised/matrix - pp.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a759a058-3088-4478-94b6-d67b948b4403', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '12. Change of Tenancy - EDF supporting document.docx', 'uncategorised/12. Change of Tenancy - EDF supporting document.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('15907c26-03a0-49c8-94c8-c3dbb011cd14', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Correspondence letter.pdf', 'correspondence/Correspondence letter.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('82651d85-ca15-4888-bb23-1edd64b7d4e3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'tenant list - pp.xlsx', 'uncategorised/tenant list - pp.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('52a1c346-a59b-467e-88e6-cf1f6ddc2a8f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Report - 32-34 Connaught Square BCH 78350.pdf', 'uncategorised/Report - 32-34 Connaught Square BCH 78350.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ea0fdc57-5d42-4dcb-a5d0-10710cb1302a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square Meeting Minutes 2.docx', 'uncategorised/Connaught Square Meeting Minutes 2.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a364c2e8-b65f-4f01-8c88-58d2b0bb7884', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square Meeting Minutes 20241120.docx', 'uncategorised/Connaught Square Meeting Minutes 20241120.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3db60420-eb1a-471d-b0f3-22c16aefa7a2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square Meeting Minutes.docx', 'uncategorised/Connaught Square Meeting Minutes.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('26985461-0981-43d5-906a-532a3ba4e598', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square Admin Duties of Co Sec.docx', 'uncategorised/Connaught Square Admin Duties of Co Sec.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cd12ef5c-da8b-4aa3-9a01-6fd601f7a318', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Signed Connaught Square Admin Duties of Co Sec.pdf', 'uncategorised/Signed Connaught Square Admin Duties of Co Sec.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c797f478-e679-4f1b-9fb7-030c9be3ac94', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '32_34 CONNAUGHT SQUARE FREEHOLD LIMITED - Statutory Registers on 22.03.2024.pdf', 'uncategorised/32_34 CONNAUGHT SQUARE FREEHOLD LIMITED - Statutory Registers on 22.03.2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('807f0aca-90e8-42c1-bc8e-60b0796aa11c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'Memorandum of Association.pdf', 'correspondence/Memorandum of Association.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bd42fe43-6c1a-4e5d-a482-23b06389308a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Incorporation documents.pdf', 'uncategorised/Incorporation documents.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('346ea81c-f068-4912-abc5-7abed8138516', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'B25676 RS 21.05.24 RM CM.pdf', 'uncategorised/B25676 RS 21.05.24 RM CM.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dd78e3ae-ce99-41b4-952c-a49a1dfecd3c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Report-20.08.2024.pdf', 'uncategorised/Report-20.08.2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bf2780b5-a03b-4a86-a9a6-b9f378f6261f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'PN0119V1.7 Privacy Notice (Website).pdf', 'correspondence/PN0119V1.7 Privacy Notice (Website).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('307e2ebb-81f5-4e3d-9805-d31f75476566', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'correspondence', 'PN0119V1.8 Privacy Notice (Website).pdf', 'correspondence/PN0119V1.8 Privacy Notice (Website).pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b2603f02-1bb2-4e3d-861c-748c407abe6d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'REPORT 31-07-25.pdf', 'uncategorised/REPORT 31-07-25.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('837df40f-b1b2-4003-8eb6-42b9c74d1d51', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '32-34 Connought Square Condtion Assessments.pdf', 'uncategorised/32-34 Connought Square Condtion Assessments.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('519cbc68-eef6-42cc-a956-cf16ec548a7a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Signed Conract.pdf', 'uncategorised/Signed Conract.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c9eabc14-d7a9-46a4-b322-959b4ebc8034', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bc9213f8-ddb2-415f-a9e9-d9558dd2b69e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('87fddbc0-b32b-4ebf-9cfe-a5b056ab0955', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Latest Report.pdf', 'uncategorised/Latest Report.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8fce0152-ccb7-4a6c-be0f-74e8dd2cf231', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Latest Report 24.04.2024.pdf', 'uncategorised/Latest Report 24.04.2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6a0ffc8d-acd1-40fe-9bd5-ef7895c7e5c5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Latest Report 19.09.2024.pdf', 'uncategorised/Latest Report 19.09.2024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('51a6509c-bd61-43c1-8fa3-d96a77619864', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cca1e3ec-b5d8-42f6-8c3f-f701d5d8d97e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6f7c5fd3-9215-4a8b-89df-15aecd365acf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5f66ab50-9eba-4e7c-9c65-83352654942b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e0aa049c-8b31-4277-ae76-3eea537db644', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '10.02.25-Pest Control.pdf', 'uncategorised/10.02.25-Pest Control.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('12a5c9ca-f9c7-4776-847d-cbacd158dbbd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Latest Report.pdf', 'uncategorised/Latest Report.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1cc64a37-48af-4e29-a6f4-0defbef4ceb7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '17.01.2025-Pest Control.pdf', 'uncategorised/17.01.2025-Pest Control.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('aec0f240-7ede-4af7-91da-a8fcba5c6e19', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'J18503 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf', 'uncategorised/J18503 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8c48c209-a6ac-45fa-b706-5d68b1db1fee', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'J18502 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf', 'uncategorised/J18502 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6b91af52-be91-4de5-989d-08135b078969', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('987f1a70-0ed4-416c-b338-8de686767597', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ad1fce4a-2878-494b-8d91-339e56a00d29', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('521b337b-9d72-4ce4-9c6d-09ac24f6253b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('05a73090-39ee-4b8a-9544-002d491a7a9d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('317d6fb4-a43f-4c54-b054-28df444e7739', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ca37571a-551f-4266-8701-4a8e663cce25', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'INV 11546 Mr Martin Samworth.xlsx', 'uncategorised/INV 11546 Mr Martin Samworth.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('eb3b71ad-423b-4c43-80e0-b39f62512212', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'QB4126 Mr Martin Samworth.docx', 'uncategorised/QB4126 Mr Martin Samworth.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d1487c18-7902-447e-b428-e08984b72c0d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'CQ2879 Mr Martin Samworth   (IP) CCTV.docx', 'uncategorised/CQ2879 Mr Martin Samworth   (IP) CCTV.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4e7136c8-f65e-498e-977e-88626ee97ccd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_32810_17-03-2025_1311.pdf', 'uncategorised/Asset_Record_For_Job_No_32810_17-03-2025_1311.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('644b03ff-248a-4638-a58a-ac8951f179c1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_32344_12-03-2025_1426.pdf', 'uncategorised/Asset_Record_For_Job_No_32344_12-03-2025_1426.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('00a2f2c5-72b2-474b-b2d1-3801141fa5ea', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf', 'uncategorised/Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e7a7e742-c3ca-4788-91c2-87845697f3df', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_34012_01-05-2025_1616.pdf', 'uncategorised/Asset_Record_For_Job_No_34012_01-05-2025_1616.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d3f3606e-fa73-40b0-abfe-699b63e4bf5d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_32759_17-03-2025_1147.pdf', 'uncategorised/Asset_Record_For_Job_No_32759_17-03-2025_1147.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ae73db73-d6a6-443b-acac-acce0e525b56', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Jobcard_For_Job_No_32344_12-03-2025_1426.pdf', 'uncategorised/Jobcard_For_Job_No_32344_12-03-2025_1426.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0759a77a-463c-4d68-acde-a3d768f6c567', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_33844_07-04-2025_1143.pdf', 'uncategorised/Asset_Record_For_Job_No_33844_07-04-2025_1143.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5eab9675-44c9-4532-bf6d-e2468eefe453', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_25732_03-10-2024_1337.pdf', 'uncategorised/Asset_Record_For_Job_No_25732_03-10-2024_1337.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f3ffebc4-cf15-4237-9e69-0bf141a554ff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_22634_03-07-2024_1650.pdf', 'uncategorised/Asset_Record_For_Job_No_22634_03-07-2024_1650.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e8b17f47-98f4-4b77-8903-e0766d34613b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_27067_07-10-2024_1147.pdf', 'uncategorised/Asset_Record_For_Job_No_27067_07-10-2024_1147.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f943aeaa-bb6a-4d06-9273-7d355636aa63', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_19665_05-04-2024_1048.pdf', 'uncategorised/Asset_Record_For_Job_No_19665_05-04-2024_1048.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9d037c1d-7282-4503-bb6e-4a71843f0c0a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'Connaught Square-Lift Quotes.xlsx', 'contracts/Connaught Square-Lift Quotes.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4cd6204b-ee9c-4360-9b43-0ac7dd3b2e4f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'LXBI3559280XB2-NEW STEP-Business-Certificate of el insurance.pdf', 'uncategorised/LXBI3559280XB2-NEW STEP-Business-Certificate of el insurance.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1f956371-39bb-4d8d-b6d6-bfc355696832', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'New Step - Cleaning of Com Part- Jan- 2023.pdf', 'uncategorised/New Step - Cleaning of Com Part- Jan- 2023.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a965eec6-99c1-4912-97ff-8d980d55ea5d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Aged debtors by property.pdf', 'uncategorised/Aged debtors by property.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dc9434a9-c082-4dca-ac13-06b2e776f9ab', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square, 32-34 Approved xlsx.xlsx', 'uncategorised/Connaught Square, 32-34 Approved xlsx.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8a66773b-d451-4d87-bba0-f2af72d5c332', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'BvA 24 Jan 25.xlsx', 'uncategorised/BvA 24 Jan 25.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('34899e76-4555-41ce-b0cd-06de1ebf92ca', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'pdf.pdf', 'uncategorised/pdf.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f12ca869-ca41-411a-ad22-c441d4002515', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square-Agenda 20.11.24.docx', 'uncategorised/Connaught Square-Agenda 20.11.24.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5ddbf703-05af-4c76-b4f8-e10a10b92d3b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square-Agenda 26.04.2024.docx', 'uncategorised/Connaught Square-Agenda 26.04.2024.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f966b3f5-ac9a-422a-8c2e-69c86c7b5c63', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Connaught Square 26.04.24.docx', 'uncategorised/Connaught Square 26.04.24.docx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ebe54c4f-d6c3-4266-a1ef-2395733c10af', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'StG_Quote_32-34 Connaught Square W2 2HL.pdf', 'contracts/StG_Quote_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2ce583fb-d0b6-4362-9c4a-b6b7c25959eb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf', 'uncategorised/StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d92ae46d-135e-4d8d-9b20-fdda39e1f970', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'contracts', 'StG_Quote_32-34 Connaught Square W2 2HL.pdf', 'contracts/StG_Quote_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2d49dda4-b619-4c7b-b039-41b52279c370', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf', 'uncategorised/StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8b01374e-3a48-4250-88dd-b1ae8873e0e1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Report - 32-34 Connaught Square BCH 78350.pdf', 'uncategorised/Report - 32-34 Connaught Square BCH 78350.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a0b499da-2e9f-4714-914f-00bf83f1d0e2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_16617_27-11-2023_1522.pdf', 'uncategorised/Asset_Record_For_Job_No_16617_27-11-2023_1522.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4593f0df-d8c2-4e50-82a6-2c963d4020a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_16808_28-11-2023_1340.pdf', 'uncategorised/Asset_Record_For_Job_No_16808_28-11-2023_1340.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('39f553d1-e6ca-42d3-b661-cefa73a07185', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'EX-NC (CONNAUGHT SQUARE) EXTRA 01102024.pdf', 'uncategorised/EX-NC (CONNAUGHT SQUARE) EXTRA 01102024.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('74a0b01f-96e5-49c2-b2c7-62fc9584bb0d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'H&S recomendations - Spreadsheet with comments.xlsx', 'uncategorised/H&S recomendations - Spreadsheet with comments.xlsx');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8f011602-2358-426c-8943-91e127f1c907', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'CM434 RS 32-34 Connaught Square - VISIT 1 OF 2 - 30-04-25.pdf', 'uncategorised/CM434 RS 32-34 Connaught Square - VISIT 1 OF 2 - 30-04-25.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2dbf489a-fce0-4d22-bc1a-becabb27856f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Q49511 - 32-34 Connaught Square.pdf', 'uncategorised/Q49511 - 32-34 Connaught Square.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('791b5431-642f-4d9b-9c62-af0458661f7c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'FA7817 CALL OUT 26032025.pdf', 'uncategorised/FA7817 CALL OUT 26032025.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5d1e66ce-8737-464e-8774-059f06bb2517', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '32 Connaught Sq - PAT .pdf', 'uncategorised/32 Connaught Sq - PAT .pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('44740649-3518-4b82-b7e0-81c40e5f98d6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_35146_03-06-2025_0906.pdf', 'uncategorised/Asset_Record_For_Job_No_35146_03-06-2025_0906.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c2008d33-4aec-48f8-963d-72690bc9fcb6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_31162_30-01-2025_1603.pdf', 'uncategorised/Asset_Record_For_Job_No_31162_30-01-2025_1603.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7b4ec3f2-7538-4122-9c0b-6e1380761bf8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf', 'uncategorised/Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d6e5db9e-67cc-4942-8f3e-e896e2a1183f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_28737_25-11-2024_0907.pdf', 'uncategorised/Asset_Record_For_Job_No_28737_25-11-2024_0907.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('99b88566-ac6c-488f-ae4e-9f98d989d08c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_35402_03-06-2025_0916.pdf', 'uncategorised/Asset_Record_For_Job_No_35402_03-06-2025_0916.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('393aaf99-43bc-490a-8a7f-32c3a60a4b08', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_22171_14-05-2024_1202.pdf', 'uncategorised/Asset_Record_For_Job_No_22171_14-05-2024_1202.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ad752fac-757c-4d5e-ae19-4449722b8ca8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_35654_03-06-2025_0912.pdf', 'uncategorised/Asset_Record_For_Job_No_35654_03-06-2025_0912.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0b995674-98d2-4afc-b817-eb0a90d32f06', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_38609_26-08-2025_0740.pdf', 'uncategorised/Asset_Record_For_Job_No_38609_26-08-2025_0740.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e2ab3f28-43e7-4b64-8df3-7d6f76b37467', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', 'Asset_Record_For_Job_No_36465_20-06-2025_1038.pdf', 'uncategorised/Asset_Record_For_Job_No_36465_20-06-2025_1038.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2e5171a9-73be-4fe5-b807-e78ade8f01d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '26368 Report.pdf', 'uncategorised/26368 Report.pdf');
-INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('43c15f19-5080-495b-9f81-b67c623dade4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'uncategorised', '26474 Report.pdf', 'uncategorised/26474 Report.pdf');
+-- Insert 318 document records
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9b158594-b4fc-4431-9602-f99f34070d00', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Important Information .pdf', 'lease/Important Information .pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('05f67652-c22e-4bd4-a3fc-c78e1111d8a0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4fa4bffa-e517-441a-8579-2f179e1d0275', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf', 'lease/Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f09543b6-3927-4401-9f66-063a49e99884', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf', 'lease/Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ef082d9b-697b-4720-900f-38128e074204', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Official Copy (Lease) 13.06.2003 - NGL827422.pdf', 'lease/Official Copy (Lease) 13.06.2003 - NGL827422.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e470af26-14fe-47c5-a62c-27f69d4b8ad3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Official Copy (Lease) 04.08.2022 - NGL809841.pdf', 'lease/Official Copy (Lease) 04.08.2022 - NGL809841.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0f39b1d5-8c7b-453e-88c9-dfccc7f798f2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Signed April 2025 Arrears Collection Procedure.pdf', 'lease/Signed April 2025 Arrears Collection Procedure.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cc30395c-8658-4e93-830b-f5715e078cf3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'WP0005V17 Welcome Pack.pdf', 'lease/WP0005V17 Welcome Pack.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('98b471bb-7233-4ff6-80e9-b4895e046eaa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_33844_07-04-2025_1143.pdf', 'lease/Jobcard_For_Job_No_33844_07-04-2025_1143.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('99087d00-aede-41e6-b376-a692aa81d06e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_37675_25-07-2025_1549.pdf', 'lease/Jobcard_For_Job_No_37675_25-07-2025_1549.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cc87eefa-6db3-4714-82e9-4f9983d62393', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_34012_01-05-2025_1616.pdf', 'lease/Jobcard_For_Job_No_34012_01-05-2025_1616.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('184fb8a8-b82c-4fac-88ad-698d76f6cbf4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_32759_17-03-2025_1145.pdf', 'lease/Jobcard_For_Job_No_32759_17-03-2025_1145.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1f75c937-2922-4e07-80be-ec4ef2d3e392', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_32810_17-03-2025_1311.pdf', 'lease/Jobcard_For_Job_No_32810_17-03-2025_1311.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dcf85f1d-2c85-4d5c-818c-a2054219e15f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf', 'contracts/Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0a5b513f-a7b0-4412-b601-08c9078f0782', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Licence_Document_352024.pdf', 'lease/Licence_Document_352024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f6473840-cfc2-4cef-a1bf-4b37327a8d40', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-12-09-2024.pdf', 'lease/JLGServiceVisit-M00813-12-09-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('42a9718b-062f-4562-ae3a-4d1caea189e6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-13-11-2024.pdf', 'lease/JLGServiceVisit-M00813-13-11-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('24aa52e5-f842-4d2b-8234-ae67923ac382', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-02-12-2024.pdf', 'lease/JLGServiceVisit-M00813-02-12-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f3f9e681-71d7-4238-9a20-a58bb7d0c676', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-08-07-2024.pdf', 'lease/JLGServiceVisit-M00813-08-07-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0d345cef-83c7-4049-9958-f112b9deccca', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-08-10-2024.pdf', 'lease/JLGServiceVisit-M00813-08-10-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('05af2aa6-a523-4692-8562-1abba09f680f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-12-02-2025.pdf', 'lease/JLGServiceVisit-M00813-12-02-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('30c0a3fa-63e7-434f-8873-5fef86e51af0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-17-03-2025.pdf', 'lease/JLGServiceVisit-M00813-17-03-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bb868d39-5a15-4a67-950a-8788a2973e15', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-14-04-2025.pdf', 'lease/JLGServiceVisit-M00813-14-04-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8ff6cec7-56a0-4e87-ab1a-a631daa00bc3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'REP-40343473-L1.pdf', 'lease/REP-40343473-L1.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('95f2718c-1ed5-4bb7-ae32-435d5f60117c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'JLGServiceVisit-M00813-13-05-2025.pdf', 'lease/JLGServiceVisit-M00813-13-05-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('10696033-ba0f-478a-96f4-eedb6385971f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Communal Cleaning-First Port.pdf', 'lease/Communal Cleaning-First Port.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('def0e0ea-cede-43d2-8992-5c756d250d46', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'SC Health and Safety Product - Accredited 10072023.pdf', 'lease/SC Health and Safety Product - Accredited 10072023.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ff589d47-8e37-4b61-8b94-071b67d80225', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Tenancy Schedule by Property.pdf', 'lease/Tenancy Schedule by Property.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('659b9265-88f4-4128-a3d5-ce6f253bbb4d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'Accounts YE 31.03.2022 32-34 Connaught Square MJP.pdf', 'finance/Accounts YE 31.03.2022 32-34 Connaught Square MJP.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c8fd20f2-b4ae-48bb-a595-d76931f1a19e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', '197-YE 31.03.22 SC Accs FINAL MAY 2023.pdf', 'finance/197-YE 31.03.22 SC Accs FINAL MAY 2023.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d1bbbe3d-e1d4-4db0-a53e-191571bcb43a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c4e2cd8f-f40f-492e-aa4b-df60d39e2fb1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', '27039 Accounts Pack - YE 2023.pdf', 'finance/27039 Accounts Pack - YE 2023.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6e142c5a-3eb7-4bbe-9f51-e314adeabef8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'Connaught Sq SC YE 23.pdf', 'finance/Connaught Sq SC YE 23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d4b51e67-e2d4-4465-b042-66f499ee6b55', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Connaught Square-House Rules.docx', 'lease/Connaught Square-House Rules.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('acdea426-34fc-442e-817a-8b326b1bca33', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Garden Notice-Connaught Square.docx', 'correspondence/Garden Notice-Connaught Square.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('73b49ed4-eaf6-4473-b064-d83ebd9f5b48', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Connaught Square-Key Cut Authorisation Letter.docx', 'correspondence/Connaught Square-Key Cut Authorisation Letter.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b2be811d-b6fc-4c46-bcd7-d15b938de7bd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'House Rules-Connaught Square.pdf', 'lease/House Rules-Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a9227bec-5a1e-4aff-a35c-a98a91f3ba38', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'REP-39659654.pdf', 'lease/REP-39659654.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b8e83659-8624-4a82-8d4a-e01778b124db', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Important Information .pdf', 'lease/Important Information .pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f42e7537-918a-4479-b512-ade63c1d5df7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'lease/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('db489188-7ced-4353-b4e0-3bedecd5f5ac', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'CM434.AnnualServiceAgreement2025-2026.pdf', 'contracts/CM434.AnnualServiceAgreement2025-2026.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('72591bdf-fcc7-4fca-909b-9e8c8314d721', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'CM434.AnnualServiceAgreement2024-2025.pdf', 'contracts/CM434.AnnualServiceAgreement2024-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('361eb1a5-b0d8-4cf0-9c1e-ee76263c5e56', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'REP-40324834-E3.pdf', 'lease/REP-40324834-E3.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('91e6b171-4547-4d3c-9640-a41bc9c1bd84', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Ellie@mihproperty.co.uk - BES Group - E-Report.pdf', 'lease/Ellie@mihproperty.co.uk - BES Group - E-Report.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1685d822-6f4f-4c76-9225-ffb0339e1c7a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_38609_26-08-2025_0741.pdf', 'lease/Jobcard_For_Job_No_38609_26-08-2025_0741.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1f33e8f4-353d-4933-ad92-5060f5d78ac1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_28737_25-11-2024_0907.pdf', 'lease/Jobcard_For_Job_No_28737_25-11-2024_0907.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c83d5933-578d-4ec8-90e4-51ba2dc1fb9d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_35402_03-06-2025_0916.pdf', 'lease/Jobcard_For_Job_No_35402_03-06-2025_0916.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6ff7a862-e988-4819-9c0e-e16bcc2aafdb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_35654_03-06-2025_0911.pdf', 'lease/Jobcard_For_Job_No_35654_03-06-2025_0911.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('12324754-3b83-4505-9904-f8be569c4094', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_37675_25-07-2025_1549.pdf', 'lease/Jobcard_For_Job_No_37675_25-07-2025_1549.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c02dacb1-9617-4dec-a368-61ad13b0c47b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_35146_03-06-2025_0906.pdf', 'lease/Jobcard_For_Job_No_35146_03-06-2025_0906.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b20ea4fa-0608-4c87-b864-5d8beea441f6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_31162_30-01-2025_1602.pdf', 'lease/Jobcard_For_Job_No_31162_30-01-2025_1602.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e2d3ad71-9436-454b-a01a-ecc45abbea19', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Jobcard_For_Job_No_36465_20-06-2025_1037.pdf', 'lease/Jobcard_For_Job_No_36465_20-06-2025_1037.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('5ce11d0a-d1ab-4c67-aea2-a0cb400a9318', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'connaught apportionment.xlsx', 'finance/connaught apportionment.xlsx', 'budget', '163ec0a0-279b-4958-82a9-86bf2cb1c36b');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('6dee7a03-45d7-4b86-8ec8-102a682db615', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'budget', '546005ce-a8d9-4b03-93ce-16292c038405');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('95775d01-07bc-4491-a97d-15480bd18a23', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'Connaught Square Budget 2025-6 Draft.xlsx', 'finance/Connaught Square Budget 2025-6 Draft.xlsx', 'budget', 'b4c87a04-e65d-47fd-bbf6-93b6cf1ad42e');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('7dd76afe-cdb2-41a2-8e4b-430bb5dc392c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'Connaught Square Budget 2025-Final.pdf', 'finance/Connaught Square Budget 2025-Final.pdf', 'budget', '3b5e1c2d-4d8b-42a5-96db-551f51d30d05');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('f6f3cc6e-83b9-4614-beca-b2fdfe576b32', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'Connaught Square Budget 2025-Final.xlsx', 'finance/Connaught Square Budget 2025-Final.xlsx', 'budget', '2d3c43c2-f37a-41d1-87d7-ad7f5d54f499');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('24cb74ee-2caa-41c0-b1f4-1fd1595351d5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'finance/ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf', 'budget', '07f6e0c8-2d2f-4701-9c9a-8b20e347d726');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('3725c053-d4fa-49c5-9e12-d48d8eab42b0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'Connaught Square YE 24 Accounts.pdf', 'finance/Connaught Square YE 24 Accounts.pdf', 'budget', '355a463a-6126-4730-879f-0f3f3aacd74b');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('e38b783f-efe2-4d0a-b78c-d1446fb7b0a4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '2024 Directors Meeting-Notes.docx', 'compliance/2024 Directors Meeting-Notes.docx', 'compliance_asset', '5ca83e99-40d9-48cf-8d35-c72f05b3ce94');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('59411c9b-8e1b-4275-9069-8306b91a1728', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance/Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance_asset', 'df46879d-9224-4d5a-9c91-df8ebab00db9');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('7f3273bc-8823-43d2-ac56-5c376183e36d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance_asset', 'fad3292e-a57d-4c84-8f72-3a5967669012');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1fe117b4-7faa-49a2-822c-763f7dd6f1a9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance_asset', 'db221dae-173b-4c18-81c9-20916654c5df');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('a737d45d-ef33-4325-b81e-f443d47bd97d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance_asset', 'bc41afeb-d85c-4970-87d3-9e53707c219f');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('d433066c-8581-431a-af6f-243bd1a307d6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'EICR Cuanku 32-34 conaught square.pdf', 'compliance/EICR Cuanku 32-34 conaught square.pdf', 'compliance_asset', '1f22a32d-8f22-4295-b7f6-dbcef6f6263e');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('47c64596-ae63-459a-bed3-e0ff00e81f9b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance_asset', '2aa48fc6-af3c-4e62-bc1b-a8c740b9fd66');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('fa789d7c-b2d7-4529-adec-dcb2346db955', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', 'b71adc07-5192-4608-b672-33770344e9dc');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('34b1eb9c-18e8-43f9-bf82-8da8fdbcd2e8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance_asset', '66b930cd-f8fb-4c4d-b98f-095f0c603b5f');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('b19ccb4a-4c7c-4812-bfff-17e7123199ef', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '001132-3234-Connaught-Square-London.pdf', 'compliance/001132-3234-Connaught-Square-London.pdf', 'compliance_asset', '247d2f1a-dae4-432a-bc23-5b16b230df9e');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('3da69ff8-152a-4ba6-b2f4-0dc093ae0362', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', '3ae9e695-9bc3-4a51-b439-9a09fdfaaa60');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1d0d4f35-fa0f-4914-bc51-5472cf3241cd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance/TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance_asset', '7906df7a-13e9-44c1-88cd-f91487a58022');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('f736995a-f7b2-40d3-a5e5-d9647be72d13', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance_asset', '00c3eedb-aaea-4d1e-b1f6-39aa0196ba65');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('db5a8d58-dd70-4bdd-9f8f-93a7e02479a0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance_asset', 'cdae0416-1de9-488b-8369-634d035f70f1');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('b7465425-5afd-47fd-8563-3eb3bbc5edcb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance/WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance_asset', '57c990a1-9aef-46a8-bfdc-3b19d84ab39e');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('06df0854-8bef-42f4-99b9-a6bdc4bb18ea', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance/EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance_asset', '8d62c047-5e07-4635-b0ea-3b21265a061d');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c5f8136e-330c-4acd-a15d-8001befe49d4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '2024 Directors Meeting-Notes.docx', 'compliance/2024 Directors Meeting-Notes.docx', 'compliance_asset', 'cd1539f6-1261-47cb-a0fd-18ec3f18b4b7');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('94161338-341a-4276-9bbf-91f46687c587', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '001457-3234-Connaught-Square-London Certificate.pdf', 'compliance/001457-3234-Connaught-Square-London Certificate.pdf', 'compliance_asset', '56e62bfb-8644-46de-b8f0-7379b7c3b6a9');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('3df379dc-1a81-42e8-abc8-b832c6fb5791', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'TC0001V31 General Terms and Conditions.pdf', 'compliance/TC0001V31 General Terms and Conditions.pdf', 'compliance_asset', 'a3a26b20-969b-4618-bfcf-e78014bc3d0d');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('6b37c4b7-4f64-4c11-ab92-4c7b81389d21', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Jobcard_For_Job_No_28992_24-01-2025_1545.pdf', 'compliance/Jobcard_For_Job_No_28992_24-01-2025_1545.pdf', 'compliance_asset', '73a91837-178a-462b-bcb5-fa91184ae482');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('cbc783f4-5c36-4f1c-a87c-a202dc2b0682', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Connaught Square (32-34) - 09.12.24 LRA.pdf', 'compliance/Connaught Square (32-34) - 09.12.24 LRA.pdf', 'compliance_asset', 'edbd5680-76ad-4cbb-857d-a70f0765ab72');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c1041220-88ce-4904-95cd-1fd9a44336f5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'SC Certificate - 10072023.pdf', 'compliance/SC Certificate - 10072023.pdf', 'compliance_asset', '1a52dae6-9cd9-4fa6-8cd1-50d2d4bf5e6f');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('ba70f082-45d9-48d6-a90e-a809ddb1d56a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance/Fire Door (Communal) Inspection (11m +) (7).pdf', 'compliance_asset', 'eac9f41e-c213-4ce4-873a-4639c0da81dc');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('dc618b20-a047-40c7-bf4e-04cd09a81b32', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (13).pdf', 'compliance_asset', '02f13562-9c43-4982-826a-52185efdf40d');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1df9bc75-41bd-48fd-b286-8f6d0218fc52', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (18).pdf', 'compliance_asset', '80cda00b-bb3f-49ad-b3ee-c62d3c4eff21');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('14d92746-22dc-49d8-84e3-603de5cde2f5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (14).pdf', 'compliance_asset', '880a4890-25de-4a9e-92b9-40aee75e6fb3');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('53efb259-8682-4e30-b3f3-64f266f21eb9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (15).pdf', 'compliance_asset', '2dacd6bf-cf23-474f-bb14-6c17e9c0d462');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('5f44dd27-f424-4374-82ed-47f41584b08f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (19).pdf', 'compliance_asset', 'd0947519-7893-440f-ab53-ecfbc1e19831');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('49877fbc-b29a-4694-a420-a1b07ee61b01', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (16).pdf', 'compliance_asset', '2cc3402a-775a-453f-958c-33c6413e565a');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('43b39d58-aad5-4204-b992-413e6609edba', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance/Fire Door (Flats) Inspection (11m +) (17).pdf', 'compliance_asset', 'f143e6bf-b107-4035-8612-1681197b67d3');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('590715f8-fa6e-49c9-b609-d43ce9418ee9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance_asset', '26d8a580-5dce-4911-a8ac-3fd736b1bb24');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('d4498e9f-b456-4c77-a86c-b66c7426ecfa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf', 'compliance_asset', '7b32663e-056b-4578-899d-475cf57eedc7');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('f44cea37-fd58-4620-9c76-7d219cad0452', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Connaught Square (32-34) - 15.11.23 (886) wa.pdf', 'compliance/Connaught Square (32-34) - 15.11.23 (886) wa.pdf', 'compliance_asset', 'a60d1042-102c-4f16-8e75-9b7015e98483');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('b248f90f-08a7-4a7c-8b6e-29a9b633e30b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf', 'compliance_asset', '5f4dfb92-2ae8-4b47-bcd0-6592c7613642');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('23cf5d54-add8-4423-a068-c8a71b252b53', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf', 'compliance_asset', '06a414dd-a735-4b96-8a22-3f0cc6f686bf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('4713b6ad-effe-44fd-85c9-8b6022dcdb53', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf', 'compliance/Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf', 'compliance_asset', 'dfe36e9f-c954-4a77-ae18-81ad457a2e22');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('7e4ad217-7a4a-4861-8be2-4336126a666d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf', 'compliance_asset', 'f2957112-a5c1-4b65-96e4-c0fb88db6172');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('c821d0f3-f45a-41ce-85b8-8a7289f795b3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf', 'compliance_asset', '1db76f63-fee8-425b-8f92-57ef59a55475');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('1a89f7c3-6a2b-4b03-98e8-08904e796743', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance/221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf', 'compliance_asset', '3152b66f-c1ff-4fa7-9499-d8ad04982166');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('2f218401-e713-42f6-b38b-77dc59fa91ec', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf', 'compliance/Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf', 'compliance_asset', '06d36d15-b0b3-4170-99d9-d2715caaf0c1');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('3e8044e6-cb8b-4e9a-a2a3-554f961cc61b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Hsfra1-L-422971-210225 32-34 Connaught Square.pdf', 'compliance/Hsfra1-L-422971-210225 32-34 Connaught Square.pdf', 'compliance_asset', 'df55713d-a74d-40f7-af42-efbe20fe972f');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('02e65cc0-deee-414c-a957-00c4d7c2982f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Hsfra1-L-422971-210225 32-34 Connaught Square.docx', 'compliance/Hsfra1-L-422971-210225 32-34 Connaught Square.docx', 'compliance_asset', '29a2946d-2bea-4c2e-be80-6fffa408d5a2');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('26936a1f-eb6a-4f90-94f9-833f55712b55', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', '40419323-f51c-489d-bfad-4943c4132056');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('fd8a4054-4e0c-4680-9507-53ad07fac6c9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance/221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf', 'compliance_asset', '1782f2c8-4696-4290-b982-a8446ce55aa2');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('bd26c6b1-6947-434c-91ba-17f7d909086c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'FRA-Connaught Square Reccommendations.xlsx', 'compliance/FRA-Connaught Square Reccommendations.xlsx', 'compliance_asset', '8c317290-1a17-4d87-8335-f34380ccf626');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('6dc2857c-f4f8-499e-871f-922faf12dc2b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '001534-3234-Connaught-Square-London.pdf', 'compliance/001534-3234-Connaught-Square-London.pdf', 'compliance_asset', 'a0d3b8cb-bc05-479d-b090-fe3fe1c7f7d3');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('ea02c83e-7b81-4171-b336-6a7349def0de', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'C1047 - Job card.pdf', 'compliance/C1047 - Job card.pdf', 'compliance_asset', '9924adfe-a5d4-46b9-a427-b8de70d78522');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('0f4cc106-1005-4a10-be12-10349186f031', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'WHM Legionella Risk Assessment 09.12.25.pdf', 'compliance/WHM Legionella Risk Assessment 09.12.25.pdf', 'compliance_asset', 'fa82ed27-f507-4420-9733-89e6f9a648fd');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('8f7ef18f-55e8-401b-abbb-60648265a424', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance/WHM Legionella Risk Assessment 07.06.22.pdf', 'compliance_asset', 'fc44604d-7b72-49fa-95a7-4283a9b26171');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('7047bae5-dc95-4ae4-add8-9e1edd9c4244', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Connaught Square (32-34) - 29.05.25 (201) wa.pdf', 'compliance/Connaught Square (32-34) - 29.05.25 (201) wa.pdf', 'compliance_asset', '5f7ccbda-1c55-488c-b64d-4f782a8480b8');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('49ea66ca-86b2-49e4-ab29-4b42ce61ac6b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'EICR Cuanku 32-34 conaught square.pdf', 'compliance/EICR Cuanku 32-34 conaught square.pdf', 'compliance_asset', '0cbf35d8-253c-476e-a74d-3f482fce02b8');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('5a46d897-3641-4630-8e14-95e4f3113fa9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance/EICR Report Cunaku SATISFACTORY 2023 .pdf', 'compliance_asset', '1bbf46c2-0ec7-466a-b44a-fd877c42923c');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('947901af-a150-4365-a228-ec20adec31c2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '001132-3234-Connaught-Square-London.pdf', 'compliance/001132-3234-Connaught-Square-London.pdf', 'compliance_asset', '6858c1b4-47bc-4ecc-a043-41cabe1bba2d');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('a4597fc0-b5b1-4c22-80a1-b54846993462', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '001534-3234-Connaught-Square-London.pdf', 'compliance/001534-3234-Connaught-Square-London.pdf', 'compliance_asset', 'c34c3526-78d7-40ac-93a4-f53ffdd76ba0');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('f724c49a-8db3-4f85-bdc5-15e702987759', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf', 'compliance/FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf', 'compliance_asset', 'dd3a24eb-a4eb-4381-aa93-3d11d2dfd318');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('277a0ff1-0cec-4a13-8fbc-4778418ff647', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance/TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf', 'compliance_asset', 'f5a8d6b0-8cc8-49c9-9f48-257c3100a8ca');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('53af03a4-0d34-43f6-8ccf-5da591302890', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'British Gas Invoice-862451083.pdf', 'finance/British Gas Invoice-862451083.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0299411f-61bb-4040-a8b6-4eb45ef6b3e5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Signed 2025 Connaught Square Management Agreement.docx.pdf', 'contracts/Signed 2025 Connaught Square Management Agreement.docx.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c9092990-6c4b-4fe3-869e-faaca5ae4ac3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Connaught Square Management Agreement.docx', 'contracts/Connaught Square Management Agreement.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a6cd28d1-5a08-4b18-b8b6-b8e92fdb08b6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', '2025 Connaught Square Management Agreement.docx', 'contracts/2025 Connaught Square Management Agreement.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('80219d0e-2916-4bd0-82f2-dd2e4ae985d7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Signed Connaught Square Management Agreement.pdf', 'contracts/Signed Connaught Square Management Agreement.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b0f33578-7497-494b-8586-844d22a88c8a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Contractors list.xlsx', 'contracts/Contractors list.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9c0435d8-77f2-45b2-bc7a-59373cb01c10', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Contractors list.xlsx', 'contracts/Contractors list.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('976591a6-6d34-4151-b665-b5ce38688997', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'EMERGENCY CALL OUT DETAILS 2024.pdf', 'contracts/EMERGENCY CALL OUT DETAILS 2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('74589a65-8a9a-4279-a3d1-6ea33b089c95', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'CM434.PRO 2024-2025.pdf', 'contracts/CM434.PRO 2024-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('83b10dcf-2e2e-44c9-bba9-642b82e68e96', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'CM434.PRO.pdf', 'contracts/CM434.PRO.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4a391acb-e62d-4dd6-b9ca-e68f87bde9a8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Gas Contract 24-5.pdf', 'contracts/Gas Contract 24-5.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('062c6e08-f337-421b-9079-698307d4f6d4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Contract_10-03-2025.pdf', 'contracts/Contract_10-03-2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('40ed5c24-0244-4347-9838-b08c854f4145', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Gas Contract 25-26.pdf', 'contracts/Gas Contract 25-26.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b8d17614-77d9-4f8c-991f-dc884f472944', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Welcome Letter - CG1885574.pdf', 'correspondence/Welcome Letter - CG1885574.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('fbd7726a-2b38-46bd-9db9-823783ccbcec', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Job 67141.pdf', 'contracts/Job 67141.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8e9b62e6-13d2-4f87-a4ac-4881ca09b0f0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('771b53b3-853f-4ca0-9a81-ce478b028be8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4bc6e8e4-3474-4da4-baa1-d695559c8ed1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('de2fe0d4-48cd-4402-b71a-cda532a17c92', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4dc31a54-fdf2-45c0-8821-3170bdc0052c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e11560ef-a18d-4a94-aaa6-14f4f358df86', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf', 'contracts/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bc5f6eac-c67d-49f7-a711-855d3455fe1c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Jobcard_For_Job_No_27067_07-10-2024_1147.pdf', 'contracts/Jobcard_For_Job_No_27067_07-10-2024_1147.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d677a329-d4b3-4b40-837d-fb99debf2932', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Jobcard_For_Job_No_19665_28-03-2024_0936.pdf', 'contracts/Jobcard_For_Job_No_19665_28-03-2024_0936.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e1cda065-a5b8-4d7b-be91-41015ebee68e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Jobcard_For_Job_No_22634_03-07-2024_1649.pdf', 'contracts/Jobcard_For_Job_No_22634_03-07-2024_1649.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0f6eb13d-3836-42cd-b3f3-e983707857b6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Jobcard_For_Job_No_25732_03-10-2024_1337.pdf', 'contracts/Jobcard_For_Job_No_25732_03-10-2024_1337.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('44cea0fe-af44-434b-ba4a-09316cebf416', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Lift Contract-Jacksons lift.pdf', 'contracts/Lift Contract-Jacksons lift.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f360fa56-546e-453a-bc3f-a9b1bba9c86c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'JLGCalloutVisit-5455045-12-07-2024.pdf', 'contracts/JLGCalloutVisit-5455045-12-07-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8eace9ee-7eb3-4c2d-b6e7-a8eba6bda9b1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'JLGCalloutVisit-5483206-26-10-2024.pdf', 'contracts/JLGCalloutVisit-5483206-26-10-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('10b4ef63-1b24-4384-b21c-a4a8a87febb2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'JLGCalloutVisit-5498439-16-12-2024.pdf', 'contracts/JLGCalloutVisit-5498439-16-12-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f4b8380c-b4fa-45b8-b916-cbd43d47852a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'JLGCalloutVisit-5455462-16-07-2024.pdf', 'contracts/JLGCalloutVisit-5455462-16-07-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dc3dd414-c39d-4766-9b63-9f5f12daf281', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'JLGCalloutVisit-5497480-13-12-2024.pdf', 'contracts/JLGCalloutVisit-5497480-13-12-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5d464a29-cc10-42bb-a752-a26566770f3b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Engineering Report - 32-34 CONNAUGHT SQUARE.pdf', 'contracts/Engineering Report - 32-34 CONNAUGHT SQUARE.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2311b374-d7af-4b16-a32a-1dc5ef3aca6f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Arch Directors and Officers Liability Insurance for Residents Associations (12.22).pdf', 'contracts/Arch Directors and Officers Liability Insurance for Residents Associations (12.22).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('560f39fe-4d6f-4129-a977-3a47d5b07fa7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf', 'contracts/StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f8f7a0e6-3757-46a7-ac8c-1acfcc3f193d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Extinguisher Signed Contract- Connaught Square.pdf', 'compliance/Fire Extinguisher Signed Contract- Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3877a6b9-d212-4335-a767-bca1a695a195', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Q51691 - 32-34 Connaught Square Contract.pdf', 'contracts/Q51691 - 32-34 Connaught Square Contract.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0b80fdaa-f408-4340-9de6-79b88edf5bda', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Engineering Report - 32-34 CONNAUGHT SQUARE.pdf', 'contracts/Engineering Report - 32-34 CONNAUGHT SQUARE.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('38008678-76da-468e-964c-e3e08a2c3a4f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Alarm+Emergency Lighting Signed Contract-3234 Connaught Square.pdf', 'compliance/Fire Alarm+Emergency Lighting Signed Contract-3234 Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ac6d8fb5-8e96-44b5-be0e-58b9cd27b4f7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Fire Alarm+Emergency Lighting Contract Connaught Square.pdf', 'compliance/Fire Alarm+Emergency Lighting Contract Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('90140001-b4a0-4f20-bd4f-14341a590be5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'BT3205 03072025.pdf', 'contracts/BT3205 03072025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('41fd638f-c3ef-4fe1-b89e-cfcbaa81bee7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'FA7817 SERVICE 08042025.pdf', 'contracts/FA7817 SERVICE 08042025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2c1c4b5d-d447-467f-be89-1c3c8c889edc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Engineer Report - 32-34 Connaught Square Flat 5.pdf', 'contracts/Engineer Report - 32-34 Connaught Square Flat 5.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a8524805-b8cd-4c6d-8434-f3138aee70e5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Engineering Report - 32-34 CONNAUGHT SQUARE.pdf', 'contracts/Engineering Report - 32-34 CONNAUGHT SQUARE.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4a07ecef-e4a9-4a14-89f2-82fd947ca1b5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Jobcard_For_Job_No_22171_14-05-2024_1202.pdf', 'contracts/Jobcard_For_Job_No_22171_14-05-2024_1202.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ab79bc43-20d3-4f2d-bc7d-80e994310ffe', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'British Gas Invoice-862451083.pdf', 'finance/British Gas Invoice-862451083.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('92b8167a-fcec-4fe7-a101-e01ea4cb4d02', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'MT8825 03072025.pdf', 'contracts/MT8825 03072025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ccc8792b-4350-4729-9344-8d0e06e27c8e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'January Monthly Test For EL-Connaught Square.pdf', 'contracts/January Monthly Test For EL-Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0d374578-ed5b-4961-9fd1-d59ea13880a4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'February Monthly Test For EL-Connaught Square.pdf', 'contracts/February Monthly Test For EL-Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('07cfa3f5-145e-4c2e-ad75-bef8be652391', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'major_works', 'External Decorations SOI - 28042025.docx', 'major_works/External Decorations SOI - 28042025.docx', 'major_works_project', '0ddb9bb7-348a-4636-b3fa-19267e0688e9');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('9e77b1f2-db93-4cb4-a562-4105f6235fd4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'major_works', 'External Dec SOE 03072025.docx', 'major_works/External Dec SOE 03072025.docx', 'major_works_project', '994e8cc5-0c4a-4161-9bd8-edf52c0a0e4b');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('e6d61be7-66d9-4f52-8d43-fde72cfb6921', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'major_works', 'Notice of intention for lift.docx', 'major_works/Notice of intention for lift.docx', 'major_works_project', '1ca52d11-f6be-4317-9340-de3f3e98a337');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path, entity_type, linked_entity_id) VALUES ('dab27319-3a4e-4a96-a1a5-6132c3e9feb1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'major_works', 'Connaught Square (32-34) - 09.12.24 Schematic.pdf', 'major_works/Connaught Square (32-34) - 09.12.24 Schematic.pdf', 'major_works_project', '35a9ab5a-0fdd-47ee-82f6-d02665e7adf1');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7d943de5-7fdf-4291-bc91-056b1a33d3e6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'CGBI3964546XB6-Cunaku Construction Ltd-Business-Certificate of insurance.pdf', 'compliance/CGBI3964546XB6-Cunaku Construction Ltd-Business-Certificate of insurance.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('41d8a64d-1600-4057-80a6-630dd7aca9fc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'CGBI3964546XB7-Cunaku Construction Ltd-Business-Certificate of insurance.pdf', 'compliance/CGBI3964546XB7-Cunaku Construction Ltd-Business-Certificate of insurance.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5bb79dcd-72b1-4f6d-bbbe-0fc4531d93da', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Real Estate Insurance NTP (01.23).pdf', 'compliance/Real Estate Insurance NTP (01.23).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b1bd1ae9-10a7-4225-806b-750c87092062', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Real Estate Policy (01.23).pdf', 'compliance/Real Estate Policy (01.23).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('19ce4f4e-f5a2-482e-aaf9-ac08ab186ea1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Summary of Cover (01.23).pdf', 'compliance/Summary of Cover (01.23).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f93be42c-e0a8-4c1b-91fb-79ecadbd97ae', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf', 'compliance/2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('141fcb24-ffb5-404d-9dbe-8c5a8f045776', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', '2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf', 'correspondence/2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4af48b9c-b805-40d9-90b6-4f0f4fcb501a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf', 'compliance/32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e0b37e8d-22b5-41a5-92bd-42952df7a6d5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '32-34 Connaught Sq Buildings Insurance 2023-2024.pdf', 'compliance/32-34 Connaught Sq Buildings Insurance 2023-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2d7d7ad4-2da8-45d9-9c5f-d9626fdfa329', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Policy Limits Document.pdf', 'compliance/Policy Limits Document.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('bd77a185-870f-4600-af2b-9b1df8dd742c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lease', 'Official Copy (Lease) 13.06.2003 - NGL823646-Flat 4.pdf', 'lease/Official Copy (Lease) 13.06.2003 - NGL823646-Flat 4.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4a415f41-2c96-4930-b999-3d774fc6365e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Letter of Authority - Connaught Square.doc.pdf', 'correspondence/Letter of Authority - Connaught Square.doc.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0b089289-d9a0-41b9-bbfa-4bcc8014a4d5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Letter to report - Connaught Square.doc.pdf', 'correspondence/Letter to report - Connaught Square.doc.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f9ef4f58-ec67-4a55-878b-73e2570bcbf0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Pricing Quote - 32_34 Connaught Square Freehold Ltd - 109 - Gas - 10.03.2025.pdf', 'contracts/Pricing Quote - 32_34 Connaught Square Freehold Ltd - 109 - Gas - 10.03.2025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1d6995fa-4118-46b7-8864-256c3931ea78', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Allianz - Lift Report 14.03.23.pdf', 'compliance/Allianz - Lift Report 14.03.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ee99bc4b-3ec6-4821-b579-713f41d15da8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Allianz-Lift Report 18.03.2024.pdf', 'compliance/Allianz-Lift Report 18.03.2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('52bcd6be-1b3e-4014-a26f-5cdda48039e3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Allianz - Lift Report - 15.09.21.pdf', 'compliance/Allianz - Lift Report - 15.09.21.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('72b02347-de57-4b36-887a-d3f7899b309c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Allianz - Lift Report 27.09.23.pdf', 'compliance/Allianz - Lift Report 27.09.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ff27de55-c79b-447d-bfaa-c31e98898c7f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Allianz - Lift Report 10.03.22.pdf', 'compliance/Allianz - Lift Report 10.03.22.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c8d88c39-5309-43db-8f6e-d48550eb1f3d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Allianz - Lift Report 09.09.22.pdf', 'compliance/Allianz - Lift Report 09.09.22.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3b003391-e46c-42c4-875f-50fdee27a7f9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'LXBI3559280XB2-NEW STEP-Business-Certificate of insurance.pdf', 'compliance/LXBI3559280XB2-NEW STEP-Business-Certificate of insurance.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5f8f4d5e-206e-4928-be49-db9c35ffbe6f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf', 'compliance/2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ccc44f9f-93ad-4b1e-a1a6-b254c5dceb2c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', '2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf', 'correspondence/2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d3319a58-63f3-4221-96ae-9180936fb21d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'MO - Policy Wording - NZ0411.pdf', 'compliance/MO - Policy Wording - NZ0411.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('644f06b6-b5c3-4b69-b29a-c98eaf81d7a0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Feature and Benefits of Allianz Engineering Inspection Service.pdf', 'compliance/Feature and Benefits of Allianz Engineering Inspection Service.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8d5d40b3-240a-4496-ae2a-a675dcc1ad22', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('55c8a5c9-8903-4327-9653-c52c8c7f19d1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6321afc5-7ac7-4fdc-bd32-3a9284caf0cf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d56a530e-9c2b-4ec1-95ac-c5d01b820d75', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('12779d9d-dc4d-47cf-a3d6-1dd160fc7cb5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5e75747a-9bd3-485d-b6c8-4b391bf64cad', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d260e829-a4d1-4611-aad9-c27810757661', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('62d2ca64-6081-4cbf-8f9d-a1b976c7384e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2b891f46-c106-4d1e-b91b-1dfe207032e1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8ee138cd-f705-4704-94a7-de44bba3bc66', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dcdfd276-64c8-4ae5-b13b-f14ec7f6d6dd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'StG_Invoice_32-34 Connaught Square Freehold Limited.pdf', 'finance/StG_Invoice_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7291b0d3-03c8-4210-8829-24d03d578b81', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf', 'compliance/32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f669b0b9-7a65-460b-8c8c-7ef0383a83a5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Certificate_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Certificate_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1694ce30-eb19-4251-9621-eea415cb50d2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Policy Wording_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_Policy Wording_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e0f959ad-c54c-478a-87ef-809e16971e98', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_D&O Endorsements_32-34 Connaught Square Freehold Limited.pdf', 'compliance/StG_D&O Endorsements_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('fa35c20c-2125-4751-b2ee-831d7d95dde7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'StG_Demands & Needs_32-34 Connaught Square Freehold Limited.pdf', 'finance/StG_Demands & Needs_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a410510c-515b-4040-9cc8-755eb273ce90', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'StG_Quote_32-34 Connaught Square Freehold Limited.pdf', 'contracts/StG_Quote_32-34 Connaught Square Freehold Limited.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5e18b1ec-4406-4b31-b766-5497245fe586', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6775755a-af52-45f3-b0e2-0db4272a41c2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'FBR113382303-20230405-B.pdf', 'compliance/FBR113382303-20230405-B.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('878cb6bf-80a5-4e8b-b75a-221ba63231fd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Real Estate Insurance NTP (01.23).pdf', 'compliance/Real Estate Insurance NTP (01.23).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a1fbb48b-ba6b-42fd-a9be-460b3d345737', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Real Estate Policy (01.23).pdf', 'compliance/Real Estate Policy (01.23).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('26fbc337-d24c-43c0-af4d-1a61b0624a72', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Summary of Cover (01.23).pdf', 'compliance/Summary of Cover (01.23).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('33f0ae89-08a6-43d9-b577-6a87b564de8e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', '32-34 Connaught Sq Buildings Insurance 2023-2024.pdf', 'compliance/32-34 Connaught Sq Buildings Insurance 2023-2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b246e5a1-3695-4105-a219-5476327dc194', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Policy Limits Document.pdf', 'compliance/Policy Limits Document.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('534bb77e-d153-4482-8ee6-d57f0e077c55', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Zurich Real Estate Policy Summary.pdf', 'compliance/Zurich Real Estate Policy Summary.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4d1bafe4-dac6-4d02-94cc-cbfd7a4cf20d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Zurich Real Estate Policy Wording.pdf', 'compliance/Zurich Real Estate Policy Wording.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9be4976c-7a8f-41e2-bb16-ab464504393c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'Zurich Real Estate Insurance NTP (01.23) ZCYP895.02.pdf', 'compliance/Zurich Real Estate Insurance NTP (01.23) ZCYP895.02.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('8f690396-6605-4328-b712-182be018fcdb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('87a3d1d1-794a-4f19-91d7-257f7c6d3a68', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6a9a6325-0585-47e8-bda5-d5fe14afc505', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Supporting Docs_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Supporting Docs_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('36d5c023-b694-4fa9-82cd-176cdc7f74f4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d890b358-db50-4ae2-a22f-5cc94ab36003', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Certificate_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Certificate_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('41c4e552-fe3a-451c-8d7b-729ff7230868', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cc28d1fa-0bff-4382-b217-02813e3875bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'finance', 'StG_Invoice_32-34 Connaught Square W2 2HL.pdf', 'finance/StG_Invoice_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f95a20d4-4504-4895-9d65-63e115fdbe98', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'compliance', 'StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf', 'compliance/StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4bfcbded-6aec-4436-87ee-8902453b9dc0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square New property information.xlsx', 'uncategorised/Connaught Square New property information.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('02ccd0e8-f72c-4bd1-aabe-a8359f490de4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square Meeting Minutes 2.docx', 'uncategorised/Connaught Square Meeting Minutes 2.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0adf2423-60eb-462b-b2d3-35d9775b9c02', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'connaught.xlsx', 'uncategorised/connaught.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('788cbe06-c963-48ae-adf7-819375e4e1af', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'matrix - pp.xlsx', 'uncategorised/matrix - pp.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a9794a6d-cbac-466e-81da-8f6078b67a81', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '12. Change of Tenancy - EDF supporting document.docx', 'uncategorised/12. Change of Tenancy - EDF supporting document.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('df9b1969-b800-40af-8129-ecc5a282e77b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Correspondence letter.pdf', 'correspondence/Correspondence letter.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5005eb95-c304-43a9-8c2d-c8a7193741f2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'tenant list - pp.xlsx', 'uncategorised/tenant list - pp.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e6597141-fdb2-4e46-9042-09a22478c750', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Report - 32-34 Connaught Square BCH 78350.pdf', 'uncategorised/Report - 32-34 Connaught Square BCH 78350.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('eed6d6f7-c407-49d5-96d3-d14a53b1c85c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square Meeting Minutes 2.docx', 'uncategorised/Connaught Square Meeting Minutes 2.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e735b454-f45e-4fe3-abc6-94357fa611c5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square Meeting Minutes 20241120.docx', 'uncategorised/Connaught Square Meeting Minutes 20241120.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('79fcea77-bf33-4c79-b5c4-636d96ea2432', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square Meeting Minutes.docx', 'uncategorised/Connaught Square Meeting Minutes.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('62a9c1c3-7e31-4dbf-87f5-dd5a34f788a5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square Admin Duties of Co Sec.docx', 'uncategorised/Connaught Square Admin Duties of Co Sec.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('36b45b11-6256-4f49-967e-459c9a66400e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Signed Connaught Square Admin Duties of Co Sec.pdf', 'uncategorised/Signed Connaught Square Admin Duties of Co Sec.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('0c9d923a-4e5c-4bd6-a455-73384c3a75f6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '32_34 CONNAUGHT SQUARE FREEHOLD LIMITED - Statutory Registers on 22.03.2024.pdf', 'uncategorised/32_34 CONNAUGHT SQUARE FREEHOLD LIMITED - Statutory Registers on 22.03.2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4e396da7-8c63-4b33-9dc3-48bbecdbdd59', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'Memorandum of Association.pdf', 'correspondence/Memorandum of Association.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4c546288-f4a8-4c6f-8bfa-d0a79712650a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Incorporation documents.pdf', 'uncategorised/Incorporation documents.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f5dcfde1-e662-443d-94a4-8709d12bab9a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'B25676 RS 21.05.24 RM CM.pdf', 'uncategorised/B25676 RS 21.05.24 RM CM.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b79e11ae-dfcc-46b8-8fd0-dab817fc3c8e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Report-20.08.2024.pdf', 'uncategorised/Report-20.08.2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('59648bb5-9c95-4270-8481-4a102ae3826c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'PN0119V1.7 Privacy Notice (Website).pdf', 'correspondence/PN0119V1.7 Privacy Notice (Website).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('3b4ae4eb-17c5-45b2-b660-75c49cb1da69', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'correspondence', 'PN0119V1.8 Privacy Notice (Website).pdf', 'correspondence/PN0119V1.8 Privacy Notice (Website).pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e84de078-16f0-4e14-9183-160554796c7b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'REPORT 31-07-25.pdf', 'uncategorised/REPORT 31-07-25.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d8b03f01-0a49-4469-b841-6417cf4c24de', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '32-34 Connought Square Condtion Assessments.pdf', 'uncategorised/32-34 Connought Square Condtion Assessments.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('94986f2c-06c2-4c55-a85b-a5b0ac038257', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Signed Conract.pdf', 'uncategorised/Signed Conract.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a4dc31e6-b1d2-493a-b13d-b0f768b45de0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5679a8d0-7d51-41ff-8b0d-962a067ab213', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('52cd0b92-0283-40c4-95c7-373cabb7f05b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Latest Report.pdf', 'uncategorised/Latest Report.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d401182f-e8de-4ea5-8e0d-0aa0b0936ac2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Latest Report 24.04.2024.pdf', 'uncategorised/Latest Report 24.04.2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6ec6afed-e17c-4c26-b6bb-ec7c94dec689', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Latest Report 19.09.2024.pdf', 'uncategorised/Latest Report 19.09.2024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6273a4d3-b9b9-4e97-9985-3f5dea4f6324', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('cff44eb3-cc36-42c6-8f22-3f70c2c4813f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7b037c44-4e97-44d7-9a9b-d0036d8a79bd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('db6f8c83-c077-468e-9037-2bf652ed4f0f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6603ada1-7f21-4ccb-90d9-c052f468e6db', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '10.02.25-Pest Control.pdf', 'uncategorised/10.02.25-Pest Control.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7f0391f3-0559-4d2e-b31c-002d45fdf401', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Latest Report.pdf', 'uncategorised/Latest Report.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('dd082d03-26f2-496a-a220-ad1733047c6a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '17.01.2025-Pest Control.pdf', 'uncategorised/17.01.2025-Pest Control.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a3cda3ed-262a-4844-9411-b6c8200bee5d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'J18503 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf', 'uncategorised/J18503 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('7d0707d1-af9b-425f-97ff-4c2a77c80cc7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'J18502 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf', 'uncategorised/J18502 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b73005bc-7dc0-4b55-9c22-b3dd7d89e6ae', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('25741741-1b10-477c-8ad7-e5a4ab3e2811', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('46572e6a-fd44-4434-a58a-0e6926217f50', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('94f51be3-ba75-44ff-9b5f-031faf687328', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('997cba2a-f3bf-4f84-b1ba-2599c97a70e4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf', 'uncategorised/BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f719f092-ad86-4b1c-a04c-e2ef548c7d52', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf', 'uncategorised/BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6f0313b3-3b10-4f8c-88d9-631ddd2f0a1f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'INV 11546 Mr Martin Samworth.xlsx', 'uncategorised/INV 11546 Mr Martin Samworth.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b008c4cb-897c-4a78-805e-f28daf7a57ce', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'QB4126 Mr Martin Samworth.docx', 'uncategorised/QB4126 Mr Martin Samworth.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a1a5839d-1702-4642-8ba7-48a8a3ea5abb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'CQ2879 Mr Martin Samworth   (IP) CCTV.docx', 'uncategorised/CQ2879 Mr Martin Samworth   (IP) CCTV.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('55040a91-8168-4b53-a316-bd323f476ae1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_32810_17-03-2025_1311.pdf', 'uncategorised/Asset_Record_For_Job_No_32810_17-03-2025_1311.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9e7b0410-c04f-4045-be4f-aba2d88bb528', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_32344_12-03-2025_1426.pdf', 'uncategorised/Asset_Record_For_Job_No_32344_12-03-2025_1426.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('e62e3790-52c6-46ff-a849-37ca1d893c2d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf', 'uncategorised/Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9b5591ee-4d65-4d08-a4bd-4c171cf3f2d4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_34012_01-05-2025_1616.pdf', 'uncategorised/Asset_Record_For_Job_No_34012_01-05-2025_1616.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c4f3e03a-e28b-4c36-b23c-a5525d701ca9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_32759_17-03-2025_1147.pdf', 'uncategorised/Asset_Record_For_Job_No_32759_17-03-2025_1147.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c35b07aa-c332-4cd5-afc8-1deee5e399ca', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Jobcard_For_Job_No_32344_12-03-2025_1426.pdf', 'uncategorised/Jobcard_For_Job_No_32344_12-03-2025_1426.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('738b9070-7aac-41d9-b225-6a998fb6f50f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_33844_07-04-2025_1143.pdf', 'uncategorised/Asset_Record_For_Job_No_33844_07-04-2025_1143.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('97c73e07-8ea3-4350-82cc-e5af12b96f20', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_25732_03-10-2024_1337.pdf', 'uncategorised/Asset_Record_For_Job_No_25732_03-10-2024_1337.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('117c46c1-a32e-4d9e-b2ad-cc30f2e3536f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_22634_03-07-2024_1650.pdf', 'uncategorised/Asset_Record_For_Job_No_22634_03-07-2024_1650.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('29fc6040-d8e2-4bfc-bd9a-df650cd8aa50', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_27067_07-10-2024_1147.pdf', 'uncategorised/Asset_Record_For_Job_No_27067_07-10-2024_1147.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c6c4579c-13b8-4463-bd6c-3ea97c5cc508', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_19665_05-04-2024_1048.pdf', 'uncategorised/Asset_Record_For_Job_No_19665_05-04-2024_1048.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a2961442-1381-4397-8a74-6a49cdf75884', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'Connaught Square-Lift Quotes.xlsx', 'contracts/Connaught Square-Lift Quotes.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d53dead9-d551-4acf-9c2a-9a49a3aac10d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'LXBI3559280XB2-NEW STEP-Business-Certificate of el insurance.pdf', 'uncategorised/LXBI3559280XB2-NEW STEP-Business-Certificate of el insurance.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a4a22194-69a4-4977-9e83-f53a0aa99634', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'New Step - Cleaning of Com Part- Jan- 2023.pdf', 'uncategorised/New Step - Cleaning of Com Part- Jan- 2023.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d1c6c487-ca06-481f-9a88-53f9f57e4136', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Aged debtors by property.pdf', 'uncategorised/Aged debtors by property.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2d3ee805-6e2d-4dd3-b1b9-f6b5b06fdbd6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square, 32-34 Approved xlsx.xlsx', 'uncategorised/Connaught Square, 32-34 Approved xlsx.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5f8f8b99-2704-4d2c-a3b8-ae2d21c4511d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'BvA 24 Jan 25.xlsx', 'uncategorised/BvA 24 Jan 25.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('d90d3702-d275-4174-9e41-0d85ee00ab1e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'pdf.pdf', 'uncategorised/pdf.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('360c3708-cd8b-4370-8b81-4ddb695cd798', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square-Agenda 20.11.24.docx', 'uncategorised/Connaught Square-Agenda 20.11.24.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('a0521679-c398-4146-867a-fcf99a32e809', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square-Agenda 26.04.2024.docx', 'uncategorised/Connaught Square-Agenda 26.04.2024.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('fd607946-1171-4007-ae57-0d3d4d9a0ac0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Connaught Square 26.04.24.docx', 'uncategorised/Connaught Square 26.04.24.docx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('17ea1926-0730-4c3e-b7bd-8f097b4bce1a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'StG_Quote_32-34 Connaught Square W2 2HL.pdf', 'contracts/StG_Quote_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('f6463477-e62b-4324-8eee-1a239fd2ec5c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf', 'uncategorised/StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('fe25318f-cefe-43df-82c4-ec68d8083ef2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'contracts', 'StG_Quote_32-34 Connaught Square W2 2HL.pdf', 'contracts/StG_Quote_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('59f2f020-93fe-43b7-99ab-3a2d03ad034d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf', 'uncategorised/StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('b418b633-e37c-410c-a5f9-c3223ad9c5cd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Report - 32-34 Connaught Square BCH 78350.pdf', 'uncategorised/Report - 32-34 Connaught Square BCH 78350.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9fe110ad-678a-4db2-a0fa-1e7cc2e88ca9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_16617_27-11-2023_1522.pdf', 'uncategorised/Asset_Record_For_Job_No_16617_27-11-2023_1522.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('86e4a7c5-9d89-4134-b9dd-ea26d9ec61f9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_16808_28-11-2023_1340.pdf', 'uncategorised/Asset_Record_For_Job_No_16808_28-11-2023_1340.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('2e7ce480-c831-4f19-acdb-bf3182c45591', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'EX-NC (CONNAUGHT SQUARE) EXTRA 01102024.pdf', 'uncategorised/EX-NC (CONNAUGHT SQUARE) EXTRA 01102024.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('6f17c455-5e08-482a-b3e4-5e6d8f45f147', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'H&S recomendations - Spreadsheet with comments.xlsx', 'uncategorised/H&S recomendations - Spreadsheet with comments.xlsx');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('18cd1c84-6331-45e2-8f40-261807d88006', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'CM434 RS 32-34 Connaught Square - VISIT 1 OF 2 - 30-04-25.pdf', 'uncategorised/CM434 RS 32-34 Connaught Square - VISIT 1 OF 2 - 30-04-25.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('60827528-8a4c-4d2b-85af-48a4d8aee36d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Q49511 - 32-34 Connaught Square.pdf', 'uncategorised/Q49511 - 32-34 Connaught Square.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ec9badf6-9e8d-4451-b619-2f3f2f9cdfac', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'FA7817 CALL OUT 26032025.pdf', 'uncategorised/FA7817 CALL OUT 26032025.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('32df7122-0c9c-4a9c-af52-58c57a3f306f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '32 Connaught Sq - PAT .pdf', 'uncategorised/32 Connaught Sq - PAT .pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('71264fe0-b799-4e60-99f5-808967a9e203', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_35146_03-06-2025_0906.pdf', 'uncategorised/Asset_Record_For_Job_No_35146_03-06-2025_0906.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('4e29731f-d0ae-47dd-aa9e-5ce7ca2d2c0e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_31162_30-01-2025_1603.pdf', 'uncategorised/Asset_Record_For_Job_No_31162_30-01-2025_1603.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('42ad7998-eed2-420a-a356-8f243310949d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf', 'uncategorised/Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('ba4626c1-853b-4264-98bf-dc07bee339fe', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_28737_25-11-2024_0907.pdf', 'uncategorised/Asset_Record_For_Job_No_28737_25-11-2024_0907.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('5fea96c2-1d6c-4765-b172-860470a14143', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_35402_03-06-2025_0916.pdf', 'uncategorised/Asset_Record_For_Job_No_35402_03-06-2025_0916.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('1e921bc4-9ea6-4341-bdba-7d7de6a7780d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_22171_14-05-2024_1202.pdf', 'uncategorised/Asset_Record_For_Job_No_22171_14-05-2024_1202.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('45d95f06-7153-4b46-8918-a4d3b96337fd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_35654_03-06-2025_0912.pdf', 'uncategorised/Asset_Record_For_Job_No_35654_03-06-2025_0912.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('c0679584-38e3-416f-82ff-7d7821585e3c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_38609_26-08-2025_0740.pdf', 'uncategorised/Asset_Record_For_Job_No_38609_26-08-2025_0740.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('78721d8e-c347-4557-82ec-6cc179b79c87', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', 'Asset_Record_For_Job_No_36465_20-06-2025_1038.pdf', 'uncategorised/Asset_Record_For_Job_No_36465_20-06-2025_1038.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('35863611-6729-4d49-85c4-54efec630841', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '26368 Report.pdf', 'uncategorised/26368 Report.pdf');
+INSERT INTO building_documents (id, building_id, category, file_name, storage_path) VALUES ('9ea0330d-3cd1-4654-b560-c07fe5bdee6f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'uncategorised', '26474 Report.pdf', 'uncategorised/26474 Report.pdf');
 
 -- Insert 26 apportionments
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('c074dcd8-c497-4af9-841d-7ff6ea5c348a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 32.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('f83d71ab-3fec-4f39-b1dc-32da054ffa1e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 10.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('e8050bf0-9d85-4fff-846b-4df400ad5e99', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 32.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('380bc57b-759a-4876-8864-ec68df907bd4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 19.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('4b2326a9-9f97-4ea5-8e74-5e75e5f7e9c3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 2.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('38d93661-4bd9-4365-afa2-d26a3da504d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 2.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('2543b225-3ee8-4b4c-9bed-e6a82eeda123', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 2.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('7b5fe36d-d60e-4d70-83e6-56ce03d825e2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 2.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('540b4a42-d72e-4676-8bd3-93a0c8449203', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 2.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('a0592705-43e0-4e8b-8de1-0ee32213f836', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('a41c25a9-5ab9-4cc3-88a4-0a3ab863b2fc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('94eb2450-d24b-40c9-ba11-1ac8ed935b4e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('74a719cc-227f-4933-a498-1a35539a4bc1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('ea202c6e-dddb-4bef-99fb-dc76f0f59bf2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('3dca3c7f-88fe-41a4-82a9-bed149623904', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('cb9fab7a-2f20-479c-b996-9567075443dc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('e5d2f7f5-1b0a-4cba-b3b9-c8e961d9d543', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('3bf50cf8-d6a6-4767-a498-03607340cc3b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('1cc0b7b1-59d9-45d4-8da5-f848346cd3af', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('3f6a1c06-a0a9-4420-9714-c65433705963', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 3.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('322da307-6447-4064-a95e-5ada8eeea716', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('91d625f7-666a-44b6-9226-10450d9808dc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('ee8f290b-53a8-41b7-bfb9-7df528d58dda', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('1d46e446-c72f-4922-ae67-b7b6da51a3c1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('4243a62d-2a47-4e2f-ab92-c4d2a54ed918', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
-INSERT INTO apportionments (id, building_id, percentage) VALUES ('c03c2abd-1930-40c8-90da-a007eb34c25f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('39aec80c-9ddb-4059-93e6-8d59b4580e67', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 32.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('439d1fb1-0c02-4c0d-aaea-76ef94d248a9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 10.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('ad6b61c7-34ad-4b14-8df1-8e8ef15fa7b4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 32.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('8be0cc14-5ea7-403a-adc9-baa2c8822f5e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 19.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('0bab214a-c03c-43e8-850c-ec06c7d3173d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 2.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('c95b405b-3918-42bf-a538-4320bf979451', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 2.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('cfedbd2a-3d22-44ae-9484-e3c084c4ca99', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 2.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('47057865-d944-477a-944a-f42292a3eb7c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 2.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('9e5c9d74-5b30-491a-aca1-c0e6fbe0813f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 2.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('7af89073-2558-4ece-8829-17feb9f2bbbb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('965c7221-733f-45e8-a646-33256ecd5646', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('bbe0aee7-f418-45c3-8c4c-af73d3afd17b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('fa5cbd0c-58b1-4c40-89f9-9d49826289b5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('d5a35929-88e8-43f2-8772-626d727daee0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('bae478f3-2898-4b30-81c2-065ebbc8bb2e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('f553b1f3-df51-4fd8-94a5-5f5462761888', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('b65a136d-4c65-4fef-ac3e-59558c1921ef', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('dbc60969-acd5-4333-9662-0d1f05244dd4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('cbf39610-4bb3-4c7e-82a9-4d1db9e84682', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('a2ecbaea-d42b-4fea-b010-62f6d41033fb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 3.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('ab93d6d2-f0e6-47e1-a4b1-f56114ca43e4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('a4fb5868-f01b-4957-9c80-e0ae6339da55', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('2c602bf2-478b-4036-9c56-aec9c1d02343', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('5b30d3c7-207a-473a-91a4-c08efcb4f896', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('dbb78521-c7f4-40ef-b169-85d4f2d6f6cd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
+INSERT INTO apportionments (id, building_id, percentage) VALUES ('d8c5cc97-e3b4-482d-a30a-6ea991e5ec7c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 8.0);
 
--- Insert 152 insurance records
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('368a23f2-dfb1-4f7e-ad8a-0282d6fe887e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'CGBI3964546XB');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('93ef4d39-7ff5-4fc3-a9f0-311979dbe805', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'CGBI3964546XB');
-INSERT INTO building_insurance (id, building_id) VALUES ('f4301dd5-13a3-4026-b708-34a46760d0ba', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('4b21316a-9ee8-4f43-a36e-a21aa37f8254', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('fcae3503-b7bc-4b44-8b3f-8d2dd2bbcb8a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('c8c91ed9-957b-418f-b1c8-31e64bea639a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'and');
-INSERT INTO building_insurance (id, building_id) VALUES ('02601dcd-67e7-435b-9ba5-56dc424720a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('39ae976b-98b1-4a61-8726-2523b39c0186', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('0092b1d2-cc5e-4fc2-9552-c15ed7628f47', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('f9e25cb6-8222-44ff-9099-9fa364d5fefc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'NZ23346712');
-INSERT INTO building_insurance (id, building_id) VALUES ('f495908f-ee1a-44f1-bc53-b3f8e3d32cdb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('1b2e498d-803e-4e63-8e7f-75dfa45e7a24', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('1522b72c-d80b-4c20-beb3-78e8b9c427d1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('aec968a0-d825-4f5d-8287-8f0bb683d34d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('9a6e17a5-f571-463d-983b-8cc3bbbad24d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('6e60f803-c2ea-4af2-8650-d03015d8ff5c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ARCH');
-INSERT INTO building_insurance (id, building_id) VALUES ('f61e126c-188c-4e35-b599-4742c1267378', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('76914784-6736-4d7d-ad66-7fba2ac7562f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('b8b2694d-6c46-4e68-aa9a-2ce2a6eb69e2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('6a74bbc5-4a19-445c-851e-63b418fc9df0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('be6ebda7-c088-4f39-8f64-116a25e7a5db', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'FU117816');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('ce77ade6-e31d-4813-943a-b8bdd9681e5f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'FU117816');
-INSERT INTO building_insurance (id, building_id) VALUES ('0309b34a-b888-4373-8390-f19072077609', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('eb4f37f8-e63c-48dd-813c-ccf2b409d63b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('bf119dbf-204c-4a79-b62f-e36ad6600907', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('9dff770f-111e-4295-a839-c52fa9268d11', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('3be810bb-9676-4f67-8628-204627f4c073', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('655ab39d-72b0-4828-b4ef-6a078cb33551', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('41f2572e-5d95-4443-a167-0d961384e66d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('e3c5691c-c767-48a8-a72a-3a81825cfc91', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('a73a07bb-df24-4d09-9933-12361fd78ac4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('33d4d5ce-a316-4bab-ae28-13310a6498bd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('e3548302-8047-443d-b002-0c316d7d7f1e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('1fe055ee-8755-486e-ab83-2d343d339010', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('56e91e1b-b995-46d8-abc1-2eef8395b0a0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('28aba32c-d4eb-49f8-b795-73d99d93b5a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('0e91406b-754e-4ec3-b8a0-25589c93a477', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('f8828f69-34a5-4520-b510-f39717774e6f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('a2d0cecf-f42c-4d0b-a36a-e5e0a7ec06bd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('b639c05d-189c-4586-8b12-56f274c1bb96', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('e1561162-b2cb-463f-82ae-6f766bb99b6f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('19d203ea-77e0-440b-a91e-3189430b3f72', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('52d9a2b6-a397-4423-b723-343c84c3fbc8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('96168aaf-9da6-4c2b-90a2-857deeb640aa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('8b7aa866-3de7-4d0b-839d-2b078e2a7483', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('fb94fa83-57c8-45bf-b385-3fff717264fd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('a07495de-ec95-4221-9d8e-064de074ce42', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('d5a24939-eda0-41aa-a101-8ba76a1d76a9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('4d365270-d3e5-421b-85c7-2a0a2d4dff31', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('16fc429f-621d-44a3-8c77-f1a263c56248', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('70361aa4-bbfe-48f5-8a61-17e9492912a7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('949c535b-df35-4647-bb78-74dc3eca3e3e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('af3e8467-d074-4381-83b1-fe8fe7369178', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('22d5c2d3-ee43-4b82-ba41-d7306b80526e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('02ee299d-f68b-4841-bff2-cdfd3032b271', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('5779c8ae-bcd3-4e6b-84c3-4cf6bd81bda1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'LXBI3559280XB');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('6d326acd-a636-45b5-9f99-dd5ad6ee0d67', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'LXBI3559280XB');
-INSERT INTO building_insurance (id, building_id) VALUES ('ca4c734e-a994-42fa-9e15-35aa74e965f0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('af124d23-7d41-4a27-9cc0-fe2831973745', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('d5e95e80-d260-4d48-ae1e-eb487e229026', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('d15a933d-6d78-401a-991a-7bff94d59843', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('87d35f9d-6857-44c7-91cd-7ee8cf328321', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('35555c31-a0a1-4005-a737-8c71c8edd60b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('e62fa362-1a01-4241-9848-4bf389d94d1c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('b1a144c7-2277-41e0-9937-18de7247919a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('9aece419-bfc5-47ef-befd-1439b653ed97', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('1d21e1cf-3728-4a61-8149-99cc24d97194', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('c52fc241-3b2c-44f0-ae16-12c552bb0678', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'NZ23346712');
-INSERT INTO building_insurance (id, building_id) VALUES ('3a3a6754-52e6-49a7-9e02-616020213088', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('a6afc3b1-ab05-49e6-b4e1-f0ecc04caf2b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'and');
-INSERT INTO building_insurance (id, building_id) VALUES ('b2946630-32fd-49bd-bca6-dea41500988c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('6365e07f-2bf5-4053-85d1-38f507355293', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('8efd0a5f-573d-4551-b81e-9d286f08d84f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('c909d376-d9f2-46ce-988e-b3cd6f66a67e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('6126897c-d1d0-41d4-a232-e6fc9fe35921', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'STGLON');
-INSERT INTO building_insurance (id, building_id) VALUES ('c2d1e72a-7cb0-460f-bcf3-988279087d66', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('5be6f0de-2b7d-4508-9133-32e8ea090af2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('6c316cb8-a19e-4ad5-9f15-283919450e0e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'STGLON');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('fd973906-4733-476d-abbd-f884cdd8a7ac', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'STGLON');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('dd2a40bf-af08-4e7b-aec1-eedafcc2a083', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'BERTSTGLON');
-INSERT INTO building_insurance (id, building_id) VALUES ('1d19fc77-1384-4c1b-9b8f-bf27422c7754', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('66a196fe-b8df-45e9-afb6-e2a4f97bd8e3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('2b96daca-107d-484c-a1a2-1354c2f28d0e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'LP');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('b54a93ec-6781-415e-b755-e080239c1df9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'HL');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('608659c5-7fa7-4f6a-abb4-77e7432319e4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ARCH');
-INSERT INTO building_insurance (id, building_id) VALUES ('3db7d7e0-e0fe-47fa-8455-f11b7067b02b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('abf7e39b-b51e-48ee-b880-69def42e0fc0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'and');
-INSERT INTO building_insurance (id, building_id) VALUES ('278e2dac-1e8b-4e44-bec5-0b6d5f8e5b97', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('191e27a9-7fcf-444b-8acf-02f0eecd755c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('bd63d3d4-1e0c-44f1-8a05-b681595642b7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('b129773f-c7ff-4712-bcd8-da1db9363eec', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('0434355e-cf34-4581-9d48-2ed11b78388b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('86fdb8f3-4231-4eb6-a67d-16f2d15c3ea9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('6460c5f6-f3d4-491d-bdec-f4e8847566cf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'and');
-INSERT INTO building_insurance (id, building_id) VALUES ('c4e2b916-d635-46ff-b9fc-c3a8a21321dc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('65960f5b-4b15-406f-8d68-c4690a3561ce', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('609af7cd-a2c0-4ef6-8323-99ccc2b83566', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('b1813d7a-0e9b-45bc-b8e4-7793b87d015e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('7a264372-4ed6-4ca8-bc69-c561ae750d45', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('413ae558-e26b-4175-9522-09a25980bc33', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('4099c9ee-c9e3-47c3-ad29-a7ed08917d92', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'and');
-INSERT INTO building_insurance (id, building_id) VALUES ('d0965c37-a4fe-44a9-906c-8fae5758ebf9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('72d4041a-7172-4f31-944b-d077ad9fbccb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'BP13228-2501');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('e1e8f980-798c-4de8-bc02-d131185c7c2a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'BP13228-2501');
-INSERT INTO building_insurance (id, building_id) VALUES ('de8f1ca0-99d4-4ea6-ae7a-a9663a684043', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('dffad681-1348-4b77-93b7-1f45fec30093', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('74b94230-c660-4d59-bf39-8e92714423c0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'TA0604600');
-INSERT INTO building_insurance (id, building_id) VALUES ('d5f3c421-e223-4afe-bc99-ba1913282203', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('6111302f-9de7-428d-897a-b8c2e571a7d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('ca37e179-4c94-49bd-a30a-fc3174fc310b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'HL');
-INSERT INTO building_insurance (id, building_id, policy_number) VALUES ('4cc60153-9426-446b-a1d6-180b32b9a572', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Camberford');
-INSERT INTO building_insurance (id, building_id) VALUES ('e612a4a2-d399-4193-8318-1d4d79299a66', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('0e0b4db0-5a1b-44d3-bc42-3df735b4f4fd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('eb312524-3761-4b57-93fa-2d808a47506e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('cf582725-e52c-49ad-960a-8dd565d548ca', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('6a8fd040-5199-4529-9899-a5c29466a64a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('d09908a6-6339-4235-a987-a4b3dd8a5380', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('8a243f99-c553-442c-b56e-e6a87cf03157', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('15132301-38e6-404a-8e62-898377c0290e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('ac647b7b-63f2-445d-ac42-7ad229405992', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('7ba31814-2d14-4767-8e43-7fa9ac32a496', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('dc7cd024-3a5c-4f5a-b27a-350c68c34537', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('cf532974-5084-4961-b617-0c809103c3ef', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('07e5adba-1dbd-4ede-a050-5b27d19139f6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('54af230f-4eda-4402-9dc9-e2efb11f8bd1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('6f23b914-bdc5-4415-91fe-133d3267af38', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('8e883b03-9c50-49c7-acd3-8bfa3f75f037', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('194b8783-b70c-4fdf-82ad-520fe03b2223', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('d181af0f-7f1e-482d-be7f-1317803e069a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('0a3feb71-c940-4e8e-91a9-50f7f278a78e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id) VALUES ('cfa2cd47-37c2-4d09-8d03-af5e68fbbe1e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('a352a7e7-9f6a-4ab0-a2c9-4ffd404cf4b3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('57876f42-4fc4-48a5-b288-81dede00a58c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('73f712fd-a2ed-4f12-8c02-41f30b24bc8a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('a3d50c2e-27ef-4130-baf9-11b53a503005', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('f9a07963-2c02-434a-8245-d42ccef60a59', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('5f086e78-49b4-48df-a325-0488283f15c2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only. Inferred year: 2023');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('3ccb07a8-2709-4511-9bbd-90e5b3cfa91c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('9a7b6c31-e7dc-4d35-a819-d49fa99c1715', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('f273032e-d24d-4f4d-b68e-9c8f4403fb05', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('08c99b57-7203-4400-aad7-2268e620db05', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('07d38572-0212-49d5-8be1-b49ca620badd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only. Inferred year: 2023');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('b0095398-d788-45f2-b38d-d3369cbd5d19', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('35741d31-f398-4351-bdd6-0bc2f426c6f6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('26480eaa-6a52-4053-a296-957a4ccd54f8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('33ac2bb9-4d2c-4e61-bad4-590cf63d08ad', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('d557269c-a740-4283-9b8b-3986580c66b6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('74400f9e-6a74-4248-8918-73be2c2ded99', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('fd93da2f-e26f-4cb3-b471-dc55c6fa1391', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('b713d618-0f1c-48e6-9701-71f9a9e7744e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('68c00aed-f5d3-4f2f-b57e-a2f264be1f93', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
-INSERT INTO building_insurance (id, building_id, notes) VALUES ('2d6db22f-bb32-4e3e-ba61-12b213fa9365', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'PDF metadata only');
+-- Insert 131 insurance records
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('105d32de-031d-4c77-a8b1-f829353647f0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'CGBI3964546XB', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('50254af0-4f0f-4d73-8de5-6c87db09615d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'CGBI3964546XB', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('9eaaeba3-dbbf-4f68-876a-3972eca56488', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('fcb40945-21ae-45b0-8cba-47e3ffa21659', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('0495ed19-504f-48d6-93c1-7b6f5af9cde7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('32a78303-0115-4c08-b2d2-d189c1de187d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'and', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('7100f4e1-1f08-4376-993a-cd6531a0ac1f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('51026455-d515-4dc7-b05e-88548f7a9c94', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('444f9d06-1133-466c-8d0d-7dd127f3238d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('435af180-0073-4ba6-ab82-2fc1d8ff59e7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'NZ23346712', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('50504da1-0640-4fc0-bb2e-8de72c538478', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('262052f1-77cb-4ae9-bb96-4148a5eb485a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('b8a6b3d0-035a-4b6e-8cfc-c6dc9ee3d0aa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('02e55aba-3e58-4855-a8a2-f35f7b9836ef', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('a1dd2876-1206-4106-971f-9343d82ef768', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('d9086520-b79b-44b8-842a-b4666bf18a1c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'ARCH', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('9baad7cf-cf40-4837-9891-722ee15b8f05', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('2813fea9-c102-47e0-8505-b60eda51f5ab', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ed34c0e2-72df-4619-b0c0-b6653f1f4e15', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('1bceaf80-be7f-4e52-b16b-624bab5bbc97', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('e7b7a203-7f7b-4076-bf41-4bfc32ed84c0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'FU117816', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('31881c0d-5661-4db2-a463-5551c3655396', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'FU117816', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('201ee038-9542-458f-aea3-47d33ea661a9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('9b28409e-e91f-4b95-96f0-4ce82d3f3f62', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ee6b6897-205a-4b7b-8a5f-ba69b692a13d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('d5b3f03e-e796-4826-85e1-172ad77357a4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('0b21d68a-4f28-4bee-a1d4-2fd2f006578b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('4daa1bdb-8dd3-490a-8e22-d8a8ab44b122', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('9c6c9a9b-527f-4712-b036-ee35e762e414', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('de76b982-ea5b-4716-a661-f13804308c8e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('72da8f63-9f20-48e7-95ea-429ff42cb62d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('dbda4ca7-3a78-4c6f-baa5-2385589bc025', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('16008ed5-efab-431c-9659-f55858ee445f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('8fa1574e-c035-4cf0-b5f7-30c572f662fb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('a802cf5a-f3d0-46db-959e-b14ae5e565bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('acdf8163-e88f-4260-b0d8-783c52c36711', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('1c7a8c44-b5d0-40cc-b720-ea70ee7112af', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('79285c71-39ee-4569-9105-5ed4a27cbed4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('a28ab950-b389-49c0-a883-2e3e356b47fe', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('9021086b-9c1e-47a3-b410-f16785c72ac0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('d93c1061-95b7-45a7-9be3-e6e7255de8c6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ea8e79e6-dd3c-4ab4-b0ba-6e2d91ada130', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('428183d5-748d-44b6-98fe-459e3a83da26', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('355537f9-5c41-45a5-80e1-f93ba837842d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('fd111086-6f68-4524-b7f0-7a09ace3dcfb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('6be80abf-1c0e-40ac-aa6c-352815a003f8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('2be46e7f-caaa-403d-a9ea-edc65173f590', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('62b9141a-8782-4ecd-bfbf-94aaa7ea4371', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('1fa620f3-5121-4048-8884-beb67af36ce4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('12bc1c4e-7226-4ff9-9c79-ef474a949c42', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('a65313ab-158a-49ec-abd2-75f08629d5aa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('3666d4f7-dce7-4336-9894-a05cdd872588', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('941a79ec-f2ae-4130-bb15-ab0ce3589774', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('167cabf1-ba73-4b54-be44-5ca9fa70533e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('7762ffac-d45a-4b09-8422-730350dc2382', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('7a87434f-dfcd-4776-9ff1-03bb3c2d92b4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'LXBI3559280XB', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('10149e66-823e-4520-8abd-484224339e12', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'LXBI3559280XB', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('79ede350-660e-4591-a5eb-370dcfa58558', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('823c67d2-989c-4052-9e97-19314059bfb0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('c531a0e0-119c-48dd-b64b-ce7a4d70bee3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('18e91993-78d8-4ae6-9da8-85da043fd2b4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('cc2f47af-8584-442c-a787-abdb6445bae0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('c5c9e10d-8a82-4932-80c4-378b03372f72', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('c6e4feff-1b9e-424a-8b1f-dca5a95c7a17', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('a89950a9-1410-4396-b37c-1008875f306d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('950496d8-2dae-4d17-9781-593c2341dfcc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('4c38ef18-f9ec-474c-813b-4ac8312000af', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('1accccca-498f-44e6-a8c0-81a6f7dacad3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'NZ23346712', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ccfde659-99d5-41d3-9eda-5db2ede3142a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('d4ae39fb-5614-4bfa-a123-7e1dd0a1d291', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'and', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('0863b12c-5142-46a6-9041-361bbc0d73cf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('d395bcf6-264c-482c-954a-501a6985fb42', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('7a824931-2ca1-42b7-976e-f56694eaf5a7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('754073ff-a8fb-4ed6-b977-7bd045adea69', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('0325d9fc-7479-4efe-9556-a44d2366a2a7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'STGLON', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('184eb1aa-057d-4376-924f-8040f1ae85bd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('8a145ce8-5622-4c0c-ad06-76e9a759f796', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('eac1a619-c14d-4db6-bb73-b9ff36e671de', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'STGLON', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('0d62a6c1-4cc8-4f35-a8af-6a5befb0435d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'STGLON', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('390d3968-96c6-43c9-8af9-928b8d50e54b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'BERTSTGLON', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('c3aa0667-abfd-44bf-86a4-b30c953e77f3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('0981ad7c-790f-4625-99ea-65a81b4d53bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('ebdbacc7-5725-4fc5-8c48-b5be4c1a15eb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'LP', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('1e21524d-94aa-42f1-b5a1-c471d756d588', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'HL', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('e3f06164-364b-42d4-b233-02e430f81c0a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'ARCH', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('07523982-f1cc-4cbf-b6c6-843fc37797c9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('790a6dce-9d04-468d-97ba-0166210d5987', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'and', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('72195067-d3b0-4de5-a0ce-702f90d6f069', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('078e984b-aa1f-4e46-a56d-95b7e949c6d6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('5ee711d3-7613-4d51-9d2f-032715860379', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('1a47e466-7647-458f-8d59-46f455341309', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('5d1a4f9f-6775-4f68-ad82-062cdd13275e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('b06b43b4-1a9d-488e-a06a-4dbc8cfb4a9f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('2f08a5d1-7070-49a3-8326-48a4ef362f45', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'and', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ccdc6aa3-f708-484e-b4cf-52ca430a7fb4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('368f95bd-8237-4355-aa30-60bbbec5a6e4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('5b9a6022-02fb-4373-a530-397c9a45e9d8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('9ee5dc96-1132-4923-bd08-fea44549f4aa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ddbfa899-72e2-40f5-976f-b69b5774a6ea', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('8321aa34-9deb-4f82-82e3-bdacfd311de5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('fe974a95-c0db-4ad4-8d75-6c98411ce684', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'and', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('992bd29f-4c72-4084-9833-25a9e3747ea3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('7e3c2a26-0373-4728-8fe3-7152585251bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'BP13228-2501', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('6f8a16ee-293b-4f52-aa5c-9449dd80d950', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'BP13228-2501', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('c3cd4298-2e98-4d6f-9488-ea7d105b68d1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('19e19198-0b78-4075-9a59-b97d8c06edee', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('1409fca9-e572-4b83-bd74-3b2184dcef6b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'TA0604600', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('d363deca-bdc2-40af-9785-a1833bd86dc8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('2ac3b1ff-9757-4284-a2b4-0d43013393c5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('a3115141-53ba-468c-93a8-846d47dca580', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'HL', 'general');
+INSERT INTO building_insurance (id, building_id, policy_number, insurance_type) VALUES ('6d8f78f2-c102-4b72-a7d2-ccf264606bf8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'Camberford', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('24f3cac7-967a-43ca-ad2e-d4f90727f4d6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('ec710c94-4764-4ccb-9c44-0b419020da43', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('da4bcbfb-76a0-4fdf-9d1f-21f54e3828ab', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('3bf6cd24-b8b4-4ce2-ace9-fc9d9bece4a9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('b3d3358f-2b5c-4b81-b6a6-bd52923c4ec9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('f9671c80-ea32-4ba4-a14e-5a0ee9aff1bd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('4abdd810-c01e-449b-93e2-b67530debd4a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('26b5b271-4859-4dd1-927a-5a73efbee3f9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('be5773cd-0ffe-495e-b538-f65f92feeccb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('c33da688-089e-4002-809d-d8f78afd8ae9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('7c65030c-65ba-4f8e-9fd4-7881582e81d2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('894e4181-8b45-4176-837f-09031b820624', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('014628e7-722b-44b8-a0d8-d8ee99f22029', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('3d4ce620-fb8e-4b93-ad63-8abf7308e9f3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('803cf99b-6a3b-4481-9aac-171724ce6b6e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('13f2c2c6-770f-4539-a829-701c76fb32e4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('7d5bbf9d-9e81-4e87-be04-6f0a12d85e03', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('dd7522f2-7d19-41a3-be5e-a69aa6a2fc5f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('44355cc9-032e-46de-a2dc-65442ca26d71', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
+INSERT INTO building_insurance (id, building_id, insurance_type) VALUES ('e7d5747c-872c-45f8-ae95-e8c00d3cfa80', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'general');
 
--- Insert 4 contractors
-INSERT INTO contractors (id, company_name, contact_person, phone, address, accreditations) VALUES ('0c4790db-1717-42eb-8314-ac16c3471be9', 'ISS', 'UK POWER', '083603538855', 'London, We''re available on Live Chat here., W1S 1RS', ARRAY[]);
-INSERT INTO contractors (id, company_name, email, phone, address, accreditations) VALUES ('cb587ba1-999c-4099-a49b-783f930b45d6', 'Quotehedge', 'info@quotehedge-heating.co.uk', '07801 799118', '182 Revelstoke Road, Wandsworth, London, SW18 5NW', ARRAY[]);
-INSERT INTO contractors (id, company_name, contact_person, email, address, accreditations) VALUES ('a3a1ed20-ae28-4357-8d79-b080784bc4a2', 'WHM', 'Candice Fisher', 'enquiries@whmltd.org', 'WATER HYGIENE MANAGEMENT L TD, 2 Churchill Court, Hortons Way,, Westerham, Kent, TN16 1BT', ARRAY[]);
-INSERT INTO contractors (id, company_name, contact_person, email, address, specialization, accreditations) VALUES ('95b246ae-e6cd-4610-819b-ad344594c5f2', 'Capita', 'your insurance', 'DPO@archinsurance.co.uk', 'f Arch Insurance (UK) Limited, Arch Insurance (UK) Limited, 5th Floor, 60 Great Tower Street, London EC3R 5AZ', 'security', ARRAY['chas']);
+-- ===========================
+-- CONTRACTORS
+-- ===========================
 
--- Insert 43 contracts
-INSERT INTO contracts (id, building_id, contractor_name, contract_status) VALUES ('4b6b5af3-f498-4b3d-963e-e2d9481e620c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('6d00ab6b-af55-4b87-ae4e-c5b9d64462cf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('ad4d8d1d-42dc-4f47-bd46-266634b41e7f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'security', 'quarterly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('d06ca3dd-6799-4727-8a25-eb76af98ebeb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'security', 'quarterly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('5fd758f3-7b00-454d-a08e-b27b7d49a850', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, contract_status) VALUES ('d8cfa13a-8147-4d20-b759-6143a400d2ad', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Quotehedge', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, contract_status) VALUES ('84289254-a92a-4d03-927f-cc358c44ad97', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Quotehedge', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, contract_status) VALUES ('85f3d7d2-d256-4b89-993b-7e27a62c1bf0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Quotehedge', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('86c5c539-ef54-4922-8bf7-fde162285bf2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('473a9969-2eec-4058-aa28-223868dfe6ff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('f0e8e3b9-ffdb-4cf4-96cc-f34a2a409d52', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, start_date, end_date, frequency, contract_status) VALUES ('67c8b5fa-914e-454f-b346-445fbe5e95b7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', '2025-03-14', '2026-03-13', 'annual', 'active');
-INSERT INTO contracts (id, building_id, service_type, start_date, end_date, frequency, contract_status) VALUES ('f7f916ac-e991-47b7-91c0-425718a65e39', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lifts', '2025-01-13', '2025-01-13', 'monthly', 'expired');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('f0750432-e831-4570-a306-5108ac315f9e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pest_control', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('7e961b86-d653-4b3a-8153-f9b2cbab77c3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pest_control', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('d5b5acd5-b87c-4227-aa1b-b9b8d4f32dba', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pest_control', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('9db5871e-95dd-40a5-910e-54ef918f5fd9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pest_control', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('4a821a11-614c-447e-a95c-e58b9e5b9d8c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pest_control', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('06d6027d-91ac-4544-8244-fac2aca39652', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pest_control', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, frequency, contract_status) VALUES ('2804c0a5-34c0-4a26-9509-09ed3ce8391e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'WHM', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, frequency, contract_status) VALUES ('fd8fbadd-567d-4df7-b0a2-88a181abc3d3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'WHM', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, frequency, contract_status) VALUES ('ff854cbf-8595-42d5-a2ed-7e452320803d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'WHM', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, frequency, contract_status) VALUES ('716aa335-a0bd-4405-bf4c-8f393747b464', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'WHM', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('c7b28510-b035-4c74-bb49-29733c5482d8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lifts', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('77841e75-eab8-4f2b-ae30-f2dd53d71061', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lifts', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('1a0975e2-53be-4b1f-984b-bc93c6dfbb67', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lifts', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('e0a094f9-c2e0-4f15-bf4f-1b3e011dc28c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lifts', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, contract_status) VALUES ('85601b54-964c-4876-8730-61443dd8bd80', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'lifts', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('e6fa00b6-6a09-4548-bf74-da49fe1153cd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('fe94889a-cc21-48f2-860b-7ab756668cf0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Capita', 'security', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, service_type, frequency, contract_status) VALUES ('b142c988-dbcf-4716-9af3-e2d303390f8d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'Capita', 'fire_alarm', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contract_status) VALUES ('ec8510b1-2c69-4b37-8d61-3b3ef5bcc536', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('b36728b4-dda6-4cf3-bdce-1de0a64cbadf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'active');
-INSERT INTO contracts (id, building_id, service_type, frequency, contract_status) VALUES ('d6a22a5c-0174-4ae8-8042-6c191581b0a5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, service_type, frequency, contract_status) VALUES ('a4208235-d2e1-4a9f-878c-09d995e368ff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, service_type, frequency, contract_status) VALUES ('1af34acf-42c5-450a-a028-c7986c875256', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('10560e11-9ecf-4c69-8ff4-4859c8b2116f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'active');
-INSERT INTO contracts (id, building_id, service_type, contract_status) VALUES ('95b2fd2b-5440-4642-b263-3aab395e20b4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, frequency, contract_status) VALUES ('55d4e868-bb31-4e7d-a376-a6f6818dab2b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'WHM', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, contractor_name, contract_status) VALUES ('ae0e4cde-cc72-4f11-b212-02ac3232fc60', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ISS', 'active');
-INSERT INTO contracts (id, building_id, frequency, contract_status) VALUES ('3d9336cc-16a9-4410-8b27-535083fd31b6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, frequency, contract_status) VALUES ('d2783b7d-ae37-4c95-a9de-66721378d8f5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'monthly', 'active');
-INSERT INTO contracts (id, building_id, frequency, contract_status) VALUES ('e9e5ecbd-d39c-4532-a579-0aa029ee4bf0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'monthly', 'active');
+INSERT INTO contractors (id, name, phone, address) VALUES
+('78a65025-86d6-4814-beae-d2be2889dc81', 'ISS', '083603538855', 'London, We''re available on Live Chat here., W1S 1RS')
+ON CONFLICT (id) DO NOTHING;
 
--- Insert 21 building-contractor links
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('fd7088bd-b139-45e0-aad3-ac4f1ff3de31', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '0c4790db-1717-42eb-8314-ac16c3471be9', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('0bbc0780-24ea-4f85-a8dc-4fc84557edf1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'b31ab448-a0ce-4f8a-b4d7-0ab089d06a0b', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('59d2e884-1ced-4eea-b93e-19dcc6515d39', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '208c8157-b344-4791-996e-6916c595dbc2', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('f2b9ca19-980a-476c-90e4-4bfba07c61bc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '706aeca7-361c-4ea7-b93d-f3cc1ad305af', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('5cc53cc4-bde3-4621-805e-3e7e08e9685b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'da3e5c35-357c-4628-a2a7-12db3de94949', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('8764ffc8-71c7-4f0a-bd00-113f635954be', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cb587ba1-999c-4099-a49b-783f930b45d6', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('fc093d92-f238-4de0-b236-5158a5226902', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '51493d82-3646-4f78-b7c1-f7b96ee15e91', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('3de1367b-6987-4565-b9e8-9d66b2ce26ac', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '7d4bce10-cabc-42b4-93aa-7909e76af9ab', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('a31965ff-2363-4e31-a7cc-b57fde06b3a1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'b79a994c-05c5-4ed5-8f41-15cce75bfa1c', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('748a1032-1d4b-4ecb-b96d-eafcf6c631b7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '024dcabe-bd0b-4e69-8061-09c6d4f33d89', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('23a829a2-091a-4015-bedc-f6fbc24b6bd4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fcdfd10f-7884-418e-bc98-6a25fdd7b02e', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('3c3438ae-9b8d-4d16-b4f6-9fa2b1c28c9c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '2070a905-13ee-4900-8f72-eca3f2ed9214', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('66809cf5-f2e6-4b89-8b57-4f09bb24c518', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'a3a1ed20-ae28-4357-8d79-b080784bc4a2', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('4f7437f3-5512-4423-899b-3058fc989ebd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '0681cefd-ebc4-4070-849f-41a66cba32d8', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('7c5fad17-cfeb-411f-9a31-b50b2d51f436', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '32d9a4b1-8426-4899-b590-6a6a75dfaf10', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('0de8f3ac-65d7-4f50-91eb-9aac602b7737', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '52a76804-568c-4a5c-86c1-9314a4a720bd', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('20451b76-9835-4c6c-8949-ab45715150ca', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'e7b7a787-89df-4878-87cd-a1ecb3f55c21', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('487b65c5-39fc-4584-9ee4-2426e134bc16', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '95b246ae-e6cd-4610-819b-ad344594c5f2', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('d0f70326-9f31-4a60-a610-e568f884a2a6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ace39e4a-7270-449e-86f5-240ea6332881', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('24078034-a924-4bfa-9e3a-850a48f62d42', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'c1fecc38-634f-41ce-8176-85e52486eb88', 'service_provider', FALSE);
-INSERT INTO building_contractors (id, building_id, contractor_id, relationship_type, is_preferred) VALUES ('2859b5dc-f7d7-4a12-a19c-e5d3bc93a267', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '376f4480-29a9-4948-8110-b9692110b4a3', 'service_provider', FALSE);
+INSERT INTO contractors (id, name, email, phone, address) VALUES
+('d48f5e72-0d88-485f-bf2a-6945ed879bd6', 'Quotehedge', 'info@quotehedge-heating.co.uk', '07801 799118', '182 Revelstoke Road, Wandsworth, London, SW18 5NW')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO contractors (id, name, email, address) VALUES
+('171764a1-fe95-4f9c-91ce-218fc0c75528', 'WHM', 'enquiries@whmltd.org', 'WATER HYGIENE MANAGEMENT L TD, 2 Churchill Court, Hortons Way,, Westerham, Kent, TN16 1BT')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO contractors (id, name, email, address) VALUES
+('922ba560-a604-41f4-8368-e2462894d824', 'Capita', 'DPO@archinsurance.co.uk', 'f Arch Insurance (UK) Limited, Arch Insurance (UK) Limited, 5th Floor, 60 Great Tower Street, London EC3R 5AZ')
+ON CONFLICT (id) DO NOTHING;
+
+
+-- ===========================
+-- BUILDING_CONTRACTORS
+-- ===========================
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('d40524fd-84ae-470c-aca9-6dd238d9ef54', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('6b9a3bab-5e47-480b-8ded-00bedacd94fd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('620a274b-776a-4483-b7e3-f4f41e9ee6d0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('061cf4dc-9125-4008-a7dc-4a1060327b7b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('97b24d90-66e3-45d5-bcd8-c1e5b15f4223', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('838a4d9a-f1e0-4133-af84-7f0849937164', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('833c01c5-a7e5-4e9d-aa7f-b3acac3173b8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('e0ec172d-7671-4fcc-ae43-4d3c954cb8bb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('88e5586b-f984-42a4-82b0-977e3618235e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('494b75ed-dd02-4a63-ae03-6a29d3dbb8e0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('ec1f6956-c43c-4b0e-b249-8a0cad9f318f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('d0e1bfc1-2fe0-41aa-8fc0-06512abb25b5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('5bbad5e0-ad29-4410-920b-ece57a49c0f3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('24150a94-4e26-4d9c-a925-501ac97f1276', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('83f4b160-4273-4de6-b012-e7f0ae4b494e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('266a043d-729b-41f4-bdb2-b6a4d783dcd2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('8c3792f0-4d4e-4668-a68d-a5f68b2608bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('04f6b8c3-d0c5-42b4-b372-cc42bded100f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('738739bc-3311-4cd5-889b-d917539ffe28', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('9b230909-6ec5-4982-aeb5-8896a2d0aef3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO building_contractors (id, building_id, contractor_type)
+VALUES ('7ec6bcd7-72b5-466d-8727-d6adcb628dcb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'service_provider')
+ON CONFLICT (id) DO NOTHING;
+
 
 -- Insert 214 assets
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('458a8291-a47a-445c-8766-39fb521e6c31', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm Works', 'Works-Following from latest leak', 'fire_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('391051c6-5ff7-4209-90e0-491a0c495d4e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Works', 'Works-Following from latest leak', 'lifts_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('36736e6f-5963-4e20-b08f-57b436088d83', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Room', 'Basement', 'Fire', 'gas_safety', ARRAY['Fire Door (Communal) Inspection (11m +) (7).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e8873c3e-3314-475d-aa65-10bdf4c699c9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('72a43229-5e2b-4e82-b91f-5f5c678c9eaf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('79529742-4599-4470-ac3b-5ab644fc85a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('57019d69-976a-4f42-be0d-5283a565ce62', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('a1ea4b4b-df9d-4036-884b-232ab7e40e75', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('4f2636f4-e5e1-4f1a-bffe-9aa074fc41b2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('3cfe83bd-8f64-4551-8f1a-167947f6d10d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('626bac30-5b00-4b3e-bdbf-a33f5ec594dc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm Works', 'Works-Following from latest leak', 'fire_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('c49ba702-4d55-43c3-9dcd-ac8f20ff2dda', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Works', 'Works-Following from latest leak', 'lifts_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('85d5b59b-83a6-45e5-8483-4faa86040813', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Room', 'Basement', 'Fire', 'gas_safety', ARRAY['Fire Door (Communal) Inspection (11m +) (7).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('058d16d6-12cf-458e-a855-5e2db340bd1d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('2e11aabc-d5a2-473e-9260-f03f7b8cab4b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('db38025e-6f3f-4af1-917c-01e45939dfc6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('76c07985-0830-4f14-ba98-f3bccbb58aa8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('7a54000a-ccf3-4786-ae45-1810b4e4e413', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('bdf2d8a1-e8df-4d19-8984-616a79625d50', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('69dae6ca-65ac-478d-b82a-55791c56ca5a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift
 motor', 'terrace - lift', 'lifts_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('aa1adb28-c653-4efe-8996-e8b755c1bc4c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', '1', 'security', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('bf310a58-bd31-473b-8050-1156c104dda8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'emergency lighting present', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3afc7699-e404-422e-afa8-d244135ae821', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('36ae4212-88f9-4f9f-bf1c-9033d14d8179', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('ce293373-853e-472d-a3c4-820dac174b20', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Hanworthy', 'Condensing Boiler Hanworthy Purewell variheat m k2 110 21 Mbar 110 0', 'pressure', 'fair', 'gas_safety', ARRAY['001132-3234-Connaught-Square-London.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('7befcdc5-141d-4008-9f1c-4cda47d51caa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('0400f71f-735f-4d64-9041-7a5d6ede44a6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFTS', 'lifts_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('73c8a73d-f188-4185-b2e6-6e0383cbd7f2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'CCTV equipment', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('871d5217-1e51-494c-9cfe-bc6a67aec4ee', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('478e7398-c99f-4e0e-9f1f-6904a6b88bc5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('a75dfb3d-cdd5-41d8-92ad-3e5fd952dd82', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water storage tank', 'water_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('b6d35818-7717-4282-8c90-e28cbea9c506', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Room', 'exits', 'gas_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('61acd4cd-65b5-472b-a9ca-337c6e5e54aa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Motor', 'Description Assessment', 'lifts_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('f9e4a7d7-b446-4937-8594-44735b4330fb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumps', 'exits', 'water_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('a6053ea7-3b2b-46c7-8d18-cd6266984065', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('fd99291e-d186-47e2-8bda-ab8ae77af845', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('38147e88-239a-4e63-91a5-f586e7dd6574', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pump is', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('9efcf527-3318-4c5e-ac16-ff445f52051e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e08ec62b-1063-4560-aa20-0061b467e8fb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('6d60b94d-3ed8-4a41-b982-a4dc37930c08', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('a992f564-6d05-4bf4-a24b-134d561c05e5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('788a3ea9-4bb6-472b-80fa-fca3c233afd0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('afcef1cc-eb14-4860-ac5a-3e8e1f9cb8e7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm Works', 'Works-Following from latest leak', 'fire_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('cc87e3f6-6e8a-48d6-b2e1-2c7a935e8cde', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Works', 'Works-Following from latest leak', 'lifts_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('f4902847-a370-4928-8431-d8e9749f6dbf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Hanworthy', 'Condensing Boiler Hanworthy Wessex modumaxO mFk2 110c 20 Mbar 1', 'pressure', 'fair', 'gas_safety', ARRAY['001457-3234-Connaught-Square-London Certificate.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, manufacturer, compliance_category, linked_documents) VALUES ('595459dc-45b4-4594-94aa-8a9c9022eda6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift to', 'of Commission is', 'Crown to the Customer', 'lifts_safety', ARRAY['TC0001V31 General Terms and Conditions.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('e15d8645-2603-47b3-bab5-e5e1432bad37', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('15b861d9-5a16-48a7-b1e0-bb4d332c37d0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('12876770-56ff-45e0-9fe0-10355a4f20b1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pump is', 'water_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('5f95c319-f80d-48cc-9276-a9fb026e3dd5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('afeec942-d17c-437b-8d4b-a13a8247595b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Room', 'Basement', 'Fire', 'gas_safety', ARRAY['Fire Door (Communal) Inspection (11m +) (7).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('80472ee1-4281-4773-99d3-db1ddaef7503', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('ad6a1b4d-e451-4b1b-8fff-5ea9978cdafa', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('e5377b1c-4e30-4c32-a78c-ff4d7cef3073', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('21049285-ed2d-4393-b297-52e4fa1a6eb0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', '1', 'security', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4f34ee89-dc73-4faf-8135-9ceb4de44ccc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'emergency lighting present', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('a9621722-6954-4aa2-ad4b-d062df41df0e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('19e58f2f-550a-49b1-9bc1-4b949c490ea9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('990f1786-f50e-4ae3-9942-4dc37e4a5a03', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Hanworthy', 'Condensing Boiler Hanworthy Purewell variheat m k2 110 21 Mbar 110 0', 'pressure', 'fair', 'gas_safety', ARRAY['001132-3234-Connaught-Square-London.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('508867fa-bd7f-4d45-9ab7-98aee71cc3f9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e3f73e48-8f5b-41c6-944b-72a61cf11e5c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFTS', 'lifts_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('cc3e36d7-a860-47df-9c1e-969e34f0462a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'CCTV equipment', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('4f83a7c4-1690-4bc2-aeb2-afe3b33e29fa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('459ba532-2a0a-4148-9b4e-c6444d479467', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('90a914eb-03e3-4c1f-a039-08422d80f153', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water storage tank', 'water_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('7d6dd14b-c4d8-44bd-b68e-6d834364e434', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Room', 'exits', 'gas_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('84fdfadd-8cf1-47ee-a3b0-d5452b6a6e2e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Motor', 'Description Assessment', 'lifts_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('b3140662-723f-438a-bf4c-fd63f7e58b76', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumps', 'exits', 'water_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('9f2dbaa9-67ee-43fe-a369-8faf670a0538', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('29e679e3-662c-42d6-8c73-fbfe5d8ba671', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('7fb635b6-e652-4bbd-8a4f-aefa633a1339', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pump is', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('cf7fd40b-504c-41ca-ab5a-ccc7b0074728', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b121d01e-25c2-48bb-90b5-dcdcc08f4458', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('f2fe20fb-bdd5-4ac4-80b3-002ebee8c391', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('8f66fc63-5b7c-44af-bda0-17cbfb558f2f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('6f8458db-2c6f-4f3f-b3f1-a84e6eeffeda', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('86af4bb5-7cb9-48e3-b50d-3fc030242337', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm Works', 'Works-Following from latest leak', 'fire_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('f218cb38-a395-415a-9e99-c23e87e3ed38', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Works', 'Works-Following from latest leak', 'lifts_safety', ARRAY['2024 Directors Meeting-Notes.docx']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('7a07facc-5d81-4bbc-94c9-73788247b31c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Hanworthy', 'Condensing Boiler Hanworthy Wessex modumaxO mFk2 110c 20 Mbar 1', 'pressure', 'fair', 'gas_safety', ARRAY['001457-3234-Connaught-Square-London Certificate.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, manufacturer, compliance_category, linked_documents) VALUES ('0669db1d-b712-47a3-b629-7353e7ef1f76', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift to', 'of Commission is', 'Crown to the Customer', 'lifts_safety', ARRAY['TC0001V31 General Terms and Conditions.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('8bc3d53c-98e3-4e5b-aac3-8c18f582f1c3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('22478142-e7b6-4046-83d5-6ed6f900e5e3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('71e97349-34d7-465b-9087-1877637c43a6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pump is', 'water_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('538eec70-b330-4cb4-a90a-37480ef3a6bf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['Connaught Square (32-34) - 09.12.24 LRA.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('d9f5dbf3-d09e-43c4-9940-a51df5d02888', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Room', 'Basement', 'Fire', 'gas_safety', ARRAY['Fire Door (Communal) Inspection (11m +) (7).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('b57afa70-e99a-4580-938d-8e95f905b633', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('caef87b3-4868-4e6a-b679-929648761c04', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('bb2dace5-bcfa-40bc-9c8f-136c433d034e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift
 motor', 'terrace - lift', 'lifts_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('5082176b-4a01-4cdf-8b5d-5a817f47fcf9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', '1', 'security', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('53abcffc-ed8a-43b3-b2a2-a9507308295b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'emergency lighting present', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('fb48e599-298a-4458-9ccb-9060a5b53937', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('4f8b6452-496b-48fc-a79b-ef1bbc960cc0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('0272fc23-195a-4ad1-b3de-395e55edf4dd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Room', 'Basement', 'Fire', 'gas_safety', ARRAY['Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('6a86b359-2a98-484c-9b6f-4f4a720d1b59', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('eb5574fb-95df-406d-bf26-a4849a96bb67', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFTS', 'lifts_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5b48f6f1-65ed-4b8c-ae0b-0dd33c11e16d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'CCTV equipment', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('bf248815-eb1a-4409-9fe2-5dea67080b06', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('884bae2b-c3b9-4405-92be-2f47f4ddde07', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('1c3465bd-f2e6-4e12-a3d7-42fda9992849', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water storage tank', 'water_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('851e0c3f-c2cc-4ddd-9e7a-b2b7abb20ab5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('4dd78965-e97c-4625-9338-c6317ed899b3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('85e44843-1ae3-4273-8357-d3cb372a0cf9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFTS', 'lifts_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('0f958056-bd3e-49af-89b8-31ce03aeb415', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'CCTV equipment', 'security', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('73852eb5-2e01-4201-84a7-68a21573e8db', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ff463b0d-ec4c-4a3d-8796-39f67b347b61', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('de8f5d2b-d808-470c-8c35-01d8465da0eb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('bcfd2af1-cb29-4ab5-941f-01cbef2b0804', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c3b39a5b-007e-4201-9f9b-5d024694c28b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water storage tank', 'water_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('2d237b8b-9ea7-4938-b5f6-7a01ef5718a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'ESCAPE
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('2c0ca1c0-548c-4675-b579-e25c9606e2d3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', '1', 'security', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('6bec865a-e186-4cc3-9e90-fa55f5d4f4c7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'emergency lighting present', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('58335ee9-252c-4983-afc2-f21a2cf9e815', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('653dfd48-d610-4a94-b8a1-acb5064f3672', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('a1b09df8-c90f-41b8-b9b5-42244de755e8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Room', 'Basement', 'Fire', 'gas_safety', ARRAY['Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('c3ecce3e-8243-4773-b272-bfda9056c627', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4c6e6fda-2cf2-4a73-bc2b-0bc55aca5cbd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFTS', 'lifts_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('81309210-b82f-4f04-8787-4a463dba911d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'CCTV equipment', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('c2382223-7b59-438d-8b94-a3daa29b6d44', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b0cf4eda-0c29-4ab1-84bd-3139b35abb6b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b844701a-1a48-401f-b087-d15b9fc6c0d1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water storage tank', 'water_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('f351beab-743e-44e1-9aec-3aa8aa08ce79', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('f6baa89d-3ead-4ceb-9240-02611265a65c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5149f819-ffa5-41fb-8996-b2458fbe2199', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFTS', 'lifts_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9400b581-333e-4790-9bd3-eb00ae208aec', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'CCTV equipment', 'security', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('f3ea4ea3-41f0-4627-8d38-734c5913cec7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b239cd6f-dbc0-4f43-ad3d-f253d2e18937', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('df5eff94-37f1-46fb-9fde-88fe6e77563c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('985ed65a-eb82-4a52-ba81-7b230aef10aa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('41e59caf-0961-4ebe-9ca0-28fb38a4901b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water storage tank', 'water_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('894d74b3-2d03-4cac-b936-2ea53546aa96', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'ESCAPE
 
 FIRE DETECTION', 'fire_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.docx']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('7310c1cd-f501-4a67-b9ed-9245dd707d0c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFTS', 'lifts_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.docx']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('7f6ff3d1-911e-47e9-bb63-e8372a984572', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('2ff88578-28ab-4e3f-90ec-28527c83e244', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('708ad1a7-c252-410e-aa1a-7b8bc07375c4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('df4b525b-ce32-4136-9903-4fc468d85dc0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFTS', 'lifts_safety', ARRAY['Hsfra1-L-422971-210225 32-34 Connaught Square.docx']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('7dcedbe9-03f4-4e64-b84a-d0dcec2ebaae', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, condition_rating, compliance_category, linked_documents) VALUES ('a10ea7b6-00f6-4941-bc41-8b191a9d6d6f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'in appropriate X Breaches to compartmentation observed', 'good', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('41b85ed1-d2d9-4d23-a619-9bd3d61597b4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift
 motor', 'terrace - lift', 'lifts_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('3b04776a-87b9-4f87-bf77-e845220b1032', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', '1', 'security', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('43153369-6396-40e5-8726-5baa06c15842', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'emergency lighting present', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('37b8694b-2713-4989-b7ad-042ee30d4559', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('5c4cc603-c5b9-47fb-91db-90de56ebedbf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('c6a5a21c-9f36-409e-8a48-a04929232c99', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('332c975a-9d80-42e5-88a0-0e64aa4e105f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFTS', 'lifts_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9d023feb-8e3b-4473-8f5e-225006145156', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'CCTV equipment', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('65b71d92-9e8e-40ed-9172-4d119ec12855', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('f0040cc2-9a66-4c99-b138-383ef464e268', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5b6d6988-31b7-4604-9bf4-76c6453ed292', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water storage tank', 'water_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('564a9ac7-e717-4e91-8ce1-d00ce6a0fbff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Hamworthy', 'Plant Room Condensing', 'pressure', 'fair', 'gas_safety', ARRAY['001534-3234-Connaught-Square-London.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('1ac2113a-f313-4d2c-ad55-294174de86cd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'boiler number', 'new gas valve', 'gas_safety', ARRAY['C1047 - Job card.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('e3f42ad2-a6da-4a5d-a68d-5cbed07ef025', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('dd960635-b4a5-47b0-b3ed-9a51880b9eec', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('321805a3-c7f3-4886-927d-4441dc8fa937', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pump is', 'water_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('0a772651-9b06-4936-b305-5e8ff9f8e02d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('82bc8d47-f9f7-4f2a-aece-9931ba9f2d04', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('93f8e186-f96e-48e6-a276-92568cf6d154', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('567c9f23-2b93-4dba-8cbe-08d0d5903ae4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pump is', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('2e65d91a-ccaf-42b0-8784-64c31e5e6447', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('744883b7-e55f-43da-8d12-18da5681516a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('eefd5022-8e72-4726-9e1e-519d0c63d987', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('2384f295-0d31-4ace-8772-298dd49595f2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('1445f317-6736-473c-8bae-7479e76b57f7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e541abf9-7cfc-4e10-a538-c38d499217a4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('b451d231-196b-4f1d-baf0-2a79e1d093cc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('e51614ca-740c-41a1-8ff0-154c0cc9597e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3e80134d-c04d-4567-bce5-4b7c782f2b71', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('25119e65-4d10-4af0-9dfd-ddedb774e8bb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Hanworthy', 'Condensing Boiler Hanworthy Purewell variheat m k2 110 21 Mbar 110 0', 'pressure', 'fair', 'gas_safety', ARRAY['001132-3234-Connaught-Square-London.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('620c33b6-90d0-4ae9-80ff-e36fb6bfbdff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Hamworthy', 'Plant Room Condensing', 'pressure', 'fair', 'gas_safety', ARRAY['001534-3234-Connaught-Square-London.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('15006cb1-987e-4735-82bc-76db956abbf0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Room', 'pipework', 'gas_safety', ARRAY['FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('d304d1ea-7ff1-45e1-890d-e63cd3248570', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Motor', 'Room brake shoe to lift motor', 'lifts_safety', ARRAY['FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('47787bd9-6797-4ea6-8bc2-fbcacd497a60', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler Room', 'exits', 'gas_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('00030007-cb9f-4e6a-9e60-53dd0ff85de3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Motor', 'Description Assessment', 'lifts_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('166d8571-8ca5-4d43-9f18-c3783b9d15a6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumps', 'exits', 'water_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('5644cb99-7f0e-45d7-887c-e55fa9ad2809', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lifts', 'monthly', 'lifts_safety', ARRAY['Signed 2025 Connaught Square Management Agreement.docx.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('f587d66a-5711-4f7d-a61e-8fc3c00a1311', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lifts', 'monthly', 'lifts_safety', ARRAY['Signed Connaught Square Management Agreement.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('52cfcc28-e050-41be-9771-74062a2a2404', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'BOILER SERVICE', 'OF', 'gas_safety', ARRAY['CM434.PRO 2024-2025.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('d852eac9-a204-4697-960f-8dfcc1f36a92', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'BOILER SERVICE', 'OF', 'gas_safety', ARRAY['CM434.PRO.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('abbf830b-5623-4bd5-b49e-216129c9c723', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift in', 'lifts_safety', ARRAY['Gas Contract 24-5.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('64ac092f-3fc4-4035-ac8f-5a3b996db8f7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFT INCORPORATED', 'lifts_safety', ARRAY['Contract_10-03-2025.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('17812356-2424-4cbe-8d20-246f05ebaa15', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'LIFT INCORPORATED', 'lifts_safety', ARRAY['Gas Contract 25-26.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('166d06e8-bbf9-4f7d-a876-ecfa8ca8865b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift to', 'lifts_safety', ARRAY['Welcome Letter - CG1885574.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, service_frequency, compliance_category, linked_documents) VALUES ('87071808-b495-4194-be19-aeee2360bf62', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift accessible', 'To clean out silt from the outlet and bagged it up', 'monthly', 'lifts_safety', ARRAY['Job 67141.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('14e09cbb-1e7e-4493-84d7-013dec5556cf', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5455045-12-07-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('014814aa-2c91-49b4-8162-b1477c07d3c3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5483206-26-10-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('2ea74f06-167d-4f41-9c5e-29f8b7032351', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5498439-16-12-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('d223695d-c7bb-4af3-b35c-1d6bd3b8534a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'emergency lighting
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('353d4da8-8511-4446-8b58-9afeff6bbd9f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', '1', 'security', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('f7c440f8-8c38-4f0c-ba84-80f97ea41dbf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'emergency lighting present', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('358711f6-cb3c-4e51-afb7-b975fdd79a24', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, condition_rating, compliance_category, linked_documents) VALUES ('503d9d0c-9a7f-4a0d-a239-88f0affd60fb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'Lightning protection available', 'good', 'electrical_safety', ARRAY['221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('54d1b9d9-b4e6-46e5-8a13-c31064e518b1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler room', 'terrace - lift', 'gas_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('1092c127-ed87-485c-b291-86ef354a7fab', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFTS', 'lifts_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4b02f958-e772-4918-8b93-142a90ebc9c2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'CCTV equipment', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('cb617b30-07ae-48a8-afbd-2730d5f12835', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'door_entry', 'Intercom door entry', 'to 3rd floor', 'security', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4d32c1e7-3561-49c3-807b-dae6619821b5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency lighting provided', 'fire_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('2c9347cb-e420-4c0a-aa5a-98d1e68285da', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water storage tank', 'water_safety', ARRAY['221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('d11cb845-2046-4a9a-87b6-5aa981b14cbd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Hamworthy', 'Plant Room Condensing', 'pressure', 'fair', 'gas_safety', ARRAY['001534-3234-Connaught-Square-London.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('73e6c24a-df6f-42fc-be1f-30a5b8800866', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'boiler number', 'new gas valve', 'gas_safety', ARRAY['C1047 - Job card.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('c4bb4fdf-f1ba-4b0f-b3df-7959fccf2ee4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4d955e4c-2201-4589-ac22-1ecd427a77e4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('dcd95a47-5cf0-445e-8d48-66a4f88f982a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pump is', 'water_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('a0bbae65-8c8a-4fdb-9aed-7b4253771986', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['WHM Legionella Risk Assessment 09.12.25.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('ef0c4bce-c0aa-4d2f-b1a6-8842395d4cad', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'Total', 'gas_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('01dc2d70-d9ba-4e1b-ab79-2035ed463f36', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'Sprinklers', 'fire_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('01856091-ec12-4072-83d9-55a17bf5fb26', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pump is', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('7033f833-d732-4244-b0ad-29472590db9a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'annually', 'water_safety', ARRAY['WHM Legionella Risk Assessment 07.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ac2f0884-f912-47e6-a6ac-83bda0c98d38', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('11c005fd-1de2-4cc7-93fb-1ed9be57cbce', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('8f896663-2e76-4b97-aae7-9aa096c5e99b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('734541c3-b584-45e9-8d0f-6751c52bb98f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Cuanku 32-34 conaught square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('52f207ef-3a69-4414-a5de-e7730799c0f7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm A', 'fire_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('ecda8647-0e4e-463f-85bf-50927fa23ba1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFT SHAFT', 'CONTROL CIRCUITS', 'lifts_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('a2d16da5-f445-4441-a69c-ef9ad66ec58c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lightning_protection', 'To lightning protection', 'B', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('f35d3f66-aa4a-44f2-8b28-7037f17bf10c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'generator', 'generators', 'electrical_safety', ARRAY['EICR Report Cunaku SATISFACTORY 2023 .pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('9ceeb3b9-0706-470a-9a0d-95d8704ff8c5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Hanworthy', 'Condensing Boiler Hanworthy Purewell variheat m k2 110 21 Mbar 110 0', 'pressure', 'fair', 'gas_safety', ARRAY['001132-3234-Connaught-Square-London.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, condition_rating, compliance_category, linked_documents) VALUES ('5560d327-d251-4211-b1d2-e822f3e9f25b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Hamworthy', 'Plant Room Condensing', 'pressure', 'fair', 'gas_safety', ARRAY['001534-3234-Connaught-Square-London.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('f56c3d8b-05ff-4ca7-9530-f360126a5dbd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Room', 'pipework', 'gas_safety', ARRAY['FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('ea360b9d-977d-4407-8ac5-a98a84902c2e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Motor', 'Room brake shoe to lift motor', 'lifts_safety', ARRAY['FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('253cddcf-ee25-4e2f-aba4-fbd6411d8536', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler Room', 'exits', 'gas_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('987fef09-8069-4aec-9ac7-3fb94c2a63fe', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Motor', 'Description Assessment', 'lifts_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('501ca354-70a4-4286-9e34-7713076963be', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumps', 'exits', 'water_safety', ARRAY['TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('40854bb4-e85a-4c2a-a8b8-d37c462b77be', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lifts', 'monthly', 'lifts_safety', ARRAY['Signed 2025 Connaught Square Management Agreement.docx.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('78d8b5e4-4641-4f11-ade6-17b134340ec3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lifts', 'monthly', 'lifts_safety', ARRAY['Signed Connaught Square Management Agreement.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('f72a87e9-b6a8-4ca9-8316-63301acb32bd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'BOILER SERVICE', 'OF', 'gas_safety', ARRAY['CM434.PRO 2024-2025.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('e87838f7-48c5-45ec-bd19-cccef7858b65', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'BOILER SERVICE', 'OF', 'gas_safety', ARRAY['CM434.PRO.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('446afe79-4096-42d9-a563-8d2dc8e4ea31', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift in', 'lifts_safety', ARRAY['Gas Contract 24-5.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5d6ef6a1-4692-4292-9f0a-442efe35d21d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFT INCORPORATED', 'lifts_safety', ARRAY['Contract_10-03-2025.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e593ecba-dbe6-494c-b8db-d96d088f185e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'LIFT INCORPORATED', 'lifts_safety', ARRAY['Gas Contract 25-26.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('76fcfb28-6a9c-4771-9640-b1eb21eec03a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift to', 'lifts_safety', ARRAY['Welcome Letter - CG1885574.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, service_frequency, compliance_category, linked_documents) VALUES ('ca8b412c-75d9-4ba7-8fcf-60b2aae406eb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift accessible', 'To clean out silt from the outlet and bagged it up', 'monthly', 'lifts_safety', ARRAY['Job 67141.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('b971c71e-588e-44ba-ad4e-4d98b9adb3f7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5455045-12-07-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('ed6ac24f-5c2d-45dc-9d76-d945c4f27120', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5483206-26-10-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('78a481fb-e67c-42cd-b0c0-73175b14c5e2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5498439-16-12-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('602fdaba-d778-4605-9943-aa6ebbd13766', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'emergency lighting
 The', 'The fault status has been classified as Faulty', 'fire_safety', ARRAY['JLGCalloutVisit-5498439-16-12-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('66a5be76-ac9d-44ba-b9bc-aba6ef8cb282', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5455462-16-07-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('fa0f7b76-9ea6-4888-8a6c-d3dfddb254d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5497480-13-12-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('76104d0e-3047-4e20-b3b6-a0e85429ca61', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('a36e2680-d8dc-4c37-b1b3-13d71d010fa4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('b3de67d5-6b5f-4c21-b39d-a3eeec1ad693', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'a boiler', 'but this sha', 'gas_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c8473da7-6b65-4e64-b673-0340f3a7d2cd', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'fire alarm
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('32b28001-8611-4bc5-a530-63fceb6207e3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5455462-16-07-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('363ad035-5555-4293-810f-4fa7b2077a3f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Ref', 'BRONZE', 'lifts_safety', ARRAY['JLGCalloutVisit-5497480-13-12-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('39743789-d9b2-466c-98ce-34bc2267b653', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('983a2271-b17c-4c45-ab88-d10348162ce5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('19b33f74-fc7c-408b-8e28-5ab9d1bb18dd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'a boiler', 'but this sha', 'gas_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('44ca59fa-57f9-4186-a2cf-18237e73c7dd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'fire alarm
 The', 'fire_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c8bb13b4-5a4f-4d61-8544-4ec4675ae964', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('8593a400-0dce-439b-9641-a8e974e3acb7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift in', 'lifts_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b06dc744-bc28-4f30-abc4-f50e024f0ec1', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumping', 'water_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('c26abe92-e0a8-4e90-9fdd-fbd9432cb70e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'cameras', 'on or', 'security', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('6ce86b68-5860-4ec6-a446-4c1edbdfca6f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'water_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3b94958c-1c13-4426-8d53-692b840f6169', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Q51691 - 32-34 Connaught Square Contract.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('a224095c-d7fb-4ef8-9837-426dfc063c26', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('d58b9bd0-f139-4da5-a825-04df7467aa6e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('d8eb597b-d110-4fba-bf6f-27c5b9c818c9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'uk
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b65e06f6-33b4-4e74-83e4-6ef699fdb106', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('19c22730-0d4a-4609-819e-6627e3bb81d3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift in', 'lifts_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('fe1d1cd1-68e9-43fa-a2b6-4336c3557e6f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumping', 'water_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('cac04170-c44f-4cd6-afc1-a2a8fbd19531', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'cameras', 'on or', 'security', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('87811ff2-bf3c-4856-a05b-42fa57f46b66', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'water_safety', ARRAY['StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('48a84a8b-5ac1-4883-b6f9-c95639785786', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Q51691 - 32-34 Connaught Square Contract.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('5187d6ea-c3df-4c3d-9968-ec4b27ad768f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('90f1e856-cb8f-4a50-a75f-50769d6bd061', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, model_number, compliance_category, linked_documents) VALUES ('be08f77a-fd2b-49fd-930c-885253196a95', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'uk
 FIRE ALARM', 'LONDON', 'LIGHTS', 'fire_safety', ARRAY['Fire Alarm+Emergency Lighting Contract Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('02770c69-0207-42fe-8b0e-b4e8a31a735d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'EMERGENCY LIGHTS
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('fbcd3b97-1916-472d-8289-42abe040881f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'EMERGENCY LIGHTS
 MT8825', 'monthly', 'fire_safety', ARRAY['Fire Alarm+Emergency Lighting Contract Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('873f002a-6373-4f97-8853-e963167031ff', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'FIRE ALARM BELL', 'monthly', 'fire_safety', ARRAY['BT3205 03072025.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('b0d10858-45ef-4ddf-95a2-bd7f94e6983d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'fire alarm service', 'MAINTENANCE', 'monthly', 'fire_safety', ARRAY['FA7817 SERVICE 08042025.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('df448222-9635-4aa3-a17b-8bf0061d01d6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights - FA7817', 'MAINTENANCE', 'monthly', 'fire_safety', ARRAY['FA7817 SERVICE 08042025.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('598dc441-7845-4463-86b3-e661e5446d6b', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineer Report - 32-34 Connaught Square Flat 5.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('90a54263-0d2b-4649-bd26-5944441d8d3a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineer Report - 32-34 Connaught Square Flat 5.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('6109d364-0561-49ca-aa81-94109dbb126d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('5a63d035-40b2-4bb8-a4e6-688087f5f42c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('b905e975-5141-492a-ba3e-6e5fecbe1283', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights Testing', 'MONTHLY', 'monthly', 'fire_safety', ARRAY['MT8825 03072025.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('59f2fe2f-0f35-49ce-a66e-a848e3bf7f85', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights Testing', 'MONTHLY', 'monthly', 'fire_safety', ARRAY['January Monthly Test For EL-Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('4a225202-ab97-4406-aac8-462c2e7d4ff8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'emergency_lighting', 'Emergency Lights Testing', 'MONTHLY', 'monthly', 'fire_safety', ARRAY['February Monthly Test For EL-Connaught Square.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('fe32b07a-45bb-4dcb-a254-869bfc6a5cd4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'boilers', 'gas_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('6d94ff1f-40fa-4361-bcc5-2820fdf66eb9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('16a2d135-a566-472e-a5f7-b32bb1b8da4d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumping', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('be07ca31-92ee-4b5c-980f-cbb56dee5e75', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'cameras', 'security', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('89d6c6dc-4670-42d7-b291-4a1f6d73dead', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c72d5159-7584-4ccd-89af-935ca8172b7d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'communal_aerial', 'satellite dishes', 'other', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('d3f621e5-9046-448e-a20e-d7359bce2356', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9e1333bd-7a72-4ad8-a974-a85437aa2a28', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler installation', 'fire_safety', ARRAY['Summary of Cover (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c2d17bee-752d-4157-a447-58cdf6627776', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift in', 'lifts_safety', ARRAY['Summary of Cover (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('8e715cc7-b81d-4c3a-9f55-8f83701a5d61', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('20bbecc7-ac62-4d50-a574-c812a58117c8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift - Powered', 'lifts_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('0180547a-faca-4276-ad6d-b390a79e53f5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b1fc9862-7ba0-44fa-a939-29651ea1c3f9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b0d5db66-0daf-4e1c-a2fe-916b6fe1c770', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift -
+INSERT INTO assets (id, building_id, asset_type, asset_name, service_frequency, compliance_category, linked_documents) VALUES ('4a0d4acd-395f-4c8b-8e5f-729cd09b602d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'FIRE ALARM BELL', 'monthly', 'fire_safety', ARRAY['BT3205 03072025.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('05629c3c-1c5c-48c4-b7e3-804f8fe26b84', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'fire alarm service', 'MAINTENANCE', 'monthly', 'fire_safety', ARRAY['FA7817 SERVICE 08042025.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('20ed1518-62db-4273-ab6c-13edfcfdee3d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights - FA7817', 'MAINTENANCE', 'monthly', 'fire_safety', ARRAY['FA7817 SERVICE 08042025.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('c0ae761e-5dfb-431e-8ed2-91fc882b67fc', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineer Report - 32-34 Connaught Square Flat 5.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('7d379dc4-c590-465b-9856-81787d28b0e8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineer Report - 32-34 Connaught Square Flat 5.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('081f7990-b2f8-4f3a-a514-7e286de0ce7d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_alarm', 'Fire Alarm', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, compliance_category, linked_documents) VALUES ('eecbc4ab-cc07-4bdd-a668-f2309e9af71a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights - FA7817', 'SMALL', 'fire_safety', ARRAY['Engineering Report - 32-34 CONNAUGHT SQUARE.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('c3c4dbd1-c557-41ab-9363-9680947af984', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights Testing', 'MONTHLY', 'monthly', 'fire_safety', ARRAY['MT8825 03072025.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('34fd9982-863e-4313-9b31-befc5e22eaf2', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights Testing', 'MONTHLY', 'monthly', 'fire_safety', ARRAY['January Monthly Test For EL-Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, model_number, service_frequency, compliance_category, linked_documents) VALUES ('85df2959-6aa1-43ef-a376-d0a82f96483c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'emergency_lighting', 'Emergency Lights Testing', 'MONTHLY', 'monthly', 'fire_safety', ARRAY['February Monthly Test For EL-Connaught Square.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('dfb19498-468e-443a-bc40-d35709f0504d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'boilers', 'gas_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9a22a3e8-54a1-4394-b0a7-67c6148b3b09', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('98adb5d2-374f-4ce8-b5ca-a97da40d538f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumping', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3c985366-d45c-458a-ad8f-499055e48ce5', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'cameras', 'security', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b6c7578c-cdc7-438a-9fd5-c100c902ea71', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('92008baa-dd99-4474-a5fa-4962ebf5ff64', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'communal_aerial', 'satellite dishes', 'other', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('1f1bddf3-e397-4f2b-8f83-f5aa004b9f9b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('79b9e26a-e024-4e41-9220-bf1a649a786f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler installation', 'fire_safety', ARRAY['Summary of Cover (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3209d268-8b4e-44b2-a24b-e67a718938c3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift in', 'lifts_safety', ARRAY['Summary of Cover (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('386e9214-6c7e-4bcb-be8a-b86849ef1797', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('fc19a75b-35ac-489f-b087-cd63e4f572c3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift - Powered', 'lifts_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('902b6147-0d24-4703-9778-0ef70ceb5bca', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('d057543a-fec3-49eb-a037-9abf46fd0561', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('69df445d-7c89-42d3-be97-874d198c2b02', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift -
 Powered', 'lifts_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('f7100c62-712c-4515-9ec4-d6d222f46d7e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b3d70acf-d242-433b-ab12-7ad6fb09830f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift', 'lifts_safety', ARRAY['32-34 Connaught Sq Buildings Insurance 2023-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b0ec69d9-ed83-4418-a14b-82ed2ead945d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz - Lift Report 14.03.23.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('7bf259d5-518c-4bdc-b537-0150b291a201', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz-Lift Report 18.03.2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('17bba60a-56bd-4db3-8ce1-e18c96ec8c69', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz - Lift Report - 15.09.21.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('12a3006f-bd6d-4e54-a20c-1d86ad1dcb11', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz - Lift Report 10.03.22.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9a78ee7b-46a8-48e0-a44e-64687b61a4b2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ec1dcbc5-788b-43e1-8b67-65887f948f33', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift - Powered', 'lifts_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('20d54bd5-1cd9-4105-b502-9335cd43a373', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('54133ea0-926a-4c12-a61c-ee945706ba81', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('cd7202eb-eff2-4d73-9e01-f8ef2f43e5e3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift -
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('939d5c0d-343f-47b5-a829-e08f89e359ab', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('d228fffc-822f-4259-a231-2bed3e9b70cf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift', 'lifts_safety', ARRAY['32-34 Connaught Sq Buildings Insurance 2023-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('a98112d0-bea0-4125-8955-96621a76760f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz - Lift Report 14.03.23.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b7828c3b-aac7-4331-aa73-71d061f0e4b9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz-Lift Report 18.03.2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('734d10b8-e56d-42a5-ab10-f74f6492a4d4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz - Lift Report - 15.09.21.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('63aa2fe7-21eb-4e22-90c1-4a075c42b0dd', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift Report', 'lifts_safety', ARRAY['Allianz - Lift Report 10.03.22.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('176e6fb6-f7e6-4dd8-b17b-ef34a4edb9ba', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5a289179-64e5-4fdf-9e7a-da67791a9cd8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift - Powered', 'lifts_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('6b88ba5c-2a0a-4ec4-9d17-dfe4a93ba260', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('629036a8-e295-4299-837a-d4b76058fc15', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4bd7034e-2b2d-4577-a516-75257621a5b3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift -
 Powered', 'lifts_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c69cfb62-d098-4467-8e72-00e0c9dd7801', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('2bd4487c-f85e-4492-854d-b3e2082e84d9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boiler and', 'owned by or leased', 'gas_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('eeac3691-a043-4220-ac14-a40dd0a4d160', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift and', 'lifts_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('f392aca1-d5e3-4e42-810b-28a98818a38c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumps', 'water_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b079a504-45d6-4b7a-ac5d-2f6e92475fc3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'Storage Tanks', 'water_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4f3abd0e-c5cd-4cb5-b213-d5396b4921f0', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'generator', 'generator sets', 'electrical_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c1cb0125-77fa-453e-8e17-9a2ed108848a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift and', 'lifts_safety', ARRAY['Feature and Benefits of Allianz Engineering Inspection Service.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4d7bdc7c-fd1e-4151-8b90-004414ba0cee', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('265e04c4-1f9a-4512-8e2b-ba43a34bce17', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b59ab58f-ff6f-47ae-99ca-0b6144f97188', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('df90c460-a416-4eb9-97c2-2bc895d6243c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e659cfed-4177-4f61-a7c9-27037f8210f2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c2a6dadd-e756-408c-8d78-0b6a223e3957', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b0676620-b187-4b4e-a328-32d3f2ecb1f4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('70ee7cc6-f926-4584-bd28-19d9453657b5', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('d1343aff-c9df-4bb1-8a79-9e3ab17e57c9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('de5f612e-61a9-4b97-ab36-253ab90482b7', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('371de321-c6c8-4856-b77f-33fba3d53db9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('85b8a61e-3fa9-495b-8860-6be6d8a5d64c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('d782eda7-c677-4735-98d2-3a4f2d701eec', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'water boiler', 'gas_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('27cd5076-5de3-40cd-95b1-6d99293e82b4', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Passenger Lift', 'lifts_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('659dea88-88a1-44ee-956b-4b0196d78251', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('081ab4f6-8675-44ff-a418-3108643bf7c8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c210805e-acdf-451f-891c-dd4d72fa1f62', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('e5732f76-cefd-446d-aa0e-d4f9e4aa2c93', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', '1x Pump', 'water_safety', ARRAY['StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3c17fa22-ba37-4807-b1e0-b9f8eadb9c1d', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift', 'lifts_safety', ARRAY['FBR113382303-20230405-B.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5f57b9a2-85b2-49e1-8205-6a065383c8df', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'boilers', 'gas_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ac91e292-998e-4c07-b637-c077bce6ea1c', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3f0f20b8-24db-4df0-b116-d2d2fafefeba', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumping', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ed2424f5-8f51-4e23-bfbd-a5e6be9b3f01', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'cameras', 'security', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('334d70cd-d493-4bc5-a468-b8d29735b8ea', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b256d771-64db-4335-af5b-49819712d4ed', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'communal_aerial', 'satellite dishes', 'other', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9718af92-ff1f-4db4-a24d-908683c593a6', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('3e7c8d3a-6b96-48d1-b86f-034c915a67da', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler installation', 'fire_safety', ARRAY['Summary of Cover (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('bb5f5ea4-6286-47ad-a60f-f5401940f2fb', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift in', 'lifts_safety', ARRAY['Summary of Cover (01.23).pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('db8686d1-1654-4425-94e7-38494d11bf83', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift', 'lifts_safety', ARRAY['32-34 Connaught Sq Buildings Insurance 2023-2024.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4e8ea569-09da-4f72-be99-3067f1e90a55', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler installation', 'fire_safety', ARRAY['Zurich Real Estate Policy Summary.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('5dc5a347-7946-4427-a58e-dee7e371267e', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'lift in', 'lifts_safety', ARRAY['Zurich Real Estate Policy Summary.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('30cb25ef-e862-413b-a6da-fc63c9cfdbcc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'boiler', 'boilers', 'gas_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c21826d2-a1c7-4842-b0ee-fe216d6faaa3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('bb3d39e6-20ab-4cc5-bcbf-1657fa2d7439', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'pump', 'pumping', 'water_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('65f28190-b8c8-4de4-8834-d3574220df31', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'cctv', 'cameras', 'security', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c4a2434f-ecf6-4c0d-8bd6-22ae35bb5b68', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('27600074-89b0-4de0-b95c-d72824c3a1e2', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'communal_aerial', 'satellite dishes', 'other', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4ae6f289-f067-4944-97f2-50089cdf5611', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'water_tank', 'water tanks', 'water_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
-INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('21e4f866-664a-4e54-b0a1-4ac4dfc95635', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'lift', 'Lift', 'lifts_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c4a994f0-0263-4865-8fa2-61fcfb9da3be', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Pumps', 'water_safety', ARRAY['2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, location_description, compliance_category, linked_documents) VALUES ('96dbef57-9fb6-41b5-9157-c2a3a1ffbc26', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boiler and', 'owned by or leased', 'gas_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('60ddd1b4-7ad9-45cd-ae39-a91f9114397d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift and', 'lifts_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('989c7d19-b408-4a98-b709-3f6d68089c31', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumps', 'water_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('6f77c631-db16-4b78-870e-205a30642a16', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'Storage Tanks', 'water_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('4f32ae41-7662-4159-b4d5-b8817dfc07ce', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'generator', 'generator sets', 'electrical_safety', ARRAY['MO - Policy Wording - NZ0411.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('0ed9d31c-ecb4-4c24-92c2-c9be3606b643', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift and', 'lifts_safety', ARRAY['Feature and Benefits of Allianz Engineering Inspection Service.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9446fac6-b414-485b-bcc9-80b8f3a0e202', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b47d7554-8ef5-44f3-ba75-85ba3783ddc3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('62fecdfa-4b41-442e-83b5-93aec00c183e', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('9c52a354-5a8b-4f32-a19c-6deb4f596714', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('acd8532a-45e0-439e-ad28-2ac1a0100466', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('7d842c4f-2ca5-44fb-a5af-7601939bb730', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('55427fb3-001e-4e6d-bce4-97bdf58a1dd0', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('969ddbac-98f4-4c3b-b9ab-2d30b4b1511d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('8dee0351-7502-40b1-a689-11899766b8e1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('a2e5db12-3141-447c-8214-f5441a740df3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('804aed0a-8baf-4b04-a8f9-4bb37365b26c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('cc3016e4-e2ee-4b52-90b1-82e5585bebc7', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('188ded95-9700-45b1-a70c-414f3ff274e1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'water boiler', 'gas_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('8e43fd26-ba45-403b-b534-6cd723363d93', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Passenger Lift', 'lifts_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c95daf12-8918-42d7-96f3-c357e7804f24', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'Centrifugal pump', 'water_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('69bdc4aa-27cc-4cc9-bbcd-d81264069b63', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'Boilers', 'gas_safety', ARRAY['StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('47213242-1c92-4735-8570-6c6128735a19', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lifts', 'lifts_safety', ARRAY['StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('da5f90d1-379d-4116-bfcb-c90203ad9070', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', '1x Pump', 'water_safety', ARRAY['StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('913af2a2-dca5-4f66-8e26-c704173a5a28', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift', 'lifts_safety', ARRAY['FBR113382303-20230405-B.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ff75e396-9bc9-4bb3-9ca8-d32955b81f2b', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'boilers', 'gas_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('482db81c-3bf5-4b0e-8da7-047719596df9', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ebb83b9a-cb8d-469b-b0e2-c58a90e10005', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumping', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('89bc0daa-cd50-483b-94aa-5bf9047a2655', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'cameras', 'security', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('29dba4e7-63c4-4b20-ad77-a182683b0150', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('18c82694-83cb-47e5-a474-72283ecc24c1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'communal_aerial', 'satellite dishes', 'other', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('1e2e25c3-7e6e-411e-ac78-4af8f76ce1b4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'water_safety', ARRAY['Real Estate Policy (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('aca53990-ad71-4d99-903b-7d8c77389a58', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler installation', 'fire_safety', ARRAY['Summary of Cover (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('fa6174d7-a3ac-4c7f-9f5e-9ea2abd9ef06', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift in', 'lifts_safety', ARRAY['Summary of Cover (01.23).pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('ed872a82-4221-49e9-9146-6f13e26d3088', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift', 'lifts_safety', ARRAY['32-34 Connaught Sq Buildings Insurance 2023-2024.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('83b5a67e-e1d4-4b09-93e3-1dfa7355834f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler installation', 'fire_safety', ARRAY['Zurich Real Estate Policy Summary.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('a5ad50fe-e48e-4b96-8602-98642ab0c1b3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'lift in', 'lifts_safety', ARRAY['Zurich Real Estate Policy Summary.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('b0c446f1-104d-422b-84c9-117e3057603d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'boiler', 'boilers', 'gas_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('74557e73-595f-46d5-a031-1b15f28d935d', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'sprinkler', 'sprinkler leakage', 'fire_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('330e60fe-1bbc-488b-8a93-c18ac03b0a9c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'pump', 'pumping', 'water_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('d0fe4014-9492-4081-b692-362f7b43d493', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'cctv', 'cameras', 'security', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('159f8872-5bfa-4521-9003-80e9db2ca00c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'fire_extinguisher', 'fire extinguishers', 'fire_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c7e10a9b-4472-4b49-85c0-c310c6f19a37', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'communal_aerial', 'satellite dishes', 'other', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('c47aeec9-a837-4a1a-92b6-f5c234c65747', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'water_tank', 'water tanks', 'water_safety', ARRAY['Zurich Real Estate Policy Wording.pdf']);
+INSERT INTO assets (id, building_id, asset_type, asset_name, compliance_category, linked_documents) VALUES ('bd175ed6-8e73-4bf8-a1ed-b220d96245e4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'lift', 'Lift', 'lifts_safety', ARRAY['StG_Certificate_32-34 Connaught Square W2 2HL.pdf']);
 
 -- Insert 22 maintenance schedules
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('b7a49e7e-c622-466a-854a-f89c7414e426', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '6d00ab6b-af55-4b87-ae4e-c5b9d64462cf', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-08', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('3e0fd486-140c-4e0c-a29a-5a8016e33505', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ad4d8d1d-42dc-4f47-bd46-266634b41e7f', 'security', 'security - ISS', 'quarterly', '3 months', '2026-01-08', '8 hours', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('5b5ade94-fabf-4aa0-b02f-5e0596cbf0f8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'd06ca3dd-6799-4727-8a25-eb76af98ebeb', 'security', 'security - ISS', 'quarterly', '3 months', '2026-01-08', '8 hours', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('1bc80530-b97f-4a49-8c49-6242d8c05486', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '5fd758f3-7b00-454d-a08e-b27b7d49a850', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-08', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('ab535a04-10de-48b0-8c7b-5dd7cd967ed9', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '86c5c539-ef54-4922-8bf7-fde162285bf2', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-08', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('3a84a63e-b27b-44c8-be50-962d754c2658', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '473a9969-2eec-4058-aa28-223868dfe6ff', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-08', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('5f68ce22-e735-4dee-a5c6-6cee3eafeda3', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'f0e8e3b9-ffdb-4cf4-96cc-f34a2a409d52', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-08', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('410c8f31-815b-4cfe-a1bc-aca75a3d7375', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '67c8b5fa-914e-454f-b346-445fbe5e95b7', 'lifts', 'lifts - ISS', 'annual', '12 months', '2026-03-14', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('b93c9c45-3929-4552-b919-17118a99ec15', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'f7f916ac-e991-47b7-91c0-425718a65e39', 'lifts', 'lifts - None', 'monthly', '1 month', '2025-02-13', '4 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('b915630f-f199-422f-bc17-5d932ab753db', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '2804c0a5-34c0-4a26-9509-09ed3ce8391e', 'None - WHM', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('87d4b2eb-6df4-47be-8e7a-c2fdacd5fe24', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fd8fbadd-567d-4df7-b0a2-88a181abc3d3', 'None - WHM', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('10753259-a562-4626-8598-53ba6f698529', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'ff854cbf-8595-42d5-a2ed-7e452320803d', 'None - WHM', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('abc081f9-999d-4c24-a017-0cd6c8b3d4dc', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '716aa335-a0bd-4405-bf4c-8f393747b464', 'None - WHM', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('acd836f5-2ea9-4388-8f5d-c0a56542d66f', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'fe94889a-cc21-48f2-860b-7ab756668cf0', 'security', 'security - Capita', 'monthly', '1 month', '2025-11-08', '8 hours', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('eba131cb-6068-4f78-b15c-53ad3e6c0ead', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'b142c988-dbcf-4716-9af3-e2d303390f8d', 'fire_alarm', 'fire_alarm - Capita', 'monthly', '1 month', '2025-11-08', '2 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('07e19729-b102-4beb-b205-aecf6ec1bb71', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'd6a22a5c-0174-4ae8-8042-6c191581b0a5', 'fire_alarm', 'fire_alarm - None', 'monthly', '1 month', '2025-11-08', '2 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('0574041c-fa35-4382-9430-0425eae156b8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'a4208235-d2e1-4a9f-878c-09d995e368ff', 'fire_alarm', 'fire_alarm - None', 'monthly', '1 month', '2025-11-08', '2 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('d7d06bd0-b850-42e9-9aba-5315fa60db04', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '1af34acf-42c5-450a-a028-c7986c875256', 'fire_alarm', 'fire_alarm - None', 'monthly', '1 month', '2025-11-08', '2 hours', 'high', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('9c68e4d5-7beb-4b3a-9af0-53a078626c1a', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '55d4e868-bb31-4e7d-a376-a6f6818dab2b', 'None - WHM', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('459a6a2b-7c1e-44ed-aef7-c2180724b8ed', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', '3d9336cc-16a9-4410-8b27-535083fd31b6', 'None - None', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('3617aa1c-b58d-45f8-9874-2e3d244a9d63', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'd2783b7d-ae37-4c95-a9de-66721378d8f5', 'None - None', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
-INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('d335ab97-0591-4743-907d-1c40ddffa9a8', '40ac4afd-5ddd-4654-9eb7-3984aa510dd8', 'e9e5ecbd-d39c-4532-a579-0aa029ee4bf0', 'None - None', 'monthly', '1 month', '2025-11-08', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('d32d6a0a-728f-46b9-9864-9f13274e65be', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'bf30ed62-fbc8-4b32-aa82-57141ec9f225', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-09', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('fb0a7c71-e4c9-4256-9bcc-65b082d30b71', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'a90aadaa-a346-446e-aa8a-f85496a9655c', 'security', 'security - ISS', 'quarterly', '3 months', '2026-01-09', '8 hours', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('0ad26832-7f10-4eb2-84ca-571000ab8d53', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '1987c751-dafd-4f62-92f2-772c02272c8e', 'security', 'security - ISS', 'quarterly', '3 months', '2026-01-09', '8 hours', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('9b86ce5a-5a2c-4c13-ad80-aa054ca2e80f', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '8a2f9b04-617e-4b98-ac01-2abf6fdae285', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-09', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('fcc71e34-6c5d-4b26-8ad5-2bbd49048e29', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'a03cce09-a211-4367-a224-6e01dee072f9', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-09', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('9fd8d23d-cffd-44e5-91bd-af9eebdd52e6', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '2010ab54-6cf2-48fa-9b96-ae90037d6093', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-09', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('6056983c-21af-45c2-93aa-6e5e2b5cc8c3', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '09951f77-5103-4c15-86dd-91b3b8fb80f7', 'lifts', 'lifts - ISS', 'monthly', '1 month', '2025-11-09', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('a5af91d5-2b93-4a98-9134-73a9b46c0060', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '58ff6582-6613-4cfe-a6da-8f2ab87d454b', 'lifts', 'lifts - ISS', 'annual', '12 months', '2026-03-14', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('31af5f14-712a-4d40-aefa-09fd2edcfdfa', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '9472f734-8914-4d64-9346-331d5997ea06', 'lifts', 'lifts - None', 'monthly', '1 month', '2025-02-13', '4 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('64b70210-671e-495f-ba22-b325bf038b3c', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '94d980f5-d9ec-4fc9-8388-4e569e8bd1dc', 'None - WHM', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('2a4bbb62-6f8f-4fb9-a4a2-2c6ec2687fbf', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '0593984e-172c-42da-84db-e3d2e0d75de7', 'None - WHM', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('84a7809d-d088-4ee4-8194-7f0440e4dd6a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'ed7e6329-75cc-458f-9ce6-05c4260ce347', 'None - WHM', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('ec5146f6-616f-47b1-b4cb-2ec625554bcb', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'a7700783-7e9b-4e51-a5d2-cbee56a1fdb8', 'None - WHM', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('c47dbbd0-347d-455f-af76-605e96a0ff75', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'b8b494cd-1ac0-40fc-8256-d5d475fc25a1', 'security', 'security - Capita', 'monthly', '1 month', '2025-11-09', '8 hours', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('49963bd9-2e2d-4802-bd69-6069bdfa7bc1', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '8305ec69-1952-4a49-a57d-65567259c9b0', 'fire_alarm', 'fire_alarm - Capita', 'monthly', '1 month', '2025-11-09', '2 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('46620318-0218-47b8-b985-4406c84a1be8', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '0580df13-c8ad-4b98-a044-2e24a8bf2712', 'fire_alarm', 'fire_alarm - None', 'monthly', '1 month', '2025-11-09', '2 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('bff35780-e238-44bc-820c-7c0aa6510f93', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'e62c6340-f23d-49f9-9937-a6d264974373', 'fire_alarm', 'fire_alarm - None', 'monthly', '1 month', '2025-11-09', '2 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, service_type, description, frequency, frequency_interval, next_due_date, estimated_duration, priority, status) VALUES ('a00dafe5-0e4b-49e6-8c3a-52aa4996d750', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '1f1f6606-9dfe-4291-b560-2935cb1d8dff', 'fire_alarm', 'fire_alarm - None', 'monthly', '1 month', '2025-11-09', '2 hours', 'high', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('6188c171-176e-4cb1-8fcb-7d3b5e11a645', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'ca405363-6b5a-433a-a558-8eb5af4a9cef', 'None - WHM', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('f1dc916c-b4d7-417b-8d04-baa9d3eae40a', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'be0c3023-b086-4479-8df8-9c8e85244228', 'None - None', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('0ba0cfac-bfc3-4760-b95f-347f8de53b80', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', '328aa331-8de9-46df-b98c-41f43d2e6cfa', 'None - None', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
+INSERT INTO maintenance_schedules (id, building_id, contract_id, description, frequency, frequency_interval, next_due_date, priority, status) VALUES ('189c331e-38f6-41fa-8494-4f07c369b2c4', 'e44d99d4-556d-4644-9e08-4bc01a4bf90e', 'ee89edb0-6963-46ba-a605-e06eb1bece95', 'None - None', 'monthly', '1 month', '2025-11-09', 'medium', 'scheduled');
 
 -- Insert 28 lease records
 -- Skipped empty insert for leases
@@ -1220,9 +1288,9 @@ CREATE INDEX IF NOT EXISTS idx_building_keys_access_search
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    '11cbb2a3-8f5a-41fc-b4af-7bac59275280',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    'be550639-fbba-4f6f-8ea9-3aed75f6485e',
+    '49f4bb22-ddec-4a97-99e4-8d794b27ba0e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    '05f67652-c22e-4bd4-a3fc-c78e1111d8a0',
     'Unknown',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1232,9 +1300,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    '00a4e40f-a6f8-4e4b-aaac-f1fdda8bc44f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    '2d564b06-7769-4d92-a11f-5853376a1fbb',
+    '2bb07c1e-e29d-41f2-a629-42df60e2c2b5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    'd1bbbe3d-e1d4-4db0-a53e-191571bcb43a',
     'Unknown',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1244,9 +1312,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    '3ab328f9-aa7e-40b5-8134-610632758af0',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    '21ee75ba-0c42-4381-9771-5651527b87b4',
+    '9f081da6-56ff-40f3-8b2a-e6c8a45ad098',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    '5ce11d0a-d1ab-4c67-aea2-a0cb400a9318',
     'Unknown',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1256,9 +1324,21 @@ ON CONFLICT (id) DO NOTHING;
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    '2b4e8319-54ce-4343-ae78-474fb93fbdf6',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    'bcd92669-c176-4ac7-9581-cae6dc4e5a19',
+    '5e6ddb9e-e5fc-41e4-85b0-2415d7ddff5a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    '6dee7a03-45d7-4b86-8ec8-102a682db615',
+    'Unknown',
+    'service_charge',
+    NULL  -- Requires manual entry
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Fallback budget for unstructured PDF
+INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
+VALUES (
+    '3b16a442-410c-463c-b2f0-447a9b2bfbce',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    '95775d01-07bc-4491-a97d-15480bd18a23',
     '2025',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1268,9 +1348,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    '44ed619a-1b96-4f6b-aa35-46ecb122f984',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    '55ef6361-4816-4cba-9838-dfe7a911347e',
+    '7f0cb20e-7be5-495c-9526-bb67eff4d06c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    '7dd76afe-cdb2-41a2-8e4b-430bb5dc392c',
     '2025',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1280,9 +1360,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    'e2ecaeb3-e4a6-4ddf-a791-5f796bb737c0',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    '007904c0-eef2-455d-9fae-a944159d02f0',
+    'd8746fa1-6d18-47c4-a956-cbc5fcf77786',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    'f6f3cc6e-83b9-4614-beca-b2fdfe576b32',
     '2025',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1292,9 +1372,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Fallback budget for unstructured PDF
 INSERT INTO budgets (id, building_id, document_id, period, budget_type, total_amount)
 VALUES (
-    '2149d50e-4af3-406c-93ba-a5ed4c7b83d1',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
-    '8b774a1b-564f-4de5-91fc-17f98b031596',
+    '827a71da-3f46-4622-a436-54ede28493bc',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
+    '24cb74ee-2caa-41c0-b1f4-1fd1595351d5',
     'Unknown',
     'service_charge',
     NULL  -- Requires manual entry
@@ -1306,8 +1386,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'cef6a946-969b-4983-b8c1-2950e438bc7d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a5346e4a-14c0-4766-92fd-675cc34f7d53',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'caretaker',
     'general',
     'Caretaker',
@@ -1323,8 +1403,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '696668e0-8e64-426e-aef3-7bca9ce59022',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f1d446d6-bb0e-4c4d-95cb-2fa96b9834ee',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -1340,8 +1420,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'be4f666e-d9d1-4bf9-aed8-e13c146013b5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '34db1f08-551d-40d1-b32a-39ca5d5b1db2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -1357,8 +1437,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '41453116-3583-4cc5-a37f-133415b23b76',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0f2045da-3eff-4819-91e2-af310a6f7a56',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -1374,8 +1454,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9e5ed022-1e90-47b1-8053-2107d8a6eacb',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd660ee5d-6439-47c0-acb6-b8f95dcabe71',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1391,8 +1471,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2708cab3-0c79-42ec-96f9-772957abc19e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '617677ca-ec6a-498b-8694-99889ee791f5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1408,8 +1488,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '5f3a2b35-a3f8-4317-8f78-cb86b4975035',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b66b4fca-5379-428f-9203-e6ea06127344',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1425,8 +1505,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '857a2b1a-d1d8-4e33-8f2f-d0c49992e4de',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '47de259e-692c-469e-896b-d5c6c5364aa7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1442,8 +1522,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4d30315e-cc3a-497d-8ec8-8696dbb229fc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c7ca99f5-a64b-40a3-b110-92d9d05101a2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1459,8 +1539,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '87e76cca-bb01-450e-8487-98d29437b321',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1a24c74f-bb7b-4f2c-91d4-913fec9681fa',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1476,8 +1556,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '24c54588-81ca-4602-95b7-c2bb62c3e8d4',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b8cd657f-0a15-4944-87cb-0ec61463c96d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1493,8 +1573,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8a2683ca-2783-4b9e-ae24-5983b9ad4635',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3fe246b5-af48-4802-9508-572ded52bdff',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1510,8 +1590,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '1906d696-2185-4f9e-b5e8-97084542377e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c535930a-0f85-42ae-bbf9-145a8223a7c2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1527,8 +1607,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '44ef6d7c-d774-4b22-b300-f26f59ab5837',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e0031152-aecc-4036-8928-40275a175348',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1544,8 +1624,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ba1f9b7c-d69d-4d18-bb00-bad6dfbef9d7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '48be6b39-be7f-437e-9f49-474b1ecd1757',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1561,8 +1641,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'fbd545f0-9a9e-4e4b-b6fb-1426b11e4a91',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8fdeae9a-c2f6-486d-8224-fc68df334c99',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1578,8 +1658,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '225fa381-a9a2-48d8-8a7e-691f350d40ea',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ac6a7e79-70c8-49c2-98dc-6b8714c77110',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1595,8 +1675,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '951f6738-948b-4341-92f5-2f0245182f54',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f409801d-48b5-4250-8a04-1c92c63b9962',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1612,8 +1692,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f766869b-56d8-49ef-aa1f-7da8c022b206',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0fb27c3b-a273-4d99-b811-ed8e1870a355',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1629,8 +1709,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7420cacb-1d92-4b56-bd46-bcfaaf394d53',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '316a970f-26a7-4ebe-8903-d2ffb196df0b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1646,8 +1726,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '645a878a-3ea2-49df-899d-12315c6f7f53',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1d735666-4826-4746-b676-7b84af16dbbd',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1663,8 +1743,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9c478184-93ad-4bf0-ab1e-721c532bd44f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3f18f59f-204e-4da3-a71a-234b3ddb3660',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -1680,8 +1760,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '40e35981-3d2e-4407-953a-85a821343ed4',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8e417915-b817-474a-9c81-172ce3eee596',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -1697,8 +1777,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7bcef447-ce7b-4501-a755-bf228882263b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f4fed8b9-0156-409c-9eec-103ab55ca45c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -1714,8 +1794,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f202d058-db32-423f-8f97-033be5369016',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'cf859eb7-cdb2-4d1c-9d61-fedc58d7a84e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -1731,8 +1811,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '648e5ddf-230f-4f83-b13e-fefea861d091',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b0279f8f-4725-4668-bfd7-586f116e81ce',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -1748,8 +1828,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f27e5443-b676-41cb-b481-a61fbfaed96c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '29921ac6-1f0d-4acc-9ca0-b4f32d432a62',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -1765,8 +1845,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '52e2709d-b210-464d-bea9-87812e69f372',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a0f69a08-91dd-4b63-98f0-063d592ec5d6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -1782,8 +1862,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '5d73da2e-e73a-41ff-9d67-4c55e77a515f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e2c29fc8-0976-4222-901e-b9027f34d914',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -1799,8 +1879,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f01729d7-04f1-4150-b776-8a4f48e13c5b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '80f30355-5d9f-43e4-b840-78359010530b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -1816,8 +1896,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ff2382e3-0a0b-4b89-8dc3-8644e0919ba1',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b3e4651d-6ab4-4923-8938-dae74c1141a5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -1833,8 +1913,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '04bf8237-eaa1-4e9b-950a-67602cb54689',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '50b17d32-c617-45e0-a66e-68204ac56155',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -1850,8 +1930,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '29f9c5e0-c03d-44a4-8129-1e46c63db076',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ebc3672c-7946-4a0d-b7b4-06548c602be6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'alarm_panel_location',
     'safety',
     'Alarm Panel',
@@ -1867,8 +1947,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '191cec47-9792-4621-8d69-10c6afca370c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f6641d55-70f4-4b00-9fa1-38478aa341bd',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -1884,8 +1964,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'fe5f9348-8e27-4198-853c-8d6960c26dee',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5418f8af-cf68-4edf-8417-5ce938bfda1d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -1901,8 +1981,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd7e08f93-5bb8-406e-94a8-82e4f9b031cc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '47c90c3f-65a9-4101-9e82-3efe5887bf18',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -1918,8 +1998,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '024839ad-9eca-49a6-9340-d9104b76daa5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '72ad80c1-c632-4816-8bc7-7f922d5e3177',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -1935,8 +2015,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '03f68f87-de2c-456b-a5a1-c47c96161852',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ec577f62-0923-4204-b482-7a125fde59cc',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'assembly_point',
     'safety',
     'Fire Assembly Point',
@@ -1952,8 +2032,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '591de2ed-201a-49e5-aca5-9ce0b22b6a36',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8aa65b72-60f4-441a-8374-af0c03b0e2bc',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -1969,8 +2049,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '861b9354-7a5c-4d5c-877b-c6826b3b8ba3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b802f303-3a58-4454-897c-72ff27cf9e7f',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -1986,8 +2066,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7801b486-996f-4ed1-bb47-05e6ee5bdb03',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0bd2bbb9-b1a1-434c-8187-39389d69dd75',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2003,8 +2083,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e7959143-551c-47e1-8845-70d307942851',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '84967d13-6ac3-4d42-884d-bc7f32d29369',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2020,8 +2100,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b57eb6d1-35e7-4730-9ecb-409e786408e9',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '45cbf806-2235-4bed-9b7f-c84455d331a9',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2037,8 +2117,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9daf59de-1dca-466b-8a74-3874fcc42b6f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'bcd57624-0196-4ad2-92ec-36bd5384f65e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -2054,8 +2134,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c425317b-90a8-4925-bb9b-3866788dcd9a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7522d60a-9829-43c1-8220-b24ae33cfc87',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -2071,8 +2151,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'dccb9628-8e7b-47ba-b997-08f5e40e194b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5753cbf1-e087-4147-88c2-fc7e22a9f31a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -2088,8 +2168,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'a2668d1e-755e-4350-8817-0027a23e2710',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b4439c4d-86dd-41a6-bfde-8dcb577d25ad',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2105,8 +2185,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ec6fc695-7f5b-4329-bf2c-250da679aa23',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '818b4e1a-8f06-4b5e-a4e6-f96a3dcc2443',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2122,8 +2202,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '6f5f2b49-71e4-4737-8de7-90371020f7ac',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '14beaf09-b028-4977-82f3-e218ab8f8f7a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2139,8 +2219,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '19b077da-b688-44a9-85ee-5c700aa249ac',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8cd5ff7e-a4f8-4b4a-8c71-e5a9447a451c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2156,8 +2236,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '04b38520-2175-477c-ad41-4f03627dc56f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '49f988b0-4ee9-4adf-867b-6074dfee14ee',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2173,8 +2253,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b4223a1f-4596-46e8-8b7e-84fa3ded4a69',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8415cba7-b831-465c-92cd-8a2bd178aa38',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2190,8 +2270,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '34c69a7e-c10f-4244-b4c5-5b2072dbdf9a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9ac9f5aa-6cee-4f29-bd30-0f617ef21e12',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2207,8 +2287,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '6e05ec24-e3df-49e6-b186-d1ffb91e849a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1b88e514-ea05-46c0-b494-e5b0aaf4c7ce',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2224,8 +2304,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ee263b5e-f6be-4257-9ffa-11253383ae82',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3459a410-58d0-4550-a01a-43d4a45bb9df',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -2241,8 +2321,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '6c874a85-9a13-4e01-a48c-143da6563d71',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '25c9bb84-67e8-49c0-9f44-839fec35b5f5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2258,8 +2338,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '64377d55-8c82-4f54-b650-75fa154c2e51',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f3f4f44e-67e6-4075-afb2-9dd6f9ff537e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2275,8 +2355,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b0e4eab7-ad54-4fd3-9fa9-a957c3db5124',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '33eefd0d-615c-46bb-80cc-8e62ac970e35',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2292,8 +2372,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7abb60df-00d2-491a-9d38-2fd7f32b656b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3ddbe0d9-50ff-4400-aeac-c06044db08d1',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2309,8 +2389,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2b0e8796-6951-48c6-b1b6-c4063fdd6765',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9331f73b-340c-4b39-81fb-db9e31a6c09f',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -2326,8 +2406,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ac40809a-db7b-47fe-abee-f248528ee6d0',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '84e10192-8b69-46b6-92b8-3471da25bc8b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2343,8 +2423,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '634c913d-0dc3-45a2-a1a3-ebaeac696a51',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '512790e6-778f-4ebf-b45b-3b9382f685cf',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2360,8 +2440,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '46d90221-ec0a-46b4-85e6-31c5ac8db48a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '766a5ec0-0659-4778-8ccc-c405057ca655',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2377,8 +2457,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0aa3466c-591e-41b9-ad69-e520934cff18',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3fa5609f-1bc4-4f10-afc2-a98fe6f36ec0',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -2394,8 +2474,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '12c9ea67-c0fa-4e32-b47b-215583b1896c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0738b747-1377-4545-a487-4d242014c4d6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2411,8 +2491,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '848f11a0-7560-4f05-b83b-bf648fa15378',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6b283ec6-c2cc-48fe-b507-f5bfde3a85e3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2428,8 +2508,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '35d9df17-4c83-4383-9fef-663b3274bd8e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6f44c2c0-0b11-499f-98ab-0b644935b5f2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2445,8 +2525,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'bd77d60a-5ec7-4e09-baa9-4dc2056afc3e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ec21d115-1c96-4ef6-a13b-02f8bbd7a4cd',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2462,8 +2542,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '32365cbd-5551-46a2-a90a-6beb7d01c271',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '895268ea-320f-4e9b-870c-81a5e5b7ca1b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2479,8 +2559,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'adbca543-bdfa-4f96-9dfc-494f325db232',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '661a3432-c296-4f63-90f8-82ab2809cf62',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -2496,8 +2576,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '679f4e4b-8546-4ace-9cb7-b530dc32a365',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd02fb812-a3c8-4b26-9f27-4e8000f75434',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -2513,8 +2593,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7db1a2d1-e04e-492f-81d0-9439abeac6fd',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '124731e4-609d-4760-b21d-b1aecdb4cbf5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -2530,8 +2610,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '1bbcd89e-5471-49d8-a4d4-d9b5db4c67f3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'dbbb90f7-1ca4-4aee-b253-3e1b97ea96b4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -2547,8 +2627,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8243171b-f37b-454b-947a-65ab60e89f4f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '4e2b9f42-0cc2-489f-9afc-5e44d9c99991',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -2564,8 +2644,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ba8a72de-6893-4da6-b1e7-94d9c9964c23',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e4a31407-cb57-40d2-bbff-f5b6460da82e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -2581,8 +2661,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c31625e6-3364-426d-bd9f-2ff1120bec6c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '797f4049-6f9e-41ae-8793-514b95544430',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -2598,8 +2678,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c959828a-1e5b-443c-9730-70d8fac5f815',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0a43510d-b716-4ee6-80f8-8480acd4e563',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -2615,8 +2695,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c1bcf865-068f-4b91-b0da-634e40c4af6e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '86262ded-a06a-4494-ac2f-3c24ed188af3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -2632,8 +2712,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '3f2a809d-ccbd-43ae-8ef8-83f8d8117553',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1c622d2c-bb71-4d88-9087-8a4d961a8463',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2649,8 +2729,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '786f97a6-c0fb-49d4-befa-104f3c191bbc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7f35c06c-3cb2-4356-8018-90c9b583b2c1',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'caretaker',
     'general',
     'Caretaker',
@@ -2666,8 +2746,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e79a0915-13c5-4a02-aefb-110e869d04d5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '675c5322-6177-42c3-bddc-1fee4595a3b0',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'caretaker',
     'general',
     'Caretaker',
@@ -2683,8 +2763,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '76fa8ed5-221e-46fd-a91a-8ed9860dac08',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd742ac33-df09-40ed-9a43-93e749128c5a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -2700,8 +2780,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7e2b0135-8fb5-46ab-be99-59e6c6fcfaa9',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a60909fa-4f6f-4904-a35a-31f2be2ade80',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2717,8 +2797,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2a22cd72-3e1b-4837-97f4-7b7b9cf9c0e3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '79000fcc-a3c5-4f58-b08c-903c13050c0d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2734,8 +2814,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f41f8439-4e88-45e9-8416-56ac05e4229b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '79385267-b42d-4a8b-9ae8-4b0e99a98ab2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2751,8 +2831,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd49b71f8-6282-4cea-981e-8fc175bda521',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9baed851-62f0-4007-859f-7bf2f40811de',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2768,8 +2848,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'cfef9883-cfa5-423e-aaa9-2c1f8c63bb10',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f46e04da-f231-4300-9d49-71f4742c80ca',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2785,8 +2865,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '82e58b2d-bed6-46ec-b598-7cf19ae9e1d5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '665f79a3-e560-457a-bbeb-2e43f967ce15',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2802,8 +2882,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ce3137dd-d1c7-4f67-a65c-46c0e84fe5c2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a69459cf-a12e-4ef4-b8d1-1589c58cd28d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2819,8 +2899,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '69962f8f-aa0c-466d-b808-19d7304c4d07',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5cacd7ff-e4d9-4e62-bc96-ef3e6e4802e7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2836,8 +2916,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '3eab9692-1565-46d7-bbee-2c0aa522ec93',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e5a585a7-d4e3-4e50-be68-dbc3f9dd2f52',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2853,8 +2933,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ccc60df8-294e-47d7-b8f2-a096ab6579aa',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '32d803ff-d86b-4068-b570-233879b6af7e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2870,8 +2950,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '39ca0a21-4cbd-413d-874c-d988b703a732',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'cc082547-94e6-422f-8a0a-b286b863d4b3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2887,8 +2967,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '55977d7c-4c4f-4a0a-b732-885818d2ee16',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9eb23832-4a16-4735-a5b1-ab103f78a902',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2904,8 +2984,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '196a86e9-e33b-424f-b35f-ec25f979015f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '904a92f7-0023-4fe9-a514-55edd46c44be',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2921,8 +3001,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0a059aea-120a-4288-bc3e-6ef133671153',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'fbf0d0db-221c-4029-afd2-e1f764dc45c6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2938,8 +3018,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'bf354da3-3497-4605-8b69-92020330ba22',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5e2a2e8c-e659-4ddf-afda-9569596650cc',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'water_meter_location',
     'utilities',
     'Water Meter',
@@ -2955,8 +3035,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '3ce0b434-859b-4cc3-b4c2-18ba02ea1e88',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '2d900391-f277-4f24-b9f8-99a886f13f02',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2972,8 +3052,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b9eff80d-aa50-477f-8b51-79c27f6492c9',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5e1f7892-d9ba-40d8-83ff-bff69821d8ad',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -2989,8 +3069,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e282287b-f165-4954-a8de-aac635b797bb',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '25383fb3-e8cb-42e8-80b0-b108888c120a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3006,8 +3086,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8e8a61b8-9e5e-4ce4-9f43-c350b14aa561',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '2bb11730-3713-43f1-b985-5226f191cb80',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3023,8 +3103,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '59cc9bad-5ce0-4e05-8267-0ac32cd82c7c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '64edc8c6-23a2-43ba-b5d0-05d72364701c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3040,8 +3120,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd0822cfc-f429-45a1-a5e8-d245c38e769f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd51d7f45-ea84-43a3-8f50-4e6f1c06b51e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3057,8 +3137,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd4ca0bc7-3f01-4972-b5d2-21d510e9b88e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7f6e38d8-0f5e-4026-9a13-ba25aba897d9',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3074,8 +3154,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '55b05beb-f214-4fab-81c5-702275e1a881',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b08804c4-b00b-4cc9-b357-9dd4cd068be3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3091,8 +3171,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b11509d9-f0fa-490d-a1db-c0437d9be52f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e00741d4-2bb7-49a1-9a08-4bcbc94be19b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3108,8 +3188,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'fd948833-09a5-42a8-a69a-7c938d2fbc86',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '12833f05-5b38-4f40-9329-9bf5acda3e0a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3125,8 +3205,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b01effe1-670e-4e0e-993f-2b4e3124ecc4',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'adeaceb8-313c-482f-abce-c9232f98fb7b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3142,8 +3222,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e7b40c84-e6b8-40ac-9bb0-473c226e424b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ec075665-ef7e-481b-9ce6-4e3d5df515d5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3159,8 +3239,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '40a696b6-df48-4635-9416-ebd30a577162',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'dba2f21a-a52d-442d-af89-02d9c4404949',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3176,8 +3256,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0bb34c27-2d74-4289-867f-b17e3186b766',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '47de828c-b9b8-4d72-9b90-e715ac8b45ca',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3193,8 +3273,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '6401a656-be99-4f62-a08b-572659aa3b05',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '28e61042-cb6e-42a6-9f88-ebd8507e854c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3210,8 +3290,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '17028357-627b-4d94-a397-03c9bd2d173a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8edbd532-70dc-400d-9611-a04648278822',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3227,8 +3307,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4fc8f02d-79fa-455f-9141-18157e55e1bd',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0aa24d63-fa08-4e99-908b-c458f20ebb25',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3244,8 +3324,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'a367f23a-f89a-4f5c-8320-d286402d52a7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c9c75519-7b82-47a0-b2e3-47227cdee15c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3261,8 +3341,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c7848f33-2fec-4cb4-a26d-0e45a080d971',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd50c63a1-b5a6-4aa7-95f4-ab3f57f61f0c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3278,8 +3358,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ea66c177-7be7-4aee-b6ea-87d168c452d6',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0265b59d-5fc9-4d18-b16b-f319ebf2c2bd',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3295,8 +3375,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e7dcdb51-b9f9-4326-ac08-39f19f55a838',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '98a5b1d5-61fb-4f00-a151-40bc4e9748f4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3312,8 +3392,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e40b985f-cff3-4e8f-bc9f-2114a0f7bae7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3304480f-713f-4db2-8c88-bf410bbfb55a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -3329,8 +3409,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '842c666a-bf48-427a-a231-0ade1ea49631',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0a4c6e7c-2573-45e4-9971-d4dd02ff2760',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -3346,8 +3426,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd4623be2-8fdb-4240-851e-db43c5d2bd12',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '2dcedf28-2d92-4bb1-a3d1-f46db93a16d4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3363,8 +3443,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '703c749c-850a-4fed-9c8b-18c1f85352f6',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '296a8c64-0960-4bc2-b5d3-3b6cdeabdc2c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3380,8 +3460,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c683ebba-3ce0-4c44-a7bb-a4bfcd8cb5e7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f070c40b-ec95-44b6-b124-4b18b0660d6d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3397,8 +3477,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '86ff5850-29b2-4f14-8fbf-59ccbd868482',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '21d1e513-7011-494f-bf93-1f21fd435aef',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3414,8 +3494,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ae20cda9-b500-432a-84bc-ad7cbfeda461',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c3cec338-d32c-4a5e-a811-7edbf3df8859',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -3431,8 +3511,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd3708952-ed80-4f4c-afb5-39773d6c005a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'fcbebf12-cfe4-4071-906b-5b6f1860c90c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'caretaker',
     'general',
     'Caretaker',
@@ -3448,8 +3528,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '43d6c967-aff8-4d6e-b568-1c81ca69e391',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5444d593-484a-40e1-bc21-ef7234c005cb',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3465,8 +3545,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '214ad60f-0e22-4d2a-b58c-f75c686591a2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '70d82831-2e4e-44cf-9f91-4a76d4a8d97b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3482,8 +3562,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '949ef939-322d-4950-a2ec-f72aa547c345',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e621ff0b-b8c3-4f81-a068-e1befa5c3692',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3499,8 +3579,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '20b200a2-f18b-43d6-bba7-2983b6e32194',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '63cc7921-0dfc-4158-9431-fa38ee3ddb8d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3516,8 +3596,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'bc5878d9-6421-45f2-8fe5-3402de18376d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '90d06faf-0c8f-437b-9689-ad53f6a11f6d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3533,8 +3613,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7714bd67-5d1c-41bd-8c91-0fb2fdc3c94d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6587b90d-aebf-40cf-9ff0-62d659958d24',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3550,8 +3630,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'a9864353-3e46-428a-9c40-d8d70e5972e9',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '50b138a6-c845-4d9b-8c1f-d46cf70ebf4e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3567,8 +3647,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'cdd32432-6444-46a2-9172-115be39c86fb',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1a414d48-e3ed-4998-a517-b1f49e2798c4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3584,8 +3664,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '781ecfb8-d452-42e6-b70d-2da668e1b764',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9e2bbf09-27de-49c7-a377-4f5696cb470a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3601,8 +3681,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8d91fff6-a47c-432e-96cc-47ab59225b25',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6445b95a-ee82-4f80-8f9a-a472342b455b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3618,8 +3698,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c37caf48-537b-4c2b-b61a-65712e6309e8',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'bd79c73a-987a-4532-8264-9bca004a8eb9',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3635,8 +3715,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '3167c2d7-0f7d-41b6-8288-3e56c1474caf',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ed120342-ac33-4ea5-a8b1-2a262183b40c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3652,8 +3732,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b0c6c127-3714-4f4c-966b-a0c738381694',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '4b42e00c-aba8-4d8c-9ff0-2325d1c4bf3e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3669,8 +3749,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'aa8af1de-dc67-455f-8e48-147893b4c908',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '16dd04ce-2e5e-4656-b7ec-311eb681f48e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3686,8 +3766,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e416190f-bd6d-4c44-9032-f78ed4303266',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6e36b11f-bc03-4274-a379-bc4135163aa6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3703,8 +3783,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '218a43fe-b351-4e76-9bb7-1531e3b2e51d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c69317e9-994b-44c8-a4b9-2e5c32a904ad',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3720,8 +3800,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '531c4226-8b6d-4b67-806e-fdbb4af39614',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '41fa72d6-096a-4f83-b529-92ec0d83b62d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3737,8 +3817,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2274f772-01f2-4b4e-859e-996e35544643',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '53232231-c819-42c1-b8bf-d9d829c3b463',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3754,8 +3834,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'fba8b78f-a8fc-4687-826c-1d793b298240',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e9aa33e8-9275-449e-9fa8-4767b60fd268',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3771,8 +3851,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '04f3c262-a5bd-40ae-b150-0c8d551eca52',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6881e802-cc8a-4a5c-ad2f-9e75972cc35f',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3788,8 +3868,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c57601c9-2253-4312-9054-85d5f89c921e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3d23462c-4412-4ee0-b46e-e9717cd3eab0',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3805,8 +3885,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '34e61f3d-08fb-48cb-893f-e2eb26d1f4eb',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '422f42c4-5330-45cf-8a8a-2b79d71b9c8a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3822,8 +3902,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'bc5e6724-5caa-4524-8acc-cc22c3014bf5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1a008f71-70cb-47f8-98f1-ee416c0a7beb',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3839,8 +3919,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0d9146b3-ef2b-4a10-a739-f27c7a4e9ab9',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a8797df3-a880-4dfd-befe-9847c48699b4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3856,8 +3936,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4218030f-9e19-43d2-a257-1d1e234f1813',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '26127edf-abab-4b56-88a9-e1e9bacb7f53',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3873,8 +3953,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c26e9440-22ce-4edf-bf7e-cf87e7640037',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'dac7592d-5f38-4412-ad0f-e24f8e3a373a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3890,8 +3970,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'faa6f45d-d625-4705-a55f-08ae098f2bc2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '494f2049-08d9-46e1-9802-7ede133e8d6d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3907,8 +3987,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '78a1be1e-32e4-4de2-8dc2-61c0baf8c84e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd0b92838-b365-4d61-ac84-1261818a921a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -3924,8 +4004,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '946d096d-ec1e-4c0e-a902-c837bf2ba048',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ad6d3b31-41ce-4304-af0a-9a4b90e80453',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -3941,8 +4021,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '6db2d61a-29ff-4877-a149-b289b881019a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '83c4bca7-2aa2-48dd-8c6c-d02faa886ef4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'stopcock_location',
     'utilities',
     'Stopcock',
@@ -3958,8 +4038,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '37036b9e-7320-48e2-b5a5-f30121b81622',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1ac852a3-864e-4e5d-837c-dbc1f276a771',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3975,8 +4055,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '73b5ec14-8e99-427b-a11d-04f600b1e5d8',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '910f748a-3694-4433-9c01-92dbcf9d072c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -3992,8 +4072,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8e6a7bc2-1862-440c-8887-b155a546e3c2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '2a50371d-8805-4308-8575-57327df26f4d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4009,8 +4089,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8048d6ce-8b2c-4d76-9072-faee25e7c68d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6eaf6cd8-d895-459d-9227-761d10237683',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4026,8 +4106,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'df3bd2ec-99a8-4f46-9d08-292b0015de7c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '593d0bf8-fdba-441a-b7fc-b1e6721046e0',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4043,8 +4123,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8302bb55-4fa8-46b4-9686-b55a2d0ce580',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1f9a0292-e206-40d1-a6e6-be5065037479',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4060,8 +4140,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'fbc0a3dd-c6e0-4849-a493-de9361c348fa',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '41b117ed-6c51-4642-8231-8e86213f3543',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -4077,8 +4157,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'cbdccd43-446d-43a3-9696-bbd67be2d751',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c2f373f0-4b60-4d27-8f98-934745d83086',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'sprinkler_location',
     'safety',
     'Sprinkler',
@@ -4094,8 +4174,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '5203f5cf-b2f1-4ee4-9796-0536767ef4d3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '40f877bb-93d8-4a5e-a338-92fa90891087',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -4111,8 +4191,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'da16790b-0561-4677-a47c-f7b126f50cd0',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '11eaec19-546a-475d-a68c-97be25ff2e23',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -4128,8 +4208,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4fbd09a7-1436-4f3c-9774-25889fc12819',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a63d7e86-4b1f-4449-87c4-5cddc92f25a7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4145,8 +4225,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '84b0e439-351c-4996-9fae-27a94e82733e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '60c48fab-e059-4e84-b5e4-213665a612ad',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4162,8 +4242,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '40c4e54c-116a-482c-84cc-89919392f33d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3632dd61-a678-4f29-8e54-00acd66e6d83',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4179,8 +4259,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '446d94ba-66d1-41ce-ae6e-8739a13b2efc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f3ea9e1a-e1d7-4c41-a545-6b9b769f2a16',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4196,8 +4276,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '14190d19-bc3f-49fb-958a-68650df198fe',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c1982936-13b4-4187-b61c-6f340b759a4d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -4213,8 +4293,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0e92c92b-45b9-43c3-b935-6dec28ee13d3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3639c437-5a40-4bc9-bccd-4244373caaf9',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4230,8 +4310,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '79f69a01-0442-4952-9add-cd2e8329e2cf',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '47d159d6-fece-4618-aece-c99b2cb4e291',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4247,8 +4327,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7e12bf0e-120c-4758-b7ae-40f3e1a2a22c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '59391147-d660-4521-a94d-724bceb5158b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4264,8 +4344,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '37d2e3d6-318a-404a-bd40-b056ca2cbbab',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9a9e7f55-1fcc-4b66-a8d3-d8fb73a4be1b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'alarm_panel_location',
     'safety',
     'Alarm Panel',
@@ -4281,8 +4361,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4a26ffd1-a385-4b90-b3ea-5a5057886182',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0938a997-e669-4935-a443-4a9f64754c8e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'alarm_panel_location',
     'safety',
     'Alarm Panel',
@@ -4298,8 +4378,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '712018e9-0ebf-4663-9206-e85c4d80d182',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'cd1f3dbb-50b4-43ad-9b5b-2b1981f23aac',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4315,8 +4395,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9b561c2f-6a40-47d7-b773-82cf7f30247e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e8674fb5-496d-426b-8a9e-c0e04b22a9b5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4332,8 +4412,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '1551fbd2-d97f-4d03-aa35-fd1b6e5f58c7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1dfe1f50-65ff-4032-b7fb-ebbf95275196',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4349,8 +4429,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '40704023-affe-491c-ae6e-12652376d99a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '8991db71-7bd5-47c9-b0dd-73f195c6aca7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4366,8 +4446,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b2c17f40-9ee6-4612-981a-46465edefaed',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '14ac1efc-5487-4935-9955-f8e51ce63f4a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4383,8 +4463,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'cb76f1a5-8d35-48f9-9090-8d3f137ce795',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'fd1a3a11-3895-4b21-9c6f-a8bd1661f67e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4400,8 +4480,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e36f5da2-9c95-4190-a517-75245c38c364',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '73953782-80fd-4942-8697-eb1c420f3d68',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4417,8 +4497,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '115413e1-e89b-407d-b76d-32581e856e58',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0a7a6d51-4832-4722-8c9b-08c136a2070d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -4434,8 +4514,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '13daab61-a4c0-4cbe-b967-04676bd9f3d6',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '74e8b0cb-9f7a-48a3-8a3b-af207c135c41',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4451,8 +4531,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '07137b2a-9ac7-49fa-b504-8a391da40d38',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f2132ff7-f768-45a6-8947-4ac5c46ce299',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -4468,8 +4548,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd653d6a9-d23f-42af-ae1c-6d74850cd9c3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9c1c41cb-350c-41bd-81ad-48f6be0622c2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'parking',
     'general',
     'Parking',
@@ -4485,8 +4565,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '03adcb40-8c45-4a43-b1c8-330d5e24815f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '50f7506a-07cc-49eb-9867-8ba941ca157b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4502,8 +4582,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '87d195d7-2d6b-4bab-9ced-a955b0ded5b3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '38002e2c-c6e5-4bb6-b40c-96f4c8fff1db',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4519,8 +4599,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '89bc105d-8689-4263-aac9-e95878da0658',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '94bafd04-b5a4-4761-96ec-6250f5200eef',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4536,8 +4616,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'a6815523-f8b2-4df4-adf0-3ca2cf039717',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '72d6c558-3743-4ae8-8334-bd114081a1f2',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4553,8 +4633,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '11b0d8c9-d8cb-4c10-9654-9723989ad0f1',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5ad3b92b-9049-40d7-b22a-54c636fe7439',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4570,8 +4650,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f831b08d-b44a-4927-8727-7e9c03046cfc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ce19191a-43b0-4be5-a6c5-ecc122176bfb',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4587,8 +4667,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '82b948e1-bf20-421f-ab70-e10eb41ed4cc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '86d16a20-e880-41aa-9699-4810f873eabd',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4604,8 +4684,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'aae11bfe-b215-4eac-ac31-df0074e91d34',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ea01fc4b-0bbb-42f9-baae-00399780821c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4621,8 +4701,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7f6916e9-b8d5-495d-83ec-e2ecc58ddeaf',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '26ca6028-b502-4931-af19-0e4dd8e115e6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4638,8 +4718,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2e44c820-5a00-44a6-9d18-5eba99de944f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'bc93c760-19c6-4dfc-8d9d-a2325223f077',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4655,8 +4735,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '71f311ca-7df2-46e1-9bc8-d4ceeb82e02d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5b6cbc6c-99e9-4d4b-8acc-77f51b2ce218',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4672,8 +4752,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '97981c4c-d705-4cfc-b387-afcdd2cb2d76',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '39dbbf35-96c7-4fb2-9120-c4ae2fb05d38',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4689,8 +4769,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '039989ce-e35e-4737-bff0-030a65ebdddf',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3e3fb460-cff5-4d9e-8083-e52245135a2a',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4706,8 +4786,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '474d5a35-a85c-4df2-be50-81839c09f384',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'edfe3f83-d294-4fab-b089-f4c8eda006d1',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4723,8 +4803,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '326f41fc-97dd-4ebd-9ab8-83cb29ad945a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'bf8c83f1-72ea-4a9d-998c-880bc9aa391b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -4740,8 +4820,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c3a5d103-b76d-420c-9056-39f420163a5a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd51dc143-5204-4504-8c36-4019d3a04369',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4757,8 +4837,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '5b5c6187-763a-4e1d-ae7a-2ab4c1e51b58',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '96756e8b-478a-447c-a92a-4d41efc6288d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4774,8 +4854,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '669a8537-7d78-43ed-99b2-4a83f2deafcd',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '17e5ac62-bc29-4da5-befe-a8f817b0a24c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4791,8 +4871,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'de0eb18e-1148-47cd-a924-95b41f02dbbc',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3adf89b8-21f7-4697-91a8-03c968097ade',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4808,8 +4888,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'a1686746-1f7b-4b11-8de3-961bc03d3da2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '2358595f-4819-425c-a643-7fbfd55e831e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4825,8 +4905,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '8966c26b-bcb7-4754-a72c-d9b40708b4ce',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '4139d38c-59d6-45a7-829f-913fc383b08e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4842,8 +4922,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '741eb7d5-420b-4266-b2e6-9eae718f2c61',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '4664989a-f819-425a-aebd-0c1872e72453',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4859,8 +4939,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '82ef5d34-2f68-4fbe-91cd-9f1b9e208a5e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e1b730c5-e000-47a4-8faa-f594e45c92be',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4876,8 +4956,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '220102a4-88a9-4a13-acde-b07461bac3f1',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b037953f-dd4d-4983-8e94-eabab22eb3e5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4893,8 +4973,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'c0913b1f-7d2c-4dc2-b91d-41d7229260a5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'da1b5e25-b8df-438a-b20e-7a98f833f932',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4910,8 +4990,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0c2b5d8f-d2ed-4bdd-9747-ca82ce332988',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'df9885c4-23e7-482d-a319-15e59f1043f6',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4927,8 +5007,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '999ae501-acb6-4952-812e-9109acb81dd7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '55f3d0f9-282d-441f-ad63-f022c159c087',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4944,8 +5024,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '5aaa767a-2669-47eb-95fb-5671a54e32f6',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '42466299-4297-481d-aa90-98b74c0652a3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4961,8 +5041,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4b312848-22c9-4f13-b4fe-d243c4b88e0a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '73c74224-e889-4276-bec7-331bbdebba9d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4978,8 +5058,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '552a3a4d-ab4b-4f1d-a0d8-088ae913b84d',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a40d9b1c-1d74-4357-b970-d52ce0c24e60',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -4995,8 +5075,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f920231f-2194-43ca-8ddf-3b5d92c9eeed',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '651eaa97-a7a6-42dc-aa38-060cb89f18ea',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5012,8 +5092,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ef5e9dba-0986-4786-9fd4-4da50fa74067',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '2cc6aa6f-8fa7-488a-9ce9-457414bf6a23',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5029,8 +5109,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '80bd7d84-2bbc-420c-904d-9316fdc08aac',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '35ac30e0-bae6-40a3-ae67-76ad2f0f5d03',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5046,8 +5126,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'cf3d0c84-0141-48d3-ae48-352c773d605f',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'c4d83e20-3be6-4a46-bda7-3e11d69de3c1',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5063,8 +5143,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '285f1a0b-d5c7-40d2-ab4d-db8ee38d347c',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '95bd1d4d-422f-4ac9-af23-5593cac033c9',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5080,8 +5160,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '99bf39ca-0f54-4119-b72a-637d25f46cf9',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3a6c91c5-e854-44c6-888e-55ec40e69fa7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5097,8 +5177,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '56e5d041-be66-4e28-827e-3011d21d7ef4',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e1d178d8-280a-43eb-8e26-5ddfbc2e1af1',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5114,8 +5194,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2d8202a1-fa5f-4d07-a538-b236e35722c1',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7c954734-8f7c-4fe6-bad9-ecafa12e66c8',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5131,8 +5211,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'f1894de5-9706-4bfb-ad1d-a80dc96f2f37',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0b7f5ce1-67d4-4c42-b3a0-11c13b0ba853',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5148,8 +5228,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '1dfe4284-21f5-491d-9ee8-07ebe378d5c2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd8fef288-9183-4cfb-a2d5-325836cf54b8',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'fire_alarm_location',
     'safety',
     'Fire Alarm',
@@ -5165,8 +5245,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '5443e78a-8b49-40d6-a741-27ab268b15ee',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'f443bacf-9f44-4267-92e1-467b8f01a437',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5182,8 +5262,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'd1ea6509-8467-402e-a525-424684c69215',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '57879c51-dc51-440b-b4cc-0efd070e3244',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5199,8 +5279,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9ee0559b-cc8f-497b-a370-ab0c16e6b2ab',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '706c5109-e951-446c-9c82-6bea3ee8670f',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5216,8 +5296,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7db35403-a927-4a03-ad31-f601a8812467',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '67728bb0-2c2a-4110-b1e9-a3b971152101',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5233,8 +5313,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '1f668813-033f-4447-9e0e-7c05daa06a68',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'b718060a-da6a-4d22-884b-249201c56f43',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5250,8 +5330,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7bcc29c4-6d81-4dc2-8c5d-b6e000348303',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a1b7de16-8936-4c41-b4d9-46efe4f3959c',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5267,8 +5347,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '34d9fa6f-e923-4d61-ad28-7c166afe1851',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7acb3cda-e66d-457f-9b68-8c3c638f218e',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5284,8 +5364,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'fad579c3-adbd-4f38-8acf-61938da48897',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd152ec1a-2fa0-49fa-96bd-8f9b5f5b1003',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5301,8 +5381,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'a696002e-0322-455f-a767-7c8a27f21349',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'd8181603-440a-4e59-8e9d-cf72b47a6ca3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5318,8 +5398,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9d96c302-8c65-4443-91a8-fa750bd608cd',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7cdf7b95-bf82-459b-8440-eda44817bbe7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5335,8 +5415,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e134a9a4-7c4a-402d-99df-e7cf75f3b787',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'db04438a-d1c3-44e4-94c8-cd6212464b88',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5352,8 +5432,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e229f67d-c38c-4f1d-9653-59d43973f0ce',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '3c006f28-9fbf-49aa-8796-ae52c5b2718b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5369,8 +5449,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '25ea9859-182c-45a3-a0b6-263c539855a2',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'a1a7d651-7287-44ac-8103-9f44477350f4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5386,8 +5466,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '55aa4f13-672b-421f-928c-7434795faf7a',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '178bcfcb-cd17-4789-abb9-cd86e4304b43',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5403,8 +5483,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '45aa5348-6050-48a1-b7f7-5533e15484e7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '39668165-6f7f-44df-a706-94392a31a283',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5420,8 +5500,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '0ab0e6a5-e0d5-4a94-a477-6de0ef67a4f3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '02f14238-3995-4102-9d37-705dde6ba02b',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5437,8 +5517,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '52de5306-6641-4d34-95ee-43c79f03534e',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'ba26dad7-05fa-42bd-ad7e-b87ceaf115f1',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5454,8 +5534,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '4a7e1797-437b-403e-8e79-eb37390a6fb7',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '11d8d2bc-dc3f-462c-85f2-96c21d77ca22',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5471,8 +5551,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '38ceb97b-c8c2-41c5-a518-15a07cd59654',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'da460990-5c87-4cba-a622-82846370eec7',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5488,8 +5568,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '764b5ac5-2c5a-4405-bd61-1e1513c58f44',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '6ccd089a-98ce-4cda-b188-0da599680ee5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5505,8 +5585,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'b66168de-f9c2-433d-b787-86496602ec72',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '9310373a-feed-40dd-a725-d58ac5af983d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5522,8 +5602,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '19514c95-776a-4846-b755-7e74568d7633',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '08a70074-94b8-479b-9d32-9d6fde6ef5d3',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'cctv_location',
     'safety',
     'CCTV',
@@ -5539,8 +5619,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'ee98fa32-5c74-405b-9ae9-1506da2e83ad',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '0a042767-c64c-4fe4-ad0b-a53e6d63a673',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'gas_meter_location',
     'utilities',
     'Gas Meter',
@@ -5556,8 +5636,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'efe3f76d-7424-4cf9-ae1f-ddd79cf0cdb4',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '398d234e-53ed-4532-a984-bc175fbcf2c5',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5573,8 +5653,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '7d3bb6e7-319e-42b8-a6ca-f31e7f9589c1',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '5c424fe2-daf6-4458-9e80-b3836c960a5d',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5590,8 +5670,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '09f47883-d5b7-43ee-8e8c-53c00f625fbf',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '7dc3d81a-3488-4e71-b16a-466b296cc7f8',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5607,8 +5687,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '74a1b972-904f-411e-a084-3521054ab05b',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    'e97e8eb8-7278-4163-83a4-5bced71c88cc',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5624,8 +5704,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '2d20b87e-acd0-42c8-90dd-de20677fbedb',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '4b5b6fbb-83fc-4fd3-92e7-d883fb051e95',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5641,8 +5721,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '3df28034-f586-400b-a0e3-3f361fa74aeb',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '1b24be07-f68c-4eb3-bea5-17f7bae0b17f',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5658,8 +5738,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'be69bc15-5865-4382-882c-16e6cdcc40e3',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '999f4c07-a9a2-466e-b284-d148cc31e1b4',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5675,8 +5755,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    'e58930ed-5adb-4239-8bc9-b132ff1e23c5',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '43d11f88-1d96-4972-a150-a8ce8272062f',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5692,8 +5772,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '243d7514-98e6-474c-a03e-be20963e8e17',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '23e09a3a-7250-4722-a58e-9064c89f68d8',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',
@@ -5709,8 +5789,8 @@ INSERT INTO building_keys_access (
     id, building_id, access_type, category, label, code, location, description, visibility
 )
 VALUES (
-    '9be30925-f1df-4dee-b09f-b9f736cc3098',
-    '40ac4afd-5ddd-4654-9eb7-3984aa510dd8',
+    '33c547dd-db7a-41cc-a60d-b33221504149',
+    'e44d99d4-556d-4644-9e08-4bc01a4bf90e',
     'boiler_location',
     'utilities',
     'Boiler',

@@ -12,8 +12,8 @@ from typing import Dict, List, Optional, Tuple
 import uuid
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables - override shell vars with .env values
+load_dotenv(override=True)
 
 
 class LeaseExtractor:
