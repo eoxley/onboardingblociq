@@ -375,6 +375,152 @@ class BuildingHealthCheckReport:
         story.append(compliance_table)
         story.append(PageBreak())
 
+    def _draw_lease_summary(self, story: List):
+        """Page 3b: Comprehensive Lease Analysis (28 Index Points)"""
+        story.append(Paragraph("📄 Lease Analysis", self.styles['SectionHeading']))
+        story.append(Spacer(1, 0.2*inch))
+
+        # Get lease data from building_data
+        leases = self.building_data.get('leases', [])
+        lease_summaries = self.building_data.get('lease_summaries', [])
+
+        if not leases and not lease_summaries:
+            story.append(Paragraph(
+                "No lease data extracted. Run comprehensive lease extraction to populate this section.",
+                self.styles['Normal']
+            ))
+            story.append(PageBreak())
+            return
+
+        # Building-level lease overview table
+        story.append(Paragraph("Lease Overview", self.styles['Heading3']))
+        story.append(Spacer(1, 0.1*inch))
+
+        lease_table_data = [['Unit', 'Term', 'Ground Rent', 'SC Year', 'Restrictions']]
+
+        for summary in lease_summaries:
+            lease_table_data.append([
+                summary.get('unit', 'Unknown'),
+                summary.get('term', 'N/A'),
+                summary.get('ground_rent', 'N/A'),
+                summary.get('sc_year', 'N/A'),
+                summary.get('restrictions', 'None')[:30] + '...' if len(summary.get('restrictions', '')) > 30 else summary.get('restrictions', 'None')
+            ])
+
+        if len(lease_table_data) > 1:
+            lease_table = Table(lease_table_data, colWidths=[1.2*inch, 1.6*inch, 1*inch, 0.9*inch, 1.5*inch])
+            lease_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), BLOCIQ_PURPLE),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+                ('ALIGN', (4, 1), (4, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                ('GRID', (0, 0), (-1, -1), 1, COLOR_GREY),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
+            story.append(lease_table)
+            story.append(Spacer(1, 0.3*inch))
+
+        # Detailed lease summaries (one per lease, up to 3 on this page)
+        for idx, lease in enumerate(leases[:3]):
+            if idx > 0:
+                story.append(Spacer(1, 0.2*inch))
+
+            # Get associated data
+            lease_id = lease.get('id')
+            financial_terms = next((f for f in self.building_data.get('lease_financial_terms', []) if f.get('lease_id') == lease_id), {})
+            insurance_terms = next((i for i in self.building_data.get('lease_insurance_terms', []) if i.get('lease_id') == lease_id), {})
+            restrictions = [r for r in self.building_data.get('lease_restrictions', []) if r.get('lease_id') == lease_id]
+            covenants = [c for c in self.building_data.get('lease_covenants', []) if c.get('lease_id') == lease_id]
+
+            # Unit header
+            unit_name = lease.get('property_address', 'Unknown Unit')
+            story.append(Paragraph(f"<b>{unit_name}</b>", self.styles['Heading4']))
+            story.append(Spacer(1, 0.05*inch))
+
+            # Lease Term
+            term_start = lease.get('term_start', 'Unknown')
+            term_years = lease.get('term_years', 0)
+            expiry_date = lease.get('expiry_date', 'Unknown')
+            story.append(Paragraph(
+                f"<b>Lease Term:</b> Commenced {term_start}, {term_years} years (expires {expiry_date})",
+                self.styles['Normal']
+            ))
+
+            # Financial Terms
+            if financial_terms:
+                ground_rent = financial_terms.get('ground_rent', 0)
+                gr_freq = financial_terms.get('ground_rent_frequency', 'annual')
+                story.append(Paragraph(
+                    f"<b>Ground Rent:</b> £{ground_rent} {gr_freq}",
+                    self.styles['Normal']
+                ))
+
+                if financial_terms.get('service_charge_year_start'):
+                    sc_start = financial_terms.get('service_charge_year_start')
+                    sc_end = financial_terms.get('service_charge_year_end')
+                    story.append(Paragraph(
+                        f"<b>Service Charge Year:</b> {sc_start} to {sc_end}",
+                        self.styles['Normal']
+                    ))
+
+                if financial_terms.get('internal_apportionment_percentage'):
+                    internal_pct = financial_terms.get('internal_apportionment_percentage')
+                    story.append(Paragraph(
+                        f"<b>Internal Apportionment:</b> {internal_pct}%",
+                        self.styles['Normal']
+                    ))
+
+            # Insurance
+            if insurance_terms:
+                if insurance_terms.get('landlord_insures'):
+                    contribution = insurance_terms.get('tenant_contribution_method', 'via service charge')
+                    story.append(Paragraph(
+                        f"<b>Insurance:</b> Landlord insures building; Tenant contributes {contribution}",
+                        self.styles['Normal']
+                    ))
+
+            # Key Restrictions
+            if restrictions:
+                restriction_texts = []
+                for r in restrictions[:5]:  # Show up to 5 restrictions
+                    if r.get('pets_permitted') is False:
+                        restriction_texts.append('No pets')
+                    if r.get('subletting_permitted') is False:
+                        restriction_texts.append('No subletting')
+                    if r.get('short_lets_permitted') is False:
+                        restriction_texts.append('No short lets')
+
+                if restriction_texts:
+                    story.append(Paragraph(
+                        f"<b>Restrictions:</b> {', '.join(restriction_texts)}",
+                        self.styles['Normal']
+                    ))
+
+            # Key Covenants
+            if covenants:
+                covenant_summaries = [c.get('covenant_summary', '') for c in covenants[:3]]
+                if covenant_summaries:
+                    story.append(Paragraph(
+                        f"<b>Key Covenants:</b> {'; '.join(covenant_summaries)}",
+                        self.styles['Normal']
+                    ))
+
+        # Note if more leases exist
+        if len(leases) > 3:
+            story.append(Spacer(1, 0.2*inch))
+            story.append(Paragraph(
+                f"<i>+ {len(leases) - 3} additional lease(s) - view full data in BlocIQ platform</i>",
+                self.styles['SmallText']
+            ))
+
+        story.append(PageBreak())
+
     def _draw_insurance_contractors(self, story: List):
         """Page 4: Insurance & Contractors"""
         story.append(Paragraph("Insurance & Contractors", self.styles['SectionHeading']))
@@ -722,6 +868,7 @@ class BuildingHealthCheckReport:
         self._draw_cover_page(story)
         self._draw_executive_summary(story)
         self._draw_compliance_summary(story)
+        self._draw_lease_summary(story)  # NEW: Comprehensive lease analysis
         self._draw_insurance_contractors(story)
         self._draw_major_works_budget(story)
         self._draw_actions_recommendations(story)
