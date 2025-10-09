@@ -1300,6 +1300,7 @@ class BlocIQOnboarder:
     def _extract_lease_data(self):
         """Extract lease information from documents using OCR"""
         from lease_extractor import LeaseExtractor
+        from comprehensive_lease_extractor import ComprehensiveLeaseExtractor
 
         # Initialize lease extractor
         extractor = LeaseExtractor(
@@ -1310,8 +1311,82 @@ class BlocIQOnboarder:
         # Extract all lease data
         results = extractor.extract_all()
 
-        # Add to mapped_data
+        # Add basic leases to mapped_data
         self.mapped_data['leases'] = results['leases']
+
+        # Now extract comprehensive lease data for each lease with OCR text
+        comprehensive_data = {
+            'document_texts': [],
+            'lease_parties': [],
+            'lease_demise': [],
+            'lease_financial_terms': [],
+            'lease_insurance_terms': [],
+            'lease_covenants': [],
+            'lease_restrictions': [],
+            'lease_rights': [],
+            'lease_enforcement': [],
+            'lease_clauses': []
+        }
+
+        # Extract comprehensive data from each lease
+        for lease in results['leases']:
+            if lease.get('ocr_text'):
+                try:
+                    comp_extractor = ComprehensiveLeaseExtractor(
+                        lease_text=lease['ocr_text'],
+                        lease_id=lease.get('id'),
+                        unit_id=lease.get('unit_id')
+                    )
+                    comp_result = comp_extractor.extract_comprehensive_lease()
+
+                    # Add document_texts entry
+                    if comp_result.get('document_text'):
+                        comprehensive_data['document_texts'].append(comp_result['document_text'])
+
+                    # Add parties
+                    if comp_result.get('parties'):
+                        comprehensive_data['lease_parties'].extend(comp_result['parties'])
+
+                    # Add demise
+                    if comp_result.get('demise'):
+                        comprehensive_data['lease_demise'].append(comp_result['demise'])
+
+                    # Add financial terms
+                    if comp_result.get('financial_terms'):
+                        comprehensive_data['lease_financial_terms'].append(comp_result['financial_terms'])
+
+                    # Add insurance terms
+                    if comp_result.get('insurance_terms'):
+                        comprehensive_data['lease_insurance_terms'].append(comp_result['insurance_terms'])
+
+                    # Add covenants
+                    if comp_result.get('covenants'):
+                        comprehensive_data['lease_covenants'].extend(comp_result['covenants'])
+
+                    # Add restrictions
+                    if comp_result.get('restrictions'):
+                        comprehensive_data['lease_restrictions'].extend(comp_result['restrictions'])
+
+                    # Add rights
+                    if comp_result.get('rights'):
+                        comprehensive_data['lease_rights'].extend(comp_result['rights'])
+
+                    # Add enforcement
+                    if comp_result.get('enforcement'):
+                        comprehensive_data['lease_enforcement'].extend(comp_result['enforcement'])
+
+                    # Add clause references
+                    if comp_result.get('clause_references'):
+                        comprehensive_data['lease_clauses'].extend(comp_result['clause_references'])
+
+                except Exception as e:
+                    print(f"     ⚠️  Comprehensive extraction failed for lease {lease.get('id')}: {str(e)}")
+
+        # Add comprehensive data to mapped_data (only if we have data)
+        for key, value in comprehensive_data.items():
+            if value:  # Only add if not empty
+                self.mapped_data[key] = value
+                print(f"     ✅ Extracted {len(value)} {key} records")
 
         # Convert errors to timeline events
         if results['errors']:

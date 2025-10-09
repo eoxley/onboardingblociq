@@ -185,7 +185,8 @@ class LeaseExtractor:
                 'rent_review_period': rent_review_period,
                 'leaseholder_name': leaseholder_name,
                 'lessor_name': lessor_name,
-                'source_document': file_name
+                'source_document': file_name,
+                'ocr_text': text_content  # Store full text for comprehensive extraction
             }
 
             # Calculate expiry date if we have start date and term
