@@ -830,6 +830,19 @@ class SQLWriter:
             if v is not None or k in table_required
         }
 
+        # CRITICAL: Ensure NOT NULL columns always have values
+        if table == 'budgets':
+            # Budget period is NOT NULL - ensure it's always set
+            if 'period' not in filtered_data or not filtered_data.get('period'):
+                # Try to infer from other fields
+                if filtered_data.get('year'):
+                    filtered_data['period'] = str(filtered_data['year'])
+                elif filtered_data.get('year_start'):
+                    year_str = str(filtered_data['year_start'])[:4]
+                    filtered_data['period'] = year_str
+                else:
+                    filtered_data['period'] = 'Unknown'
+
         if table == 'compliance_assets':
             print(f"  Filtered data: {filtered_data}")
             print()
