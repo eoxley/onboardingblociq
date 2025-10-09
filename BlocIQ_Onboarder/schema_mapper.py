@@ -428,10 +428,11 @@ class SupabaseSchemaMapper:
         if filename:
             # FALSE POSITIVE PREVENTION: Check finance keywords FIRST to prevent misclassification
             # "Accounts.xlsx" should NOT be classified as compliance even if it contains "fra" substring
+            # Maps to Supabase CHECK constraint: compliance, leases, insurance, major_works, minutes, other
             finance_keywords = ['budget', 'account', 'invoice', 'apportionment',
                                'demand', 'service charge', 'finance', 'year end', 'ye']
             if any(kw in filename_lower for kw in finance_keywords):
-                return 'finance'
+                return 'other'  # finance → other (CHECK constraint)
 
             # Compliance keywords - STRICT matching to prevent false positives
             # Only match if file explicitly contains compliance-specific terms
@@ -440,7 +441,6 @@ class SupabaseSchemaMapper:
                 'fire risk assessment', 'fire risk', 'fra ',  # Note: "fra " with space to avoid "FRAming"
                 'fire door inspection', 'fire door',
                 'legionella risk', 'legionella assessment', 'legionella',
-                'insurance certificate', 'insurance policy', 'building insurance',
                 'pat test', 'portable appliance',
                 'gas safety certificate', 'gas safety',
                 'emergency light', 'emergency lighting',
@@ -450,6 +450,11 @@ class SupabaseSchemaMapper:
             if any(kw in filename_lower for kw in compliance_keywords):
                 return 'compliance'
 
+            # Insurance keywords
+            insurance_keywords = {'insurance certificate', 'insurance policy', 'building insurance'}
+            if any(kw in filename_lower for kw in insurance_keywords):
+                return 'insurance'
+
             # Major works keywords
             elif any(kw in filename_lower for kw in ['section 20', 's20', 'noi', 'soe', 'statement of estimate',
                                                        'notice of intention', 'major works', 'contractor quote']):
@@ -457,27 +462,29 @@ class SupabaseSchemaMapper:
 
             # Lease keywords
             elif any(kw in filename_lower for kw in ['lease', 'deed', 'covenant', 'lpe1', 'official copy']):
-                return 'lease'
+                return 'leases'  # lease → leases (plural, CHECK constraint)
 
             # Contract keywords
             elif any(kw in filename_lower for kw in ['contract', 'agreement', 'proposal', 'quotation', 'quote']):
-                return 'contracts'
+                return 'other'  # contracts → other (CHECK constraint)
 
             # Correspondence keywords
             elif any(kw in filename_lower for kw in ['letter', 'memo', 'notice', 'correspondence']):
-                return 'correspondence'
+                return 'other'  # correspondence → other (CHECK constraint)
 
         # PRIORITY 2: Classifier category mapping
+        # Maps to Supabase CHECK constraint: compliance, leases, insurance, major_works, minutes, other
         category_map = {
             'compliance': 'compliance',
-            'budgets': 'finance',
-            'apportionments': 'finance',
+            'budgets': 'other',  # finance → other (CHECK constraint)
+            'apportionments': 'other',  # finance → other (CHECK constraint)
             'major_works': 'major_works',
-            'units_leaseholders': 'lease',
-            'contracts': 'contracts',
-            'insurance': 'compliance',
-            'correspondence': 'correspondence',
-            'uncategorized': 'uncategorised'
+            'units_leaseholders': 'leases',  # lease → leases (plural, CHECK constraint)
+            'contracts': 'other',  # contracts → other (CHECK constraint)
+            'insurance': 'insurance',
+            'correspondence': 'other',  # correspondence → other (CHECK constraint)
+            'uncategorized': 'other',  # uncategorised → other (CHECK constraint)
+            'uncategorised': 'other'  # Alternative spelling
         }
 
         # Direct mapping
@@ -485,20 +492,21 @@ class SupabaseSchemaMapper:
             return category_map[raw_lower]
 
         # PRIORITY 3: Fuzzy matching on category name
+        # Maps to Supabase CHECK constraint: compliance, leases, insurance, major_works, minutes, other
         if 'compliance' in raw_lower or 'eicr' in raw_lower or 'fra' in raw_lower:
             return 'compliance'
         elif 'budget' in raw_lower or 'finance' in raw_lower or 'apport' in raw_lower:
-            return 'finance'
+            return 'other'  # finance → other
         elif 'major' in raw_lower or 'works' in raw_lower or 'section' in raw_lower:
             return 'major_works'
         elif 'lease' in raw_lower or 'leaseholder' in raw_lower:
-            return 'lease'
+            return 'leases'  # lease → leases (plural)
         elif 'contract' in raw_lower:
-            return 'contracts'
+            return 'other'  # contracts → other
         elif 'letter' in raw_lower or 'correspondence' in raw_lower:
-            return 'correspondence'
+            return 'other'  # correspondence → other
 
-        return 'uncategorised'
+        return 'other'  # uncategorised → other
 
     def map_building(self, property_form_data: Dict, leaseholder_data: Dict = None) -> Dict:
         """

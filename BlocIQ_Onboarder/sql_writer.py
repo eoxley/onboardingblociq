@@ -6,6 +6,7 @@ Generates Supabase-ready SQL migration scripts with exact schema compliance
 from typing import Dict, List, Any
 import json
 from schema_mapper import SupabaseSchemaMapper
+from schema_validator import SchemaValidator
 
 
 class SQLWriter:
@@ -14,6 +15,7 @@ class SQLWriter:
     def __init__(self):
         self.sql_statements = []
         self.schema_mapper = SupabaseSchemaMapper()
+        self.schema_validator = SchemaValidator()
         self.agency_id = '11111111-1111-1111-1111-111111111111'  # BlocIQ agency ID
 
     def generate_migration(self, mapped_data: Dict) -> str:
@@ -826,10 +828,19 @@ class SQLWriter:
         Returns:
             SQL INSERT/UPSERT statement
         """
-        # Validate data against schema
+        # First validate with legacy schema mapper (for compatibility)
         validated_data = self.schema_mapper.validate_data(table, data)
 
-        # DEBUG: Print for compliance_assets
+        # Then apply strict schema validation and transformation
+        validated_data = self.schema_validator.validate_and_transform(table, validated_data)
+
+        # DEBUG: Print for major_works_projects and compliance_assets
+        if table == 'major_works_projects':
+            print(f"DEBUG major_works_projects:")
+            print(f"  Original data keys: {list(data.keys())}")
+            print(f"  Validated data keys: {list(validated_data.keys())}")
+            if 'project_name' in data:
+                print(f"  Mapped project_name -> name: {data.get('project_name')}")
         if table == 'compliance_assets':
             print(f"DEBUG compliance_assets:")
             print(f"  Original data: {data}")
