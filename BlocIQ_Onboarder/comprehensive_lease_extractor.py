@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from lease_data_extractor import LeaseDataExtractor
 
 
-class ComprehensiveLease Extractor(LeaseDataExtractor):
+class ComprehensiveLeaseExtractor(LeaseDataExtractor):
     """
     Comprehensive lease extraction covering all 28 index points
     Extends base LeaseDataExtractor with additional fields

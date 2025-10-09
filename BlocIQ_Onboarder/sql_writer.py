@@ -14,7 +14,7 @@ class SQLWriter:
     def __init__(self):
         self.sql_statements = []
         self.schema_mapper = SupabaseSchemaMapper()
-        self.portfolio_id = None  # Will be generated per migration
+        self.agency_id = '11111111-1111-1111-1111-111111111111'  # BlocIQ agency ID
 
     def generate_migration(self, mapped_data: Dict) -> str:
         """
@@ -29,8 +29,8 @@ class SQLWriter:
         import uuid
 
         self.sql_statements = []
-        # Generate unique portfolio ID for this migration
-        self.portfolio_id = str(uuid.uuid4())
+        # Use fixed agency ID for BlocIQ
+        # self.agency_id is set in __init__
 
         # Header (includes agency placeholder)
         self._add_header()
@@ -418,17 +418,8 @@ class SQLWriter:
             "-- DATA MIGRATION: Insert building data",
             "-- =====================================",
             "",
-            "-- Insert agency (required for portfolios foreign key)",
-            "-- NOTE: Replace 'AGENCY_ID_PLACEHOLDER' with your actual agency UUID",
-            "-- and 'Your Agency Name' with your agency name",
-            "INSERT INTO agencies (id, name)",
-            "VALUES ('AGENCY_ID_PLACEHOLDER', 'Your Agency Name')",
-            "ON CONFLICT (id) DO NOTHING;",
-            "",
-            "-- Insert portfolio (linked to agency above)",
-            "INSERT INTO portfolios (id, agency_id, name)",
-            f"VALUES ('{self.portfolio_id}', 'AGENCY_ID_PLACEHOLDER', 'Default Portfolio')",
-            "ON CONFLICT (id) DO NOTHING;",
+            "-- Using BlocIQ agency ID: 11111111-1111-1111-1111-111111111111",
+            "-- Agency already exists in Supabase, no INSERT needed",
             "",
             "BEGIN;",
             ""
@@ -446,14 +437,14 @@ class SQLWriter:
         ])
 
     def _generate_building_insert(self, building: Dict):
-        """Generate INSERT for buildings table with portfolio_id"""
-        # Add portfolio_id to building data
-        building_with_portfolio = building.copy()
-        building_with_portfolio['portfolio_id'] = self.portfolio_id
+        """Generate INSERT for buildings table with agency_id"""
+        # Add agency_id to building data
+        building_with_agency = building.copy()
+        building_with_agency['agency_id'] = self.agency_id
 
         self.sql_statements.append("-- Insert building")
         self.sql_statements.append(
-            self._create_insert_statement('buildings', building_with_portfolio, use_upsert=False)
+            self._create_insert_statement('buildings', building_with_agency, use_upsert=False)
         )
         self.sql_statements.append("")
 
