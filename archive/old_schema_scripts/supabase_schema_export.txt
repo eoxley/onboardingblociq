@@ -1,0 +1,287 @@
+      table_name      |         column_name         |        data_type         | is_nullable |        column_default        
+----------------------+-----------------------------+--------------------------+-------------+------------------------------
+ apportionments       | id                          | uuid                     | NO          | gen_random_uuid()
+ apportionments       | building_id                 | uuid                     | NO          | 
+ apportionments       | unit_number                 | text                     | YES         | 
+ apportionments       | percentage                  | numeric                  | YES         | 
+ apportionments       | share_fraction              | text                     | YES         | 
+ apportionments       | notes                       | text                     | YES         | 
+ apportionments       | created_at                  | timestamp with time zone | YES         | now()
+ apportionments       | updated_at                  | timestamp with time zone | YES         | now()
+ budgets              | id                          | uuid                     | NO          | uuid_generate_v4()
+ budgets              | building_id                 | uuid                     | YES         | 
+ budgets              | document_id                 | uuid                     | YES         | 
+ budgets              | period                      | text                     | NO          | 
+ budgets              | start_date                  | date                     | YES         | 
+ budgets              | end_date                    | date                     | YES         | 
+ budgets              | total_amount                | numeric                  | YES         | 
+ budgets              | demand_date_1               | date                     | YES         | 
+ budgets              | demand_date_2               | date                     | YES         | 
+ budgets              | year_end_date               | date                     | YES         | 
+ budgets              | budget_type                 | text                     | YES         | 
+ budgets              | agency_id                   | uuid                     | YES         | 
+ budgets              | schedule_id                 | uuid                     | YES         | 
+ budgets              | year                        | integer                  | YES         | 
+ budgets              | name                        | text                     | YES         | 
+ budgets              | confidence_score            | numeric                  | YES         | 1.00
+ budgets              | created_at                  | timestamp with time zone | YES         | now()
+ budgets              | year_start                  | date                     | YES         | 
+ budgets              | year_end                    | date                     | YES         | 
+ building_contractors | id                          | uuid                     | NO          | gen_random_uuid()
+ building_contractors | building_id                 | uuid                     | NO          | 
+ building_contractors | service_type                | text                     | YES         | 
+ building_contractors | company_name                | text                     | YES         | 
+ building_contractors | contact_name                | text                     | YES         | 
+ building_contractors | contact_email               | text                     | YES         | 
+ building_contractors | contact_phone               | text                     | YES         | 
+ building_contractors | contract_start_date         | date                     | YES         | 
+ building_contractors | contract_end_date           | date                     | YES         | 
+ building_contractors | contract_value              | numeric                  | YES         | 
+ building_contractors | status                      | text                     | YES         | 'active'::text
+ building_contractors | notes                       | text                     | YES         | 
+ building_contractors | created_at                  | timestamp with time zone | YES         | now()
+ building_contractors | updated_at                  | timestamp with time zone | YES         | now()
+ building_contractors | retender_status             | text                     | YES         | 'not_scheduled'::text
+ building_contractors | retender_due_date           | date                     | YES         | 
+ building_contractors | next_review_date            | date                     | YES         | 
+ building_contractors | renewal_notice_period       | interval                 | YES         | '90 days'::interval
+ building_documents   | id                          | uuid                     | NO          | gen_random_uuid()
+ building_documents   | building_id                 | uuid                     | YES         | 
+ building_documents   | unit_id                     | uuid                     | YES         | 
+ building_documents   | leaseholder_id              | uuid                     | YES         | 
+ building_documents   | file_name                   | text                     | YES         | 
+ building_documents   | file_url                    | text                     | YES         | 
+ building_documents   | type                        | text                     | YES         | 'Letter'::text
+ building_documents   | created_at                  | timestamp with time zone | YES         | now()
+ building_documents   | confidence                  | text                     | YES         | 
+ building_documents   | suggested_action            | text                     | YES         | 
+ building_documents   | auto_linked_building_id     | uuid                     | YES         | 
+ building_documents   | full_text                   | text                     | YES         | 
+ building_documents   | content_summary             | text                     | YES         | 
+ building_documents   | confidence_level            | text                     | YES         | 
+ building_documents   | updated_at                  | timestamp with time zone | YES         | now()
+ building_documents   | is_unlinked                 | boolean                  | YES         | false
+ building_documents   | summary                     | text                     | YES         | 
+ building_documents   | extracted                   | jsonb                    | YES         | '{}'::jsonb
+ building_documents   | name                        | text                     | YES         | 
+ building_documents   | category                    | text                     | NO          | 'other'::text
+ building_documents   | file_path                   | text                     | YES         | 
+ building_documents   | file_size                   | bigint                   | NO          | 0
+ building_documents   | uploaded_at                 | timestamp with time zone | NO          | now()
+ building_documents   | uploaded_by                 | text                     | NO          | 'Unknown'::text
+ building_documents   | ocr_status                  | text                     | NO          | 'pending'::text
+ building_documents   | ocr_text                    | text                     | YES         | 
+ building_documents   | metadata                    | jsonb                    | YES         | 
+ building_documents   | file_type                   | character varying        | YES         | 
+ building_documents   | storage_path                | text                     | YES         | 
+ building_insurance   | id                          | uuid                     | NO          | gen_random_uuid()
+ building_insurance   | building_id                 | uuid                     | NO          | 
+ building_insurance   | insurance_type              | text                     | NO          | 
+ building_insurance   | broker_name                 | text                     | YES         | 
+ building_insurance   | insurer_name                | text                     | YES         | 
+ building_insurance   | policy_number               | text                     | YES         | 
+ building_insurance   | renewal_date                | date                     | YES         | 
+ building_insurance   | coverage_amount             | numeric                  | YES         | 
+ building_insurance   | premium_amount              | numeric                  | YES         | 
+ building_insurance   | document_id                 | uuid                     | YES         | 
+ building_insurance   | notes                       | text                     | YES         | 
+ building_insurance   | created_at                  | timestamp with time zone | YES         | now()
+ building_insurance   | expiry_date                 | date                     | YES         | 
+ building_keys_access | id                          | uuid                     | NO          | gen_random_uuid()
+ building_keys_access | building_id                 | uuid                     | NO          | 
+ building_keys_access | key_holder_name             | text                     | YES         | 
+ building_keys_access | key_type                    | text                     | YES         | 
+ building_keys_access | key_number                  | text                     | YES         | 
+ building_keys_access | access_level                | text                     | YES         | 
+ building_keys_access | issued_date                 | date                     | YES         | 
+ building_keys_access | notes                       | text                     | YES         | 
+ building_keys_access | created_at                  | timestamp with time zone | YES         | now()
+ building_keys_access | updated_at                  | timestamp with time zone | YES         | now()
+ building_keys_access | category                    | text                     | YES         | 
+ building_keys_access | label                       | text                     | YES         | 
+ building_keys_access | visibility                  | text                     | YES         | 'team'::text
+ building_keys_access | access_type                 | text                     | YES         | 
+ building_keys_access | code                        | text                     | YES         | 
+ building_keys_access | location                    | text                     | YES         | 
+ building_keys_access | description                 | text                     | YES         | 
+ building_staff       | id                          | uuid                     | NO          | gen_random_uuid()
+ building_staff       | building_id                 | uuid                     | NO          | 
+ building_staff       | staff_type                  | text                     | YES         | 
+ building_staff       | description                 | text                     | YES         | 
+ building_staff       | employee_name               | text                     | YES         | 
+ building_staff       | position                    | text                     | YES         | 
+ building_staff       | start_date                  | date                     | YES         | 
+ building_staff       | end_date                    | date                     | YES         | 
+ building_staff       | document_id                 | uuid                     | YES         | 
+ building_staff       | notes                       | text                     | YES         | 
+ building_staff       | created_at                  | timestamp with time zone | YES         | now()
+ buildings            | id                          | uuid                     | NO          | gen_random_uuid()
+ buildings            | name                        | character varying        | NO          | 
+ buildings            | address                     | text                     | YES         | 
+ buildings            | unit_count                  | integer                  | YES         | 
+ buildings            | access_notes                | text                     | YES         | 
+ buildings            | sites_staff                 | text                     | YES         | 
+ buildings            | parking_info                | text                     | YES         | 
+ buildings            | council_borough             | character varying        | YES         | 
+ buildings            | building_manager_name       | character varying        | YES         | 
+ buildings            | building_manager_email      | character varying        | YES         | 
+ buildings            | building_manager_phone      | character varying        | YES         | 
+ buildings            | emergency_contact_name      | character varying        | YES         | 
+ buildings            | emergency_contact_phone     | character varying        | YES         | 
+ buildings            | building_age                | character varying        | YES         | 
+ buildings            | construction_type           | character varying        | YES         | 
+ buildings            | total_floors                | character varying        | YES         | 
+ buildings            | lift_available              | character varying        | YES         | 
+ buildings            | heating_type                | character varying        | YES         | 
+ buildings            | hot_water_type              | character varying        | YES         | 
+ buildings            | waste_collection_day        | character varying        | YES         | 
+ buildings            | recycling_info              | text                     | YES         | 
+ buildings            | building_insurance_provider | character varying        | YES         | 
+ buildings            | building_insurance_expiry   | date                     | YES         | 
+ buildings            | fire_safety_status          | character varying        | YES         | 
+ buildings            | asbestos_status             | character varying        | YES         | 
+ buildings            | energy_rating               | character varying        | YES         | 
+ buildings            | service_charge_frequency    | character varying        | YES         | 
+ buildings            | ground_rent_amount          | numeric                  | YES         | 
+ buildings            | ground_rent_frequency       | character varying        | YES         | 
+ buildings            | created_at                  | timestamp with time zone | YES         | now()
+ buildings            | updated_at                  | timestamp with time zone | YES         | now()
+ buildings            | notes                       | text                     | YES         | 
+ buildings            | key_access_notes            | text                     | YES         | 
+ buildings            | entry_code                  | character varying        | YES         | 
+ buildings            | fire_panel_location         | character varying        | YES         | 
+ buildings            | is_hrb                      | boolean                  | YES         | false
+ buildings            | agency_id                   | uuid                     | YES         | 
+ buildings            | building_type               | character varying        | YES         | 
+ buildings            | created_by                  | uuid                     | YES         | 
+ buildings            | structure_type              | character varying        | YES         | 
+ buildings            | client_type                 | character varying        | YES         | 
+ buildings            | client_name                 | character varying        | YES         | 
+ buildings            | client_contact              | character varying        | YES         | 
+ buildings            | client_email                | character varying        | YES         | 
+ buildings            | operational_notes           | text                     | YES         | 
+ compliance_assets    | id                          | uuid                     | NO          | gen_random_uuid()
+ compliance_assets    | building_id                 | uuid                     | YES         | 
+ compliance_assets    | user_id                     | uuid                     | YES         | 
+ compliance_assets    | asset_name                  | character varying        | NO          | 
+ compliance_assets    | asset_type                  | character varying        | NO          | 
+ compliance_assets    | category                    | character varying        | YES         | 
+ compliance_assets    | description                 | text                     | YES         | 
+ compliance_assets    | is_required                 | boolean                  | YES         | false
+ compliance_assets    | is_active                   | boolean                  | YES         | true
+ compliance_assets    | inspection_frequency        | character varying        | NO          | 
+ compliance_assets    | frequency_months            | integer                  | YES         | 
+ compliance_assets    | status                      | character varying        | YES         | 'pending'::character varying
+ compliance_assets    | last_inspection_date        | date                     | YES         | 
+ compliance_assets    | next_due_date               | date                     | YES         | 
+ compliance_assets    | certificate_expiry          | date                     | YES         | 
+ compliance_assets    | inspector_name              | character varying        | YES         | 
+ compliance_assets    | inspector_company           | character varying        | YES         | 
+ compliance_assets    | inspector_contact           | character varying        | YES         | 
+ compliance_assets    | certificate_url             | text                     | YES         | 
+ compliance_assets    | notes                       | text                     | YES         | 
+ compliance_assets    | compliance_reference        | character varying        | YES         | 
+ compliance_assets    | custom_asset                | boolean                  | YES         | false
+ compliance_assets    | created_at                  | timestamp with time zone | YES         | now()
+ compliance_assets    | updated_at                  | timestamp with time zone | YES         | now()
+ compliance_assets    | compliance_status           | character varying        | YES         | 'unknown'::character varying
+ compliance_assets    | location                    | character varying        | YES         | 
+ compliance_assets    | responsible_party           | character varying        | YES         | 
+ leaseholders         | id                          | uuid                     | NO          | gen_random_uuid()
+ leaseholders         | unit_id                     | uuid                     | YES         | 
+ leaseholders         | name                        | character varying        | YES         | 
+ leaseholders         | email                       | character varying        | YES         | 
+ leaseholders         | phone                       | character varying        | YES         | 
+ leaseholders         | created_at                  | timestamp with time zone | YES         | now()
+ leaseholders         | full_name                   | text                     | YES         | 
+ leaseholders         | phone_number                | text                     | YES         | 
+ leaseholders         | correspondence_address      | text                     | YES         | 
+ leaseholders         | is_director                 | boolean                  | YES         | false
+ leaseholders         | director_since              | date                     | YES         | 
+ leaseholders         | director_notes              | text                     | YES         | 
+ leaseholders         | updated_at                  | timestamp with time zone | YES         | now()
+ leaseholders         | building_id                 | uuid                     | YES         | 
+ leaseholders         | unit_number                 | character varying        | YES         | 
+ leases               | id                          | uuid                     | NO          | gen_random_uuid()
+ leases               | building_id                 | uuid                     | NO          | 
+ leases               | unit_number                 | text                     | NO          | 
+ leases               | leaseholder_name            | text                     | NO          | 
+ leases               | start_date                  | date                     | NO          | 
+ leases               | end_date                    | date                     | NO          | 
+ leases               | status                      | text                     | YES         | 'active'::text
+ leases               | ground_rent                 | text                     | NO          | 
+ leases               | service_charge_percentage   | numeric                  | NO          | 
+ leases               | responsibilities            | ARRAY                    | YES         | '{}'::text[]
+ leases               | restrictions                | ARRAY                    | YES         | '{}'::text[]
+ leases               | rights                      | ARRAY                    | YES         | '{}'::text[]
+ leases               | file_path                   | text                     | NO          | 
+ leases               | ocr_text                    | text                     | YES         | 
+ leases               | metadata                    | jsonb                    | YES         | 
+ leases               | created_at                  | timestamp with time zone | YES         | now()
+ leases               | updated_at                  | timestamp with time zone | YES         | now()
+ leases               | unit_id                     | uuid                     | YES         | 
+ leases               | scope                       | text                     | NO          | 'unit'::text
+ leases               | title_number                | text                     | YES         | 
+ leases               | plot_number                 | text                     | YES         | 
+ leases               | deed_date                   | date                     | YES         | 
+ leases               | head_lease_reference        | text                     | YES         | 
+ leases               | is_underlease               | boolean                  | YES         | false
+ leases               | property_address            | text                     | YES         | 
+ leases               | floor_description           | text                     | YES         | 
+ leases               | expiry_date                 | date                     | YES         | 
+ major_works_projects | id                          | uuid                     | NO          | gen_random_uuid()
+ major_works_projects | building_id                 | uuid                     | YES         | 
+ major_works_projects | name                        | text                     | YES         | 
+ major_works_projects | description                 | text                     | YES         | 
+ major_works_projects | status                      | text                     | NO          | 'notice_of_intention'::text
+ major_works_projects | notice_of_intention_date    | date                     | YES         | 
+ major_works_projects | statement_of_estimates_date | date                     | YES         | 
+ major_works_projects | contractor_appointed_date   | date                     | YES         | 
+ major_works_projects | expected_completion_date    | date                     | YES         | 
+ major_works_projects | actual_completion_date      | date                     | YES         | 
+ major_works_projects | estimated_cost              | numeric                  | YES         | 
+ major_works_projects | actual_cost                 | numeric                  | YES         | 
+ major_works_projects | contractor_name             | text                     | YES         | 
+ major_works_projects | contractor_contact          | text                     | YES         | 
+ major_works_projects | notes                       | text                     | YES         | 
+ major_works_projects | created_at                  | timestamp with time zone | YES         | now()
+ major_works_projects | updated_at                  | timestamp with time zone | YES         | now()
+ major_works_projects | title                       | text                     | YES         | 
+ major_works_projects | created_by                  | uuid                     | YES         | 
+ major_works_projects | project_type                | text                     | YES         | 'general'::text
+ major_works_projects | priority                    | text                     | YES         | 'medium'::text
+ major_works_projects | start_date                  | date                     | YES         | 
+ major_works_projects | expected_duration           | integer                  | YES         | 
+ major_works_projects | completion_percentage       | integer                  | YES         | 0
+ major_works_projects | is_active                   | boolean                  | YES         | true
+ major_works_projects | budget_allocated            | numeric                  | YES         | 0
+ major_works_projects | attachments                 | jsonb                    | YES         | '[]'::jsonb
+ major_works_projects | stakeholders                | jsonb                    | YES         | '[]'::jsonb
+ major_works_projects | milestones                  | jsonb                    | YES         | '[]'::jsonb
+ major_works_projects | user_id                     | uuid                     | YES         | 
+ major_works_projects | project_name                | text                     | YES         | 
+ schedules            | id                          | uuid                     | NO          | gen_random_uuid()
+ schedules            | building_id                 | uuid                     | NO          | 
+ schedules            | name                        | text                     | NO          | 
+ schedules            | description                 | text                     | YES         | 
+ schedules            | created_at                  | timestamp with time zone | YES         | now()
+ schedules            | updated_at                  | timestamp with time zone | YES         | now()
+ timeline_events      | id                          | uuid                     | NO          | gen_random_uuid()
+ timeline_events      | building_id                 | uuid                     | YES         | 
+ timeline_events      | event_type                  | text                     | NO          | 
+ timeline_events      | event_date                  | timestamp with time zone | YES         | now()
+ timeline_events      | description                 | text                     | YES         | 
+ timeline_events      | metadata                    | jsonb                    | YES         | 
+ timeline_events      | severity                    | text                     | YES         | 'info'::text
+ timeline_events      | created_at                  | timestamp with time zone | YES         | now()
+ units                | id                          | uuid                     | NO          | gen_random_uuid()
+ units                | building_id                 | uuid                     | YES         | 
+ units                | unit_number                 | character varying        | NO          | 
+ units                | type                        | character varying        | YES         | 
+ units                | floor                       | character varying        | YES         | 
+ units                | leaseholder_email           | character varying        | YES         | 
+ units                | created_at                  | timestamp with time zone | YES         | now()
+ units                | leaseholder_id              | uuid                     | YES         | 
+ units                | apportionment_percent       | numeric                  | YES         | 
+(283 rows)
+

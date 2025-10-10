@@ -1,2274 +1,2274 @@
 [
   {
-    "timestamp": "2025-10-09T17:07:55.542938",
+    "timestamp": "2025-10-09T21:45:26.612869",
     "action": "parse",
     "file": "Connaught Square New property information.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.548434",
+    "timestamp": "2025-10-09T21:45:26.618221",
     "action": "parse",
     "file": "Connaught Square Meeting Minutes 2.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.551914",
+    "timestamp": "2025-10-09T21:45:26.621581",
     "action": "parse",
     "file": "connaught apportionment.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.555217",
+    "timestamp": "2025-10-09T21:45:26.625005",
     "action": "parse",
     "file": "2024 Directors Meeting-Notes.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.558496",
+    "timestamp": "2025-10-09T21:45:26.629234",
     "action": "parse",
     "file": "connaught.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.567386",
+    "timestamp": "2025-10-09T21:45:26.637860",
     "action": "parse",
     "file": "External Decorations SOI - 28042025.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.604178",
+    "timestamp": "2025-10-09T21:45:26.675744",
     "action": "parse",
     "file": "CGBI3964546XB6-Cunaku Construction Ltd-Business-Certificate of insurance.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.628852",
+    "timestamp": "2025-10-09T21:45:26.701281",
     "action": "parse",
     "file": "CGBI3964546XB7-Cunaku Construction Ltd-Business-Certificate of insurance.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.637578",
+    "timestamp": "2025-10-09T21:45:26.710319",
     "action": "parse",
     "file": "External Dec SOE 03072025.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.647198",
+    "timestamp": "2025-10-09T21:45:26.719565",
     "action": "parse",
     "file": "Notice of intention for lift.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.648523",
+    "timestamp": "2025-10-09T21:45:26.720992",
     "action": "parse",
     "file": "matrix - pp.xlsx",
     "success": false,
     "error": "File is not a zip file"
   },
   {
-    "timestamp": "2025-10-09T17:07:55.654907",
+    "timestamp": "2025-10-09T21:45:26.727562",
     "action": "parse",
     "file": "12. Change of Tenancy - EDF supporting document.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.735590",
+    "timestamp": "2025-10-09T21:45:26.809208",
     "action": "parse",
     "file": "Correspondence letter.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.736447",
+    "timestamp": "2025-10-09T21:45:26.810076",
     "action": "parse",
     "file": "tenant list - pp.xlsx",
     "success": false,
     "error": "File is not a zip file"
   },
   {
-    "timestamp": "2025-10-09T17:07:55.781073",
+    "timestamp": "2025-10-09T21:45:26.853509",
     "action": "parse",
     "file": "Fire Door (Communal) Inspection (11m +) (7).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.822115",
+    "timestamp": "2025-10-09T21:45:26.894436",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (13).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.883893",
+    "timestamp": "2025-10-09T21:45:26.958162",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (18).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:55.924410",
+    "timestamp": "2025-10-09T21:45:26.998855",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (14).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:56.007467",
+    "timestamp": "2025-10-09T21:45:27.080763",
     "action": "parse",
     "file": "Real Estate Insurance NTP (01.23).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:07:57.467391",
+    "timestamp": "2025-10-09T21:45:28.606014",
     "action": "parse",
     "file": "EICR Cuanku 32-34 conaught square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:07.014907",
+    "timestamp": "2025-10-09T21:45:37.994285",
     "action": "parse",
     "file": "Real Estate Policy (01.23).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:07.056133",
+    "timestamp": "2025-10-09T21:45:38.438055",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (15).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:07.392490",
+    "timestamp": "2025-10-09T21:45:38.779797",
     "action": "parse",
     "file": "Summary of Cover (01.23).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:10.027082",
+    "timestamp": "2025-10-09T21:45:40.710904",
     "action": "parse",
     "file": "221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:10.110724",
+    "timestamp": "2025-10-09T21:45:40.751816",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (19).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:10.388955",
+    "timestamp": "2025-10-09T21:45:40.852831",
     "action": "parse",
     "file": "001132-3234-Connaught-Square-London.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:12.472489",
+    "timestamp": "2025-10-09T21:45:42.741947",
     "action": "parse",
     "file": "221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:12.556184",
+    "timestamp": "2025-10-09T21:45:42.821815",
     "action": "parse",
     "file": "2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:12.650960",
+    "timestamp": "2025-10-09T21:45:42.912401",
     "action": "parse",
     "file": "2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:14.877024",
+    "timestamp": "2025-10-09T21:45:45.033085",
     "action": "parse",
     "file": "TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:15.026094",
+    "timestamp": "2025-10-09T21:45:45.250126",
     "action": "parse",
     "file": "British Gas Invoice-862451083.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:15.147898",
+    "timestamp": "2025-10-09T21:45:45.291401",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (16).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:15.189445",
+    "timestamp": "2025-10-09T21:45:45.332919",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (17).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:18.159622",
+    "timestamp": "2025-10-09T21:45:48.341696",
     "action": "parse",
     "file": "WHM Legionella Risk Assessment 07.06.22.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:18.620928",
+    "timestamp": "2025-10-09T21:45:48.694373",
     "action": "parse",
     "file": "Important Information .pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:19.056799",
+    "timestamp": "2025-10-09T21:45:49.195526",
     "action": "parse",
     "file": "Report - 32-34 Connaught Square BCH 78350.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:19.117787",
+    "timestamp": "2025-10-09T21:45:49.249812",
     "action": "parse",
     "file": "32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:19.267295",
+    "timestamp": "2025-10-09T21:45:49.348045",
     "action": "parse",
     "file": "32-34 Connaught Sq Buildings Insurance 2023-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:19.401713",
+    "timestamp": "2025-10-09T21:45:49.490458",
     "action": "parse",
     "file": "Policy Limits Document.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:20.957393",
+    "timestamp": "2025-10-09T21:45:50.984128",
     "action": "parse",
     "file": "EICR Report Cunaku SATISFACTORY 2023 .pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:21.032654",
+    "timestamp": "2025-10-09T21:45:51.059531",
     "action": "parse",
     "file": "Official Copy (Lease) 13.06.2003 - NGL823646-Flat 4.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:21.500944",
+    "timestamp": "2025-10-09T21:45:51.495076",
     "action": "parse",
     "file": "ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:21.668533",
+    "timestamp": "2025-10-09T21:45:51.632180",
     "action": "parse",
     "file": "ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:21.790736",
+    "timestamp": "2025-10-09T21:45:51.780469",
     "action": "parse",
     "file": "Letter of Authority - Connaught Square.doc.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:21.910947",
+    "timestamp": "2025-10-09T21:45:51.897581",
     "action": "parse",
     "file": "Letter to report - Connaught Square.doc.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:21.966891",
+    "timestamp": "2025-10-09T21:45:51.968564",
     "action": "parse",
     "file": "Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.021636",
+    "timestamp": "2025-10-09T21:45:52.035677",
     "action": "parse",
     "file": "Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.107003",
+    "timestamp": "2025-10-09T21:45:52.086114",
     "action": "parse",
     "file": "Official Copy (Lease) 13.06.2003 - NGL827422.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.156450",
+    "timestamp": "2025-10-09T21:45:52.158791",
     "action": "parse",
     "file": "Official Copy (Lease) 04.08.2022 - NGL809841.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.162361",
+    "timestamp": "2025-10-09T21:45:52.164254",
     "action": "parse",
     "file": "Connaught Square Meeting Minutes 2.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.166452",
+    "timestamp": "2025-10-09T21:45:52.168057",
     "action": "parse",
     "file": "Connaught Square Meeting Minutes 20241120.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.170847",
+    "timestamp": "2025-10-09T21:45:52.171802",
     "action": "parse",
     "file": "Connaught Square Meeting Minutes.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:22.175511",
+    "timestamp": "2025-10-09T21:45:52.174955",
     "action": "parse",
     "file": "2024 Directors Meeting-Notes.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:25.044369",
+    "timestamp": "2025-10-09T21:45:54.813844",
     "action": "parse",
     "file": "Signed 2025 Connaught Square Management Agreement.docx.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:25.158444",
+    "timestamp": "2025-10-09T21:45:55.018464",
     "action": "parse",
     "file": "Signed April 2025 Arrears Collection Procedure.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:25.224788",
+    "timestamp": "2025-10-09T21:45:55.082430",
     "action": "parse",
     "file": "Connaught Square Management Agreement.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:25.289248",
+    "timestamp": "2025-10-09T21:45:55.149637",
     "action": "parse",
     "file": "2025 Connaught Square Management Agreement.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.115449",
+    "timestamp": "2025-10-09T21:45:57.829198",
     "action": "parse",
     "file": "Signed Connaught Square Management Agreement.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.122157",
+    "timestamp": "2025-10-09T21:45:57.835184",
     "action": "parse",
     "file": "Connaught Square Admin Duties of Co Sec.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.257262",
+    "timestamp": "2025-10-09T21:45:57.965574",
     "action": "parse",
     "file": "Signed Connaught Square Admin Duties of Co Sec.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.300320",
+    "timestamp": "2025-10-09T21:45:58.003453",
     "action": "parse",
     "file": "32_34 CONNAUGHT SQUARE FREEHOLD LIMITED - Statutory Registers on 22.03.2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.305828",
+    "timestamp": "2025-10-09T21:45:58.006868",
     "action": "parse",
     "file": "Memorandum of Association.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.317733",
+    "timestamp": "2025-10-09T21:45:58.014612",
     "action": "parse",
     "file": "Incorporation documents.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.326582",
+    "timestamp": "2025-10-09T21:45:58.018435",
     "action": "parse",
     "file": "Contractors list.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.329916",
+    "timestamp": "2025-10-09T21:45:58.022011",
     "action": "parse",
     "file": "Contractors list.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.374559",
+    "timestamp": "2025-10-09T21:45:58.062859",
     "action": "parse",
     "file": "EMERGENCY CALL OUT DETAILS 2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.407702",
+    "timestamp": "2025-10-09T21:45:58.095289",
     "action": "parse",
     "file": "CM434.PRO 2024-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.443978",
+    "timestamp": "2025-10-09T21:45:58.126666",
     "action": "parse",
     "file": "CM434.PRO.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.529202",
+    "timestamp": "2025-10-09T21:45:58.206200",
     "action": "parse",
     "file": "B25676 RS 21.05.24 RM CM.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:28.531316",
+    "timestamp": "2025-10-09T21:45:58.208214",
     "action": "parse",
     "file": "Report-20.08.2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:39.763384",
+    "timestamp": "2025-10-09T21:46:08.893040",
     "action": "parse",
     "file": "Gas Contract 24-5.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:39.825552",
+    "timestamp": "2025-10-09T21:46:08.948178",
     "action": "parse",
     "file": "Pricing Quote - 32_34 Connaught Square Freehold Ltd - 109 - Gas - 10.03.2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:39.941430",
+    "timestamp": "2025-10-09T21:46:09.351850",
     "action": "parse",
     "file": "001457-3234-Connaught-Square-London Certificate.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:41.206653",
+    "timestamp": "2025-10-09T21:46:10.295985",
     "action": "parse",
     "file": "PN0119V1.7 Privacy Notice (Website).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:41.630315",
+    "timestamp": "2025-10-09T21:46:10.820913",
     "action": "parse",
     "file": "WP0005V17 Welcome Pack.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:44.023741",
+    "timestamp": "2025-10-09T21:46:13.192442",
     "action": "parse",
     "file": "Contract_10-03-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:44.999191",
+    "timestamp": "2025-10-09T21:46:14.187899",
     "action": "parse",
     "file": "PN0119V1.8 Privacy Notice (Website).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:47.346764",
+    "timestamp": "2025-10-09T21:46:16.673263",
     "action": "parse",
     "file": "Gas Contract 25-26.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:47.664560",
+    "timestamp": "2025-10-09T21:46:17.375465",
     "action": "parse",
     "file": "Welcome Letter - CG1885574.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:49.675259",
+    "timestamp": "2025-10-09T21:46:19.579459",
     "action": "parse",
     "file": "TC0001V31 General Terms and Conditions.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:49.785223",
+    "timestamp": "2025-10-09T21:46:19.690913",
     "action": "parse",
     "file": "REPORT 31-07-25.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:49.811851",
+    "timestamp": "2025-10-09T21:46:19.826670",
     "action": "parse",
     "file": "Job 67141.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:50.937844",
+    "timestamp": "2025-10-09T21:46:20.904257",
     "action": "parse",
     "file": "32-34 Connought Square Condtion Assessments.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:50.940276",
+    "timestamp": "2025-10-09T21:46:20.907514",
     "action": "parse",
     "file": "Signed Conract.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:50.993643",
+    "timestamp": "2025-10-09T21:46:20.958909",
     "action": "parse",
     "file": "BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:51.030027",
+    "timestamp": "2025-10-09T21:46:20.993972",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:51.853362",
+    "timestamp": "2025-10-09T21:46:21.797256",
     "action": "parse",
     "file": "BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:52.368650",
+    "timestamp": "2025-10-09T21:46:22.309246",
     "action": "parse",
     "file": "Latest Report.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:52.404725",
+    "timestamp": "2025-10-09T21:46:22.346821",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:52.467093",
+    "timestamp": "2025-10-09T21:46:22.385983",
     "action": "parse",
     "file": "Latest Report 24.04.2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:52.498013",
+    "timestamp": "2025-10-09T21:46:22.417908",
     "action": "parse",
     "file": "Latest Report 19.09.2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:52.532408",
+    "timestamp": "2025-10-09T21:46:22.479167",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:53.489833",
+    "timestamp": "2025-10-09T21:46:23.278552",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:54.145877",
+    "timestamp": "2025-10-09T21:46:23.850720",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:54.191326",
+    "timestamp": "2025-10-09T21:46:23.888771",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:54.741290",
+    "timestamp": "2025-10-09T21:46:24.428096",
     "action": "parse",
     "file": "BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:55.390770",
+    "timestamp": "2025-10-09T21:46:25.046176",
     "action": "parse",
     "file": "10.02.25-Pest Control.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:55.428678",
+    "timestamp": "2025-10-09T21:46:25.084650",
     "action": "parse",
     "file": "Latest Report.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:55.944211",
+    "timestamp": "2025-10-09T21:46:25.575954",
     "action": "parse",
     "file": "17.01.2025-Pest Control.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:56.345020",
+    "timestamp": "2025-10-09T21:46:25.917696",
     "action": "parse",
     "file": "J18503 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:56.680283",
+    "timestamp": "2025-10-09T21:46:26.267574",
     "action": "parse",
     "file": "J18502 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:56.732645",
+    "timestamp": "2025-10-09T21:46:26.318395",
     "action": "parse",
     "file": "BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:56.769039",
+    "timestamp": "2025-10-09T21:46:26.353894",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:57.701695",
+    "timestamp": "2025-10-09T21:46:27.183815",
     "action": "parse",
     "file": "BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:57.739332",
+    "timestamp": "2025-10-09T21:46:27.221371",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:57.775607",
+    "timestamp": "2025-10-09T21:46:27.257157",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:58.641219",
+    "timestamp": "2025-10-09T21:46:28.057868",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:59.232543",
+    "timestamp": "2025-10-09T21:46:28.717288",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:59.270884",
+    "timestamp": "2025-10-09T21:46:28.753434",
     "action": "parse",
     "file": "BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:59.849637",
+    "timestamp": "2025-10-09T21:46:29.287907",
     "action": "parse",
     "file": "BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:59.859127",
+    "timestamp": "2025-10-09T21:46:29.297168",
     "action": "parse",
     "file": "INV 11546 Mr Martin Samworth.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:59.874679",
+    "timestamp": "2025-10-09T21:46:29.312703",
     "action": "parse",
     "file": "QB4126 Mr Martin Samworth.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:08:59.884080",
+    "timestamp": "2025-10-09T21:46:29.322133",
     "action": "parse",
     "file": "CQ2879 Mr Martin Samworth   (IP) CCTV.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:00.167968",
+    "timestamp": "2025-10-09T21:46:29.570531",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_32810_17-03-2025_1311.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:00.318036",
+    "timestamp": "2025-10-09T21:46:29.712073",
     "action": "parse",
     "file": "Jobcard_For_Job_No_33844_07-04-2025_1143.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:00.452406",
+    "timestamp": "2025-10-09T21:46:29.841125",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_32344_12-03-2025_1426.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:00.715111",
+    "timestamp": "2025-10-09T21:46:30.135323",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:01.022350",
+    "timestamp": "2025-10-09T21:46:30.392608",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_34012_01-05-2025_1616.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:01.617422",
+    "timestamp": "2025-10-09T21:46:30.978271",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_32759_17-03-2025_1147.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:01.763471",
+    "timestamp": "2025-10-09T21:46:31.155615",
     "action": "parse",
     "file": "Jobcard_For_Job_No_37675_25-07-2025_1549.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:01.961058",
+    "timestamp": "2025-10-09T21:46:31.347539",
     "action": "parse",
     "file": "Jobcard_For_Job_No_32344_12-03-2025_1426.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:02.105347",
+    "timestamp": "2025-10-09T21:46:31.491088",
     "action": "parse",
     "file": "Jobcard_For_Job_No_34012_01-05-2025_1616.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:02.251703",
+    "timestamp": "2025-10-09T21:46:31.634788",
     "action": "parse",
     "file": "Jobcard_For_Job_No_32759_17-03-2025_1145.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:02.398203",
+    "timestamp": "2025-10-09T21:46:31.778880",
     "action": "parse",
     "file": "Jobcard_For_Job_No_32810_17-03-2025_1311.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:02.703855",
+    "timestamp": "2025-10-09T21:46:32.058317",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_33844_07-04-2025_1143.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:02.875805",
+    "timestamp": "2025-10-09T21:46:32.222482",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_25732_03-10-2024_1337.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:02.929476",
+    "timestamp": "2025-10-09T21:46:32.273954",
     "action": "parse",
     "file": "Jobcard_For_Job_No_27067_07-10-2024_1147.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.013896",
+    "timestamp": "2025-10-09T21:46:32.325599",
     "action": "parse",
     "file": "Jobcard_For_Job_No_19665_28-03-2024_0936.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.066545",
+    "timestamp": "2025-10-09T21:46:32.376664",
     "action": "parse",
     "file": "Jobcard_For_Job_No_22634_03-07-2024_1649.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.228864",
+    "timestamp": "2025-10-09T21:46:32.562848",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_22634_03-07-2024_1650.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.398343",
+    "timestamp": "2025-10-09T21:46:32.724048",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_27067_07-10-2024_1147.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.484591",
+    "timestamp": "2025-10-09T21:46:32.774462",
     "action": "parse",
     "file": "Jobcard_For_Job_No_25732_03-10-2024_1337.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.627925",
+    "timestamp": "2025-10-09T21:46:32.941638",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_19665_05-04-2024_1048.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:03.792093",
+    "timestamp": "2025-10-09T21:46:33.103132",
     "action": "parse",
     "file": "Jobcard_For_Job_No_28992_24-01-2025_1545.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:04.195725",
+    "timestamp": "2025-10-09T21:46:33.486678",
     "action": "parse",
     "file": "Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:07.369670",
+    "timestamp": "2025-10-09T21:46:36.455785",
     "action": "parse",
     "file": "Connaught Square (32-34) - 09.12.24 LRA.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.045443",
+    "timestamp": "2025-10-09T21:46:36.635652",
     "action": "parse",
     "file": "Connaught Square (32-34) - 09.12.24 Schematic.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.360132",
+    "timestamp": "2025-10-09T21:46:37.049206",
     "action": "parse",
     "file": "Licence_Document_352024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.363871",
+    "timestamp": "2025-10-09T21:46:37.053723",
     "action": "parse",
     "file": "Connaught Square-Lift Quotes.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.474965",
+    "timestamp": "2025-10-09T21:46:37.145483",
     "action": "parse",
     "file": "Lift Contract-Jacksons lift.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.505542",
+    "timestamp": "2025-10-09T21:46:37.176255",
     "action": "parse",
     "file": "JLGCalloutVisit-5455045-12-07-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.579350",
+    "timestamp": "2025-10-09T21:46:37.248624",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-12-09-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.609399",
+    "timestamp": "2025-10-09T21:46:37.281233",
     "action": "parse",
     "file": "JLGCalloutVisit-5483206-26-10-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.715334",
+    "timestamp": "2025-10-09T21:46:37.398593",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-13-11-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.747349",
+    "timestamp": "2025-10-09T21:46:37.430171",
     "action": "parse",
     "file": "JLGCalloutVisit-5498439-16-12-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.777277",
+    "timestamp": "2025-10-09T21:46:37.461550",
     "action": "parse",
     "file": "JLGCalloutVisit-5455462-16-07-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.807805",
+    "timestamp": "2025-10-09T21:46:37.492067",
     "action": "parse",
     "file": "JLGCalloutVisit-5497480-13-12-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.909193",
+    "timestamp": "2025-10-09T21:46:37.599063",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-02-12-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:08.982457",
+    "timestamp": "2025-10-09T21:46:37.669928",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-08-07-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.055776",
+    "timestamp": "2025-10-09T21:46:37.743889",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-08-10-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.110126",
+    "timestamp": "2025-10-09T21:46:37.801695",
     "action": "parse",
     "file": "Engineering Report - 32-34 CONNAUGHT SQUARE.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.213954",
+    "timestamp": "2025-10-09T21:46:37.913465",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-12-02-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.306359",
+    "timestamp": "2025-10-09T21:46:37.990025",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-17-03-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.380890",
+    "timestamp": "2025-10-09T21:46:38.065609",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-14-04-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.476401",
+    "timestamp": "2025-10-09T21:46:38.150713",
     "action": "parse",
     "file": "REP-40343473-L1.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.559883",
+    "timestamp": "2025-10-09T21:46:38.226038",
     "action": "parse",
     "file": "JLGServiceVisit-M00813-13-05-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.722244",
+    "timestamp": "2025-10-09T21:46:38.380321",
     "action": "parse",
     "file": "Allianz - Lift Report 14.03.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.826648",
+    "timestamp": "2025-10-09T21:46:38.482071",
     "action": "parse",
     "file": "Allianz-Lift Report 18.03.2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:09.996145",
+    "timestamp": "2025-10-09T21:46:38.634471",
     "action": "parse",
     "file": "Allianz - Lift Report - 15.09.21.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:14.453894",
+    "timestamp": "2025-10-09T21:46:42.512161",
     "action": "parse",
     "file": "Allianz - Lift Report 27.09.23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:14.564820",
+    "timestamp": "2025-10-09T21:46:42.718426",
     "action": "parse",
     "file": "Allianz - Lift Report 10.03.22.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:14.568221",
+    "timestamp": "2025-10-09T21:46:42.723611",
     "action": "parse",
     "file": "Allianz - Lift Report 09.09.22.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:14.851684",
+    "timestamp": "2025-10-09T21:46:42.916519",
     "action": "parse",
     "file": "Communal Cleaning-First Port.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:14.882315",
+    "timestamp": "2025-10-09T21:46:42.944828",
     "action": "parse",
     "file": "LXBI3559280XB2-NEW STEP-Business-Certificate of el insurance.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:14.997917",
+    "timestamp": "2025-10-09T21:46:43.057362",
     "action": "parse",
     "file": "New Step - Cleaning of Com Part- Jan- 2023.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.056083",
+    "timestamp": "2025-10-09T21:46:43.083612",
     "action": "parse",
     "file": "LXBI3559280XB2-NEW STEP-Business-Certificate of insurance.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.088394",
+    "timestamp": "2025-10-09T21:46:43.114214",
     "action": "parse",
     "file": "SC Certificate - 10072023.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.203373",
+    "timestamp": "2025-10-09T21:46:43.255582",
     "action": "parse",
     "file": "SC Health and Safety Product - Accredited 10072023.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.226899",
+    "timestamp": "2025-10-09T21:46:43.278438",
     "action": "parse",
     "file": "Aged debtors by property.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.245820",
+    "timestamp": "2025-10-09T21:46:43.296628",
     "action": "parse",
     "file": "Tenancy Schedule by Property.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.274223",
+    "timestamp": "2025-10-09T21:46:43.321624",
     "action": "parse",
     "file": "Connaught Square, 32-34 Approved xlsx.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.281297",
+    "timestamp": "2025-10-09T21:46:43.328506",
     "action": "parse",
     "file": "Connaught Square Budget 2025-6 Draft.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.493757",
+    "timestamp": "2025-10-09T21:46:43.510290",
     "action": "parse",
     "file": "Connaught Square Budget 2025-Final.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.503261",
+    "timestamp": "2025-10-09T21:46:43.518643",
     "action": "parse",
     "file": "BvA 24 Jan 25.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.511048",
+    "timestamp": "2025-10-09T21:46:43.525485",
     "action": "parse",
     "file": "Connaught Square Budget 2025-Final.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:15.809454",
+    "timestamp": "2025-10-09T21:46:43.809430",
     "action": "parse",
     "file": "pdf.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:16.247524",
+    "timestamp": "2025-10-09T21:46:44.276108",
     "action": "parse",
     "file": "Accounts YE 31.03.2022 32-34 Connaught Square MJP.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:16.644137",
+    "timestamp": "2025-10-09T21:46:44.678119",
     "action": "parse",
     "file": "197-YE 31.03.22 SC Accs FINAL MAY 2023.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.105177",
+    "timestamp": "2025-10-09T21:46:45.116185",
     "action": "parse",
     "file": "ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.276746",
+    "timestamp": "2025-10-09T21:46:45.295268",
     "action": "parse",
     "file": "ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.494293",
+    "timestamp": "2025-10-09T21:46:45.494982",
     "action": "parse",
     "file": "27039 Accounts Pack - YE 2023.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.689242",
+    "timestamp": "2025-10-09T21:46:45.725080",
     "action": "parse",
     "file": "Connaught Sq SC YE 23.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.907027",
+    "timestamp": "2025-10-09T21:46:45.942576",
     "action": "parse",
     "file": "Connaught Square YE 24 Accounts.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.913424",
+    "timestamp": "2025-10-09T21:46:45.948855",
     "action": "parse",
     "file": "Connaught Square-Agenda 20.11.24.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.916758",
+    "timestamp": "2025-10-09T21:46:45.951966",
     "action": "parse",
     "file": "Connaught Square-Agenda 26.04.2024.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.923311",
+    "timestamp": "2025-10-09T21:46:45.958454",
     "action": "parse",
     "file": "Connaught Square-House Rules.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.930843",
+    "timestamp": "2025-10-09T21:46:45.963641",
     "action": "parse",
     "file": "Garden Notice-Connaught Square.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:17.938830",
+    "timestamp": "2025-10-09T21:46:45.968512",
     "action": "parse",
     "file": "Connaught Square-Key Cut Authorisation Letter.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:18.089026",
+    "timestamp": "2025-10-09T21:46:46.086214",
     "action": "parse",
     "file": "House Rules-Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:18.097067",
+    "timestamp": "2025-10-09T21:46:46.094744",
     "action": "parse",
     "file": "Connaught Square 26.04.24.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:18.182713",
+    "timestamp": "2025-10-09T21:46:46.217762",
     "action": "parse",
     "file": "2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:18.289808",
+    "timestamp": "2025-10-09T21:46:46.317124",
     "action": "parse",
     "file": "2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:20.255182",
+    "timestamp": "2025-10-09T21:46:48.274274",
     "action": "parse",
     "file": "MO - Policy Wording - NZ0411.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:20.390177",
+    "timestamp": "2025-10-09T21:46:48.518946",
     "action": "parse",
     "file": "Feature and Benefits of Allianz Engineering Inspection Service.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:20.464740",
+    "timestamp": "2025-10-09T21:46:48.599365",
     "action": "parse",
     "file": "REP-39659654.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:23.268901",
+    "timestamp": "2025-10-09T21:46:51.262576",
     "action": "parse",
     "file": "StG_Quote_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:46.397414",
+    "timestamp": "2025-10-09T21:47:13.313273",
     "action": "parse",
     "file": "StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:46.528798",
+    "timestamp": "2025-10-09T21:47:13.453751",
     "action": "parse",
     "file": "StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:46.565208",
+    "timestamp": "2025-10-09T21:47:14.244482",
     "action": "parse",
     "file": "StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:46.691150",
+    "timestamp": "2025-10-09T21:47:14.378559",
     "action": "parse",
     "file": "StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:09:50.001913",
+    "timestamp": "2025-10-09T21:47:17.068778",
     "action": "parse",
     "file": "StG_Quote_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:12.424026",
+    "timestamp": "2025-10-09T21:47:39.341404",
     "action": "parse",
     "file": "StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:12.563778",
+    "timestamp": "2025-10-09T21:47:39.483379",
     "action": "parse",
     "file": "StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:12.602578",
+    "timestamp": "2025-10-09T21:47:39.521214",
     "action": "parse",
     "file": "StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:12.744136",
+    "timestamp": "2025-10-09T21:47:39.656720",
     "action": "parse",
     "file": "StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:12.798521",
+    "timestamp": "2025-10-09T21:47:40.203764",
     "action": "parse",
     "file": "StG_Invoice_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:12.904477",
+    "timestamp": "2025-10-09T21:47:40.300943",
     "action": "parse",
     "file": "StG_Certificate_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:13.725343",
+    "timestamp": "2025-10-09T21:47:40.451580",
     "action": "parse",
     "file": "StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:13.763052",
+    "timestamp": "2025-10-09T21:47:40.487328",
     "action": "parse",
     "file": "StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:13.814491",
+    "timestamp": "2025-10-09T21:47:40.537366",
     "action": "parse",
     "file": "StG_Invoice_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:15.482084",
+    "timestamp": "2025-10-09T21:47:42.101330",
     "action": "parse",
     "file": "Arch Directors and Officers Liability Insurance for Residents Associations (12.22).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:15.541893",
+    "timestamp": "2025-10-09T21:47:42.156597",
     "action": "parse",
     "file": "32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:15.632291",
+    "timestamp": "2025-10-09T21:47:42.320589",
     "action": "parse",
     "file": "StG_Certificate_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:17.532050",
+    "timestamp": "2025-10-09T21:47:44.092420",
     "action": "parse",
     "file": "StG_Policy Wording_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:17.685931",
+    "timestamp": "2025-10-09T21:47:44.153066",
     "action": "parse",
     "file": "StG_D&O Endorsements_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:17.739964",
+    "timestamp": "2025-10-09T21:47:44.208048",
     "action": "parse",
     "file": "StG_Demands & Needs_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:17.759820",
+    "timestamp": "2025-10-09T21:47:44.230339",
     "action": "parse",
     "file": "StG_Quote_32-34 Connaught Square Freehold Limited.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:17.874515",
+    "timestamp": "2025-10-09T21:47:44.434578",
     "action": "parse",
     "file": "StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:18.010324",
+    "timestamp": "2025-10-09T21:47:44.537249",
     "action": "parse",
     "file": "FBR113382303-20230405-B.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:18.096033",
+    "timestamp": "2025-10-09T21:47:44.621061",
     "action": "parse",
     "file": "Real Estate Insurance NTP (01.23).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:29.464797",
+    "timestamp": "2025-10-09T21:47:54.205010",
     "action": "parse",
     "file": "Real Estate Policy (01.23).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:29.861683",
+    "timestamp": "2025-10-09T21:47:54.536497",
     "action": "parse",
     "file": "Summary of Cover (01.23).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:30.272248",
+    "timestamp": "2025-10-09T21:47:54.949593",
     "action": "parse",
     "file": "Important Information .pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:30.673170",
+    "timestamp": "2025-10-09T21:47:55.791982",
     "action": "parse",
     "file": "Report - 32-34 Connaught Square BCH 78350.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:31.523441",
+    "timestamp": "2025-10-09T21:47:55.892337",
     "action": "parse",
     "file": "32-34 Connaught Sq Buildings Insurance 2023-2024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:31.648983",
+    "timestamp": "2025-10-09T21:47:56.039759",
     "action": "parse",
     "file": "Policy Limits Document.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:32.183308",
+    "timestamp": "2025-10-09T21:47:56.490213",
     "action": "parse",
     "file": "Zurich Real Estate Policy Summary.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:44.125253",
+    "timestamp": "2025-10-09T21:48:06.721101",
     "action": "parse",
     "file": "Zurich Real Estate Policy Wording.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:44.219842",
+    "timestamp": "2025-10-09T21:48:06.802467",
     "action": "parse",
     "file": "Zurich Real Estate Insurance NTP (01.23) ZCYP895.02.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:44.260048",
+    "timestamp": "2025-10-09T21:48:06.839114",
     "action": "parse",
     "file": "StG_Invoice_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:44.514529",
+    "timestamp": "2025-10-09T21:48:07.064758",
     "action": "parse",
     "file": "StG_Certificate_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:45.032851",
+    "timestamp": "2025-10-09T21:48:07.706561",
     "action": "parse",
     "file": "StG_Supporting Docs_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:50.064622",
+    "timestamp": "2025-10-09T21:48:12.377450",
     "action": "parse",
     "file": "StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:50.121342",
+    "timestamp": "2025-10-09T21:48:12.432361",
     "action": "parse",
     "file": "StG_Invoice_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:50.770509",
+    "timestamp": "2025-10-09T21:48:12.868784",
     "action": "parse",
     "file": "StG_Certificate_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:50.801380",
+    "timestamp": "2025-10-09T21:48:12.896213",
     "action": "parse",
     "file": "StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:50.859205",
+    "timestamp": "2025-10-09T21:48:12.948723",
     "action": "parse",
     "file": "StG_Invoice_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:51.696190",
+    "timestamp": "2025-10-09T21:48:13.849531",
     "action": "parse",
     "file": "StG_Certificate_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:51.746969",
+    "timestamp": "2025-10-09T21:48:13.895773",
     "action": "parse",
     "file": "StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:51.796054",
+    "timestamp": "2025-10-09T21:48:13.981435",
     "action": "parse",
     "file": "Fire Door (Communal) Inspection (11m +) (7).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:51.885806",
+    "timestamp": "2025-10-09T21:48:14.022658",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (13).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:51.929905",
+    "timestamp": "2025-10-09T21:48:14.063415",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (18).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:51.975800",
+    "timestamp": "2025-10-09T21:48:14.104930",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (14).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:52.022475",
+    "timestamp": "2025-10-09T21:48:14.144618",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (15).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:52.065733",
+    "timestamp": "2025-10-09T21:48:14.216095",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (19).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:52.112466",
+    "timestamp": "2025-10-09T21:48:14.263879",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (16).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:52.191700",
+    "timestamp": "2025-10-09T21:48:14.307056",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) (17).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:54.374787",
+    "timestamp": "2025-10-09T21:48:16.294128",
     "action": "parse",
     "file": "221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:54.425073",
+    "timestamp": "2025-10-09T21:48:16.338712",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:54.609790",
+    "timestamp": "2025-10-09T21:48:16.603159",
     "action": "parse",
     "file": "Connaught Square (32-34) - 15.11.23 (886) wa.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:54.770283",
+    "timestamp": "2025-10-09T21:48:16.645777",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:54.820110",
+    "timestamp": "2025-10-09T21:48:16.691004",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:54.867896",
+    "timestamp": "2025-10-09T21:48:16.738234",
     "action": "parse",
     "file": "Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:55.011480",
+    "timestamp": "2025-10-09T21:48:16.902670",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_16617_27-11-2023_1522.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:55.070841",
+    "timestamp": "2025-10-09T21:48:16.946825",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:55.486661",
+    "timestamp": "2025-10-09T21:48:17.268999",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_16808_28-11-2023_1340.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:55.569124",
+    "timestamp": "2025-10-09T21:48:17.311360",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:57.825340",
+    "timestamp": "2025-10-09T21:48:19.593210",
     "action": "parse",
     "file": "221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:57.873912",
+    "timestamp": "2025-10-09T21:48:19.634250",
     "action": "parse",
     "file": "Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:57.878098",
+    "timestamp": "2025-10-09T21:48:19.636519",
     "action": "parse",
     "file": "EX-NC (CONNAUGHT SQUARE) EXTRA 01102024.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:57.882371",
+    "timestamp": "2025-10-09T21:48:19.640245",
     "action": "parse",
     "file": "Fire Extinguisher Signed Contract- Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:10:57.941886",
+    "timestamp": "2025-10-09T21:48:19.690086",
     "action": "parse",
     "file": "Q51691 - 32-34 Connaught Square Contract.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:02.065270",
+    "timestamp": "2025-10-09T21:48:23.327247",
     "action": "parse",
     "file": "Hsfra1-L-422971-210225 32-34 Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:02.336081",
+    "timestamp": "2025-10-09T21:48:23.568208",
     "action": "parse",
     "file": "Hsfra1-L-422971-210225 32-34 Connaught Square.docx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:02.342921",
+    "timestamp": "2025-10-09T21:48:23.574486",
     "action": "parse",
     "file": "H&S recomendations - Spreadsheet with comments.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:04.679045",
+    "timestamp": "2025-10-09T21:48:25.656943",
     "action": "parse",
     "file": "221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:06.975951",
+    "timestamp": "2025-10-09T21:48:27.615888",
     "action": "parse",
     "file": "221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:06.982078",
+    "timestamp": "2025-10-09T21:48:27.620717",
     "action": "parse",
     "file": "FRA-Connaught Square Reccommendations.xlsx",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:07.727093",
+    "timestamp": "2025-10-09T21:48:28.209911",
     "action": "parse",
     "file": "CM434.AnnualServiceAgreement2025-2026.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:08.579663",
+    "timestamp": "2025-10-09T21:48:28.919270",
     "action": "parse",
     "file": "CM434.AnnualServiceAgreement2024-2025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:08.705945",
+    "timestamp": "2025-10-09T21:48:29.022895",
     "action": "parse",
     "file": "001534-3234-Connaught-Square-London.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:08.778606",
+    "timestamp": "2025-10-09T21:48:29.083608",
     "action": "parse",
     "file": "C1047 - Job card.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:08.932588",
+    "timestamp": "2025-10-09T21:48:29.206510",
     "action": "parse",
     "file": "REP-40324834-E3.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:08.956798",
+    "timestamp": "2025-10-09T21:48:29.226735",
     "action": "parse",
     "file": "Ellie@mihproperty.co.uk - BES Group - E-Report.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:09.098437",
+    "timestamp": "2025-10-09T21:48:29.344098",
     "action": "parse",
     "file": "CM434 RS 32-34 Connaught Square - VISIT 1 OF 2 - 30-04-25.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:09.158848",
+    "timestamp": "2025-10-09T21:48:29.395803",
     "action": "parse",
     "file": "Engineering Report - 32-34 CONNAUGHT SQUARE.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:09.880969",
+    "timestamp": "2025-10-09T21:48:30.035867",
     "action": "parse",
     "file": "Q49511 - 32-34 Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:09.887298",
+    "timestamp": "2025-10-09T21:48:30.041563",
     "action": "parse",
     "file": "Fire Alarm+Emergency Lighting Signed Contract-3234 Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.032704",
+    "timestamp": "2025-10-09T21:48:30.133218",
     "action": "parse",
     "file": "Fire Alarm+Emergency Lighting Contract Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.094731",
+    "timestamp": "2025-10-09T21:48:30.186190",
     "action": "parse",
     "file": "BT3205 03072025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.200589",
+    "timestamp": "2025-10-09T21:48:30.258620",
     "action": "parse",
     "file": "FA7817 SERVICE 08042025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.276123",
+    "timestamp": "2025-10-09T21:48:30.314797",
     "action": "parse",
     "file": "Engineer Report - 32-34 Connaught Square Flat 5.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.277848",
+    "timestamp": "2025-10-09T21:48:30.316070",
     "action": "parse",
     "file": "FA7817 CALL OUT 26032025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.345506",
+    "timestamp": "2025-10-09T21:48:30.411143",
     "action": "parse",
     "file": "Engineering Report - 32-34 CONNAUGHT SQUARE.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:10.646891",
+    "timestamp": "2025-10-09T21:48:30.605787",
     "action": "parse",
     "file": "32 Connaught Sq - PAT .pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:14.340757",
+    "timestamp": "2025-10-09T21:48:33.445311",
     "action": "parse",
     "file": "WHM Legionella Risk Assessment 09.12.25.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:17.999993",
+    "timestamp": "2025-10-09T21:48:36.445515",
     "action": "parse",
     "file": "WHM Legionella Risk Assessment 07.06.22.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:18.170536",
+    "timestamp": "2025-10-09T21:48:36.592834",
     "action": "parse",
     "file": "Jobcard_For_Job_No_38609_26-08-2025_0741.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:18.445479",
+    "timestamp": "2025-10-09T21:48:36.813689",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_35146_03-06-2025_0906.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:18.699081",
+    "timestamp": "2025-10-09T21:48:36.897089",
     "action": "parse",
     "file": "Connaught Square (32-34) - 29.05.25 (201) wa.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:19.210325",
+    "timestamp": "2025-10-09T21:48:37.350356",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_31162_30-01-2025_1603.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:19.374249",
+    "timestamp": "2025-10-09T21:48:37.547422",
     "action": "parse",
     "file": "Jobcard_For_Job_No_28737_25-11-2024_0907.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:19.670500",
+    "timestamp": "2025-10-09T21:48:38.043608",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:19.831379",
+    "timestamp": "2025-10-09T21:48:38.195304",
     "action": "parse",
     "file": "Jobcard_For_Job_No_35402_03-06-2025_0916.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:19.888336",
+    "timestamp": "2025-10-09T21:48:38.243017",
     "action": "parse",
     "file": "Jobcard_For_Job_No_22171_14-05-2024_1202.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:20.110307",
+    "timestamp": "2025-10-09T21:48:38.385289",
     "action": "parse",
     "file": "Jobcard_For_Job_No_35654_03-06-2025_0911.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:20.274439",
+    "timestamp": "2025-10-09T21:48:38.525052",
     "action": "parse",
     "file": "Jobcard_For_Job_No_37675_25-07-2025_1549.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:20.962019",
+    "timestamp": "2025-10-09T21:48:39.111461",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_28737_25-11-2024_0907.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:21.254149",
+    "timestamp": "2025-10-09T21:48:39.395762",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_35402_03-06-2025_0916.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:21.475110",
+    "timestamp": "2025-10-09T21:48:39.548888",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_22171_14-05-2024_1202.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:22.185617",
+    "timestamp": "2025-10-09T21:48:40.187511",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_35654_03-06-2025_0912.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:22.513849",
+    "timestamp": "2025-10-09T21:48:40.432157",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_38609_26-08-2025_0740.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:22.672820",
+    "timestamp": "2025-10-09T21:48:40.570638",
     "action": "parse",
     "file": "Jobcard_For_Job_No_35146_03-06-2025_0906.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:22.965548",
+    "timestamp": "2025-10-09T21:48:40.865360",
     "action": "parse",
     "file": "Asset_Record_For_Job_No_36465_20-06-2025_1038.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:23.125429",
+    "timestamp": "2025-10-09T21:48:41.006939",
     "action": "parse",
     "file": "Jobcard_For_Job_No_31162_30-01-2025_1602.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:23.285612",
+    "timestamp": "2025-10-09T21:48:41.145229",
     "action": "parse",
     "file": "Jobcard_For_Job_No_36465_20-06-2025_1037.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:24.963276",
+    "timestamp": "2025-10-09T21:48:42.647857",
     "action": "parse",
     "file": "EICR Cuanku 32-34 conaught square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:26.673495",
+    "timestamp": "2025-10-09T21:48:44.173813",
     "action": "parse",
     "file": "EICR Report Cunaku SATISFACTORY 2023 .pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:26.783612",
+    "timestamp": "2025-10-09T21:48:44.347763",
     "action": "parse",
     "file": "001132-3234-Connaught-Square-London.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.014570",
+    "timestamp": "2025-10-09T21:48:44.491857",
     "action": "parse",
     "file": "British Gas Invoice-862451083.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.157069",
+    "timestamp": "2025-10-09T21:48:44.626444",
     "action": "parse",
     "file": "001534-3234-Connaught-Square-London.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.373764",
+    "timestamp": "2025-10-09T21:48:44.823082",
     "action": "parse",
     "file": "26368 Report.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.527332",
+    "timestamp": "2025-10-09T21:48:44.952846",
     "action": "parse",
     "file": "26474 Report.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.586664",
+    "timestamp": "2025-10-09T21:48:45.008884",
     "action": "parse",
     "file": "MT8825 03072025.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.648304",
+    "timestamp": "2025-10-09T21:48:45.066214",
     "action": "parse",
     "file": "January Monthly Test For EL-Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:27.709507",
+    "timestamp": "2025-10-09T21:48:45.120689",
     "action": "parse",
     "file": "February Monthly Test For EL-Connaught Square.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:30.810142",
+    "timestamp": "2025-10-09T21:48:47.853369",
     "action": "parse",
     "file": "FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:33.554987",
+    "timestamp": "2025-10-09T21:48:50.032529",
     "action": "parse",
     "file": "TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf",
     "success": true,
     "error": null
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609445",
+    "timestamp": "2025-10-09T21:48:50.063475",
     "action": "classify",
     "category": "units_leaseholders",
     "file_count": 52
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609460",
+    "timestamp": "2025-10-09T21:48:50.063488",
     "action": "classify",
     "category": "budgets",
     "file_count": 7
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609523",
+    "timestamp": "2025-10-09T21:48:50.063527",
     "action": "classify",
     "category": "compliance",
     "file_count": 56
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609561",
+    "timestamp": "2025-10-09T21:48:50.063548",
     "action": "classify",
     "category": "contracts",
     "file_count": 48
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609565",
+    "timestamp": "2025-10-09T21:48:50.063551",
     "action": "classify",
     "category": "major_works",
     "file_count": 4
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609615",
+    "timestamp": "2025-10-09T21:48:50.063579",
     "action": "classify",
     "category": "insurance",
     "file_count": 60
   },
   {
-    "timestamp": "2025-10-09T17:11:33.609676",
+    "timestamp": "2025-10-09T21:48:50.063615",
     "action": "classify",
     "category": "uncategorized",
     "file_count": 91
   },
   {
-    "timestamp": "2025-10-09T17:11:33.625514",
+    "timestamp": "2025-10-09T21:48:50.075933",
     "action": "map",
     "tables": [
       "buildings",
@@ -2284,24 +2284,24 @@
     }
   },
   {
-    "timestamp": "2025-10-09T17:11:33.625576",
+    "timestamp": "2025-10-09T21:48:50.076019",
     "action": "extract_compliance",
     "assets_found": 56,
     "inspections_found": 0
   },
   {
-    "timestamp": "2025-10-09T17:11:33.625586",
+    "timestamp": "2025-10-09T21:48:50.076027",
     "action": "extract_major_works",
     "projects_found": 4
   },
   {
-    "timestamp": "2025-10-09T17:11:33.625590",
+    "timestamp": "2025-10-09T21:48:50.076031",
     "action": "extract_financial",
     "budgets_found": 0,
     "accounts_found": 0
   },
   {
-    "timestamp": "2025-10-09T17:11:34.713007",
+    "timestamp": "2025-10-09T21:48:50.790867",
     "action": "extract_financial_intelligence",
     "apportionments": 26,
     "budgets": 22,
@@ -2310,7 +2310,7 @@
     "alerts": 161
   },
   {
-    "timestamp": "2025-10-09T17:11:34.792430",
+    "timestamp": "2025-10-09T21:48:50.827150",
     "action": "extract_excel_financial_data",
     "budgets": 0,
     "apportionments": 0,
@@ -2318,12 +2318,12 @@
     "errors": 0
   },
   {
-    "timestamp": "2025-10-09T17:11:34.796524",
+    "timestamp": "2025-10-09T21:48:50.828274",
     "action": "extract_staffing_data",
     "staff_members": 0
   },
   {
-    "timestamp": "2025-10-09T17:19:55.948475",
+    "timestamp": "2025-10-09T21:55:31.433548",
     "action": "extract_lease_data",
     "leases_extracted": 28,
     "files_processed": 28,
@@ -2331,7 +2331,7 @@
     "errors": 0
   },
   {
-    "timestamp": "2025-10-09T17:19:57.242115",
+    "timestamp": "2025-10-09T21:55:32.518620",
     "action": "extract_handover_intelligence",
     "insurance_policies": 58,
     "contracts": 43,
@@ -2343,31 +2343,31 @@
     "maintenance_schedules": 22
   },
   {
-    "timestamp": "2025-10-09T17:19:57.242996",
+    "timestamp": "2025-10-09T21:55:32.520027",
     "action": "validate",
     "errors": 0,
     "warnings": 22,
     "info": 0
   },
   {
-    "timestamp": "2025-10-09T17:19:58.517777",
+    "timestamp": "2025-10-09T21:55:33.503956",
     "action": "generate_sql",
     "file": "output/migration.sql",
-    "lines": 5803,
+    "lines": 5698,
     "validation_passed": false,
     "enrichment_stats": {
       "building_metadata_filled": 0,
       "major_works_tagged": 0,
-      "budget_placeholders_created": 8,
+      "budget_placeholders_created": 0,
       "building_intelligence_entries": 260,
       "addresses_extracted": 0,
       "addresses_skipped": 0
     }
   },
   {
-    "timestamp": "2025-10-09T17:19:58.552023",
+    "timestamp": "2025-10-09T21:55:33.541706",
     "action": "execute_sql_migration",
     "executed": 0,
-    "failed": 1155
+    "failed": 1173
   }
 ]

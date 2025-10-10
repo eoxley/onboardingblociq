@@ -1,0 +1,45 @@
+# Cleanup Summary - October 10, 2025
+
+## 📊 Files Organized
+
+### Moved to archive/ (100+ files):
+- 19 old SQL migration files
+- 19 old SQL database cleanup files  
+- 17 schema discovery/parsing scripts
+- 16 migration execution scripts
+- 15 test/debug scripts
+- 32 documentation files
+
+### Created new structure:
+- scripts/ - utility scripts (1 file)
+- tests/ - verification tests (2 files)
+- archive/ - old reference files (100+ files)
+
+## 📁 Current Clean Structure
+
+Root directory now contains only:
+- BlocIQ_Onboarder/ - main application
+- scripts/ - utilities
+- tests/ - test scripts
+- archive/ - historical files
+- output/ - generated files
+- docs/ - current documentation
+- supabase_current_schema.json - active schema
+- .env - configuration
+- README.md - documentation
+
+## ✅ Benefits:
+- Reduced root clutter from 102 files to ~10 essential items
+- Clear separation of concerns
+- Easy to find current vs archived files
+- No conflicts from old/duplicate scripts
+- Documented structure in README.md
+
+## 🔍 Archive Contents:
+- archive/old_migrations/ - old migration scripts
+- archive/old_schema_scripts/ - schema discovery tools
+- archive/old_sql/ - database cleanup SQL
+- archive/old_tests/ - test/debug scripts
+- archive/old_docs/ - historical documentation
+
+All archived files preserved for reference if needed.

@@ -1,0 +1,389 @@
+{
+  "buildings": {
+    "columns": [
+      "id",
+      "portfolio_id",
+      "name",
+      "address",
+      "created_at",
+      "number_of_units",
+      "previous_agents",
+      "current_accountants",
+      "accountant_contact",
+      "demand_date_1",
+      "demand_date_2",
+      "year_end_date",
+      "management_fee_ex_vat",
+      "management_fee_inc_vat",
+      "company_secretary_fee_ex_vat",
+      "company_secretary_fee_inc_vat",
+      "ground_rent_applicable",
+      "ground_rent_charges",
+      "insurance_broker",
+      "insurance_renewal_date",
+      "section_20_limit_inc_vat",
+      "expenditure_limit",
+      "additional_info",
+      "agency_id"
+    ],
+    "sample_columns": [
+      "id",
+      "portfolio_id",
+      "name",
+      "address",
+      "created_at",
+      "number_of_units",
+      "previous_agents",
+      "current_accountants",
+      "accountant_contact",
+      "demand_date_1"
+    ]
+  },
+  "units": {
+    "columns": [
+      "id",
+      "building_id",
+      "unit_number",
+      "created_at"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "unit_number",
+      "created_at"
+    ]
+  },
+  "leaseholders": {
+    "columns": [
+      "id",
+      "unit_id",
+      "name",
+      "email",
+      "created_at",
+      "correspondence_address",
+      "building_id",
+      "confidence_score",
+      "unit_number"
+    ],
+    "sample_columns": [
+      "id",
+      "unit_id",
+      "name",
+      "email",
+      "created_at",
+      "correspondence_address",
+      "building_id",
+      "confidence_score",
+      "unit_number"
+    ]
+  },
+  "compliance_assets": {
+    "columns": [
+      "id",
+      "description",
+      "building_id",
+      "asset_name",
+      "asset_type",
+      "inspection_frequency",
+      "last_inspection_date",
+      "next_due_date",
+      "compliance_status",
+      "location",
+      "responsible_party",
+      "notes",
+      "is_active",
+      "confidence_score",
+      "extraction_source",
+      "reinspection_date",
+      "inspection_contractor"
+    ],
+    "sample_columns": [
+      "id",
+      "description",
+      "building_id",
+      "asset_name",
+      "asset_type",
+      "inspection_frequency",
+      "last_inspection_date",
+      "next_due_date",
+      "compliance_status",
+      "location"
+    ]
+  },
+  "assets": {
+    "columns": [
+      "id",
+      "building_id",
+      "asset_type",
+      "asset_name",
+      "location_description",
+      "model_number",
+      "serial_number",
+      "manufacturer",
+      "installation_date",
+      "last_service_date",
+      "next_service_date",
+      "warranty_expiry",
+      "compliance_category",
+      "status",
+      "linked_documents",
+      "notes",
+      "created_at",
+      "updated_at"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "asset_type",
+      "asset_name",
+      "location_description",
+      "model_number",
+      "serial_number",
+      "manufacturer",
+      "installation_date",
+      "last_service_date"
+    ]
+  },
+  "major_works_projects": {
+    "columns": [
+      "id",
+      "building_id",
+      "document_id",
+      "project_name",
+      "status",
+      "start_date",
+      "end_date",
+      "created_at"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "document_id",
+      "project_name",
+      "status",
+      "start_date",
+      "end_date",
+      "created_at"
+    ]
+  },
+  "budgets": {
+    "columns": [
+      "id",
+      "building_id",
+      "document_id",
+      "period",
+      "total_amount",
+      "created_at",
+      "start_date",
+      "end_date",
+      "demand_date_1",
+      "demand_date_2",
+      "year_end_date",
+      "budget_type",
+      "agency_id",
+      "schedule_id",
+      "year",
+      "name",
+      "confidence_score",
+      "year_start",
+      "year_end"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "document_id",
+      "period",
+      "total_amount",
+      "created_at",
+      "start_date",
+      "end_date",
+      "demand_date_1",
+      "demand_date_2"
+    ]
+  },
+  "schedules": {
+    "columns": [
+      "id",
+      "building_id",
+      "name",
+      "description",
+      "created_at",
+      "updated_at",
+      "agency_id"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "name",
+      "description",
+      "created_at",
+      "updated_at",
+      "agency_id"
+    ]
+  },
+  "apportionments": {
+    "columns": [
+      "id",
+      "unit_id",
+      "budget_id",
+      "percentage",
+      "amount",
+      "building_id",
+      "confidence_score"
+    ],
+    "sample_columns": [
+      "id",
+      "unit_id",
+      "budget_id",
+      "percentage",
+      "amount",
+      "building_id",
+      "confidence_score"
+    ]
+  },
+  "building_contractors": {
+    "columns": [
+      "id",
+      "building_id",
+      "contractor_type",
+      "company_name",
+      "contact_person",
+      "phone",
+      "email",
+      "contract_start",
+      "contract_end",
+      "document_id",
+      "notes",
+      "created_at",
+      "retender_status",
+      "retender_due_date",
+      "next_review_date",
+      "renewal_notice_period",
+      "confidence_score"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "contractor_type",
+      "company_name",
+      "contact_person",
+      "phone",
+      "email",
+      "contract_start",
+      "contract_end",
+      "document_id"
+    ]
+  },
+  "building_documents": {
+    "columns": [
+      "id",
+      "building_id",
+      "category",
+      "file_name",
+      "storage_path",
+      "entity_type",
+      "linked_entity_id",
+      "uploaded_at",
+      "ai_confidence"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "category",
+      "file_name",
+      "storage_path",
+      "entity_type",
+      "linked_entity_id",
+      "uploaded_at",
+      "ai_confidence"
+    ]
+  },
+  "building_insurance": {
+    "columns": [
+      "id",
+      "building_id",
+      "insurance_type",
+      "broker_name",
+      "insurer_name",
+      "policy_number",
+      "renewal_date",
+      "coverage_amount",
+      "premium_amount",
+      "document_id",
+      "notes",
+      "created_at",
+      "expiry_date"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "insurance_type",
+      "broker_name",
+      "insurer_name",
+      "policy_number",
+      "renewal_date",
+      "coverage_amount",
+      "premium_amount",
+      "document_id"
+    ]
+  },
+  "leases": {
+    "columns": [
+      "id",
+      "unit_id",
+      "leaseholder_id",
+      "document_id",
+      "lease_type",
+      "start_date",
+      "end_date",
+      "created_at",
+      "confidence_score",
+      "building_id",
+      "expiry_date"
+    ],
+    "sample_columns": [
+      "id",
+      "unit_id",
+      "leaseholder_id",
+      "document_id",
+      "lease_type",
+      "start_date",
+      "end_date",
+      "created_at",
+      "confidence_score",
+      "building_id"
+    ]
+  },
+  "building_knowledge": {
+    "columns": [
+      "id",
+      "building_id",
+      "question",
+      "answer",
+      "category",
+      "source_type",
+      "confidence",
+      "metadata",
+      "related_document_id",
+      "keywords",
+      "verified",
+      "verified_by",
+      "verified_at",
+      "created_by",
+      "created_at",
+      "updated_at"
+    ],
+    "sample_columns": [
+      "id",
+      "building_id",
+      "question",
+      "answer",
+      "category",
+      "source_type",
+      "confidence",
+      "metadata",
+      "related_document_id",
+      "keywords"
+    ]
+  }
+}

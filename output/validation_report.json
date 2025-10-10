@@ -30,9 +30,9 @@
   ],
   "warnings": [],
   "results": [
-    "\u2705 buildings.id: e44d99d4-556d-4644-9e08-4bc01a4bf90e",
+    "\u2705 buildings.id: 6f70b361-8781-47bc-934b-06892458b603",
     "\u2705 buildings.name: Connaught Square",
     "\u2705 buildings.address: CONNAUGHT SQUARE"
   ],
-  "enrichment_summary": "\u2705 Created 8 budget placeholder(s) for unstructured PDFs\n\u2705 Extracted 260 building knowledge entrie(s)"
+  "enrichment_summary": "\u2705 Extracted 260 building knowledge entrie(s)"
 }

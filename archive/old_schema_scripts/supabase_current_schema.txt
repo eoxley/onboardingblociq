@@ -1,0 +1,2447 @@
+SUPABASE CURRENT SCHEMA
+============================================================
+
+
+TABLE: actuals
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - budget_line_id: uuid NULL
+  - building_id: uuid NOT NULL
+  - schedule_id: uuid NULL
+  - amount: numeric NOT NULL
+  - date: timestamp with time zone NULL DEFAULT now()
+  - description: text NULL
+  - invoice_number: text NULL
+  - vendor_id: uuid NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - agency_id: uuid NULL
+
+Constraints:
+  - actuals_budget_line_id_fkey: FOREIGN KEY (budget_line_id) REFERENCES budget_lines(id)
+  - actuals_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - actuals_pkey: PRIMARY KEY (id)
+  - actuals_schedule_id_fkey: FOREIGN KEY (schedule_id) REFERENCES schedules(id)
+  - actuals_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+
+Indexes:
+  - actuals_pkey
+  - idx_actuals_budget_line_id
+  - idx_actuals_building_id
+  - idx_actuals_schedule_id
+
+
+TABLE: agencies
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - name: text NOT NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - agencies_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - agencies_pkey
+
+
+TABLE: ai_conversations
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - title: text NULL
+  - building_id: uuid NULL
+  - user_id: uuid NULL
+  - rolling_summary: text NULL DEFAULT ''::text
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - ai_conversations_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - ai_conversations_pkey: PRIMARY KEY (id)
+  - ai_conversations_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id)
+
+Indexes:
+  - ai_conversations_pkey
+  - idx_ai_conversations_user_id
+  - idx_ai_conversations_building_id
+  - idx_ai_conversations_created_at
+
+
+TABLE: ai_logs
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - user_id: uuid NULL
+  - building_id: uuid NULL
+  - question: text NOT NULL
+  - response: text NOT NULL
+  - context_type: text NULL DEFAULT 'general'::text
+  - document_ids: ARRAY NULL DEFAULT '{}'::uuid[]
+  - leaseholder_id: uuid NULL
+  - email_thread_id: uuid NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - ai_logs_pkey: PRIMARY KEY (id)
+  - ai_logs_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL
+
+Indexes:
+  - ai_logs_pkey
+  - idx_ai_logs_user
+  - idx_ai_logs_building
+  - idx_ai_logs_context
+  - idx_ai_logs_created
+  - idx_ai_logs_user_id
+  - idx_ai_logs_building_id
+  - idx_ai_logs_context_type
+  - idx_ai_logs_created_at
+
+
+TABLE: ai_memory
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - scope: text NOT NULL
+  - building_id: uuid NULL
+  - conversation_id: uuid NULL
+  - key: text NOT NULL
+  - value: text NOT NULL
+  - weight: integer NULL DEFAULT 1
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - ai_memory_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - ai_memory_conversation_id_fkey: FOREIGN KEY (conversation_id) REFERENCES ai_conversations(id) ON DELETE CASCADE
+  - ai_memory_pkey: PRIMARY KEY (id)
+  - ai_memory_scope_building_id_conversation_id_key_key: UNIQUE (scope, building_id, conversation_id, key)
+  - ai_memory_scope_check: CHECK ((scope = ANY (ARRAY['global'::text, 'building'::text, 'conversation'::text])))
+
+Indexes:
+  - ai_memory_pkey
+  - ai_memory_scope_building_id_conversation_id_key_key
+  - idx_ai_memory_scope
+
+
+TABLE: ai_messages
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - conversation_id: uuid NULL
+  - role: text NULL
+  - content: text NOT NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - ai_messages_conversation_id_fkey: FOREIGN KEY (conversation_id) REFERENCES ai_conversations(id) ON DELETE CASCADE
+  - ai_messages_pkey: PRIMARY KEY (id)
+  - ai_messages_role_check: CHECK ((role = ANY (ARRAY['system'::text, 'user'::text, 'assistant'::text])))
+
+Indexes:
+  - ai_messages_pkey
+  - idx_ai_messages_conv_id
+
+
+TABLE: apportionments
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - unit_id: uuid NULL
+  - budget_id: uuid NULL
+  - percentage: numeric NULL
+  - amount: numeric NULL
+  - building_id: uuid NULL
+  - confidence_score: numeric NULL DEFAULT 1.00
+
+Constraints:
+  - apportionments_budget_id_fkey: FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE
+  - apportionments_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - apportionments_pkey: PRIMARY KEY (id)
+  - apportionments_unit_id_fkey: FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE
+  - fk_apportionments_building: FOREIGN KEY (building_id) REFERENCES buildings(id)
+
+Indexes:
+  - apportionments_pkey
+  - idx_apportionments_building_id
+  - idx_apportionments_building
+  - idx_apportionments_unit
+
+
+TABLE: arrears_records
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: text NOT NULL
+  - unit_id: text NOT NULL
+  - tenant_name: text NOT NULL
+  - amount_owed: numeric NOT NULL DEFAULT 0
+  - days_overdue: integer NOT NULL DEFAULT 0
+  - last_payment_date: timestamp with time zone NULL
+  - status: text NOT NULL DEFAULT 'current'::text
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - arrears_records_pkey: PRIMARY KEY (id)
+  - arrears_records_status_check: CHECK ((status = ANY (ARRAY['current'::text, 'overdue'::text, 'critical'::text])))
+
+Indexes:
+  - arrears_records_pkey
+  - idx_arrears_building_id
+  - idx_arrears_status
+
+
+TABLE: assets
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - asset_type: text NOT NULL
+  - asset_name: text NOT NULL
+  - location_description: text NULL
+  - model_number: text NULL
+  - serial_number: text NULL
+  - manufacturer: text NULL
+  - installation_date: date NULL
+  - last_service_date: date NULL
+  - next_service_date: date NULL
+  - warranty_expiry: date NULL
+  - compliance_category: text NULL
+  - status: text NULL DEFAULT 'active'::text
+  - linked_documents: ARRAY NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - assets_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - assets_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - assets_pkey
+  - idx_assets_building
+  - idx_assets_type
+  - idx_assets_compliance
+  - idx_assets_status
+
+
+TABLE: audit_trail
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - timestamp: timestamp with time zone NULL DEFAULT now()
+  - building_id: text NOT NULL
+  - intent: text NOT NULL
+  - status: text NOT NULL DEFAULT 'success'::text
+  - user_id: text NULL
+  - payload: jsonb NULL
+  - response: jsonb NULL
+  - files_generated: ARRAY NULL
+  - error_message: text NULL
+
+Constraints:
+  - audit_trail_pkey: PRIMARY KEY (id)
+  - audit_trail_status_check: CHECK ((status = ANY (ARRAY['success'::text, 'fail'::text, 'warn'::text, 'todo'::text])))
+
+Indexes:
+  - audit_trail_pkey
+  - idx_audit_trail_building_id
+  - idx_audit_trail_timestamp
+  - idx_audit_trail_status
+
+
+TABLE: balances_daily
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - as_of_date: date NOT NULL
+  - balance: numeric NOT NULL DEFAULT 0
+  - arrears_total: numeric NOT NULL DEFAULT 0
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - balances_daily_building_id_as_of_date_key: UNIQUE (building_id, as_of_date)
+  - balances_daily_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - balances_daily_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - balances_daily_pkey
+  - balances_daily_building_id_as_of_date_key
+  - idx_balances_daily_building_date
+
+
+TABLE: bsr_compliance_tracking
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - bsr_registration_number: text NULL
+  - accountable_person: text NULL
+  - principal_accountable_person: text NULL
+  - is_higher_risk: boolean NULL DEFAULT false
+  - height_metres: numeric NULL
+  - number_of_storeys: integer NULL
+  - number_of_residential_units: integer NULL
+  - overall_compliance_status: text NULL
+  - last_assessment_date: date NULL
+  - next_assessment_due: date NULL
+  - safety_case_report_id: uuid NULL
+  - safety_case_status: text NULL
+  - safety_case_last_updated: timestamp with time zone NULL
+  - structure_compliant: boolean NULL DEFAULT false
+  - fire_safety_compliant: boolean NULL DEFAULT false
+  - mechanical_electrical_compliant: boolean NULL DEFAULT false
+  - resident_engagement_compliant: boolean NULL DEFAULT false
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - bsr_compliance_tracking_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - bsr_compliance_tracking_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - bsr_compliance_tracking_pkey
+  - idx_bsr_tracking_building
+  - idx_bsr_tracking_higher_risk
+
+
+TABLE: bsr_helpers
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - helper_type: text NOT NULL
+  - category: text NULL
+  - title: text NOT NULL
+  - description: text NULL
+  - severity: text NULL DEFAULT 'info'::text
+  - action_label: text NULL
+  - action_type: text NULL
+  - action_payload: jsonb NULL
+  - context_data: jsonb NULL DEFAULT '{}'::jsonb
+  - is_active: boolean NULL DEFAULT true
+  - dismissed_at: timestamp with time zone NULL
+  - dismissed_by: uuid NULL
+  - generated_at: timestamp with time zone NULL DEFAULT now()
+  - expires_at: timestamp with time zone NULL
+
+Constraints:
+  - bsr_helpers_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - bsr_helpers_pkey: PRIMARY KEY (id)
+  - bsr_helpers_severity_check: CHECK ((severity = ANY (ARRAY['critical'::text, 'high'::text, 'medium'::text, 'low'::text, 'info'::text])))
+
+Indexes:
+  - bsr_helpers_pkey
+  - idx_bsr_helpers_building
+  - idx_bsr_helpers_type
+  - idx_bsr_helpers_active
+
+
+TABLE: budget_items
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: text NOT NULL
+  - category: text NOT NULL
+  - budgeted_amount: numeric NOT NULL DEFAULT 0
+  - actual_amount: numeric NOT NULL DEFAULT 0
+  - variance: numeric NULL
+  - period: text NOT NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - budget_items_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - budget_items_pkey
+  - idx_budget_items_building_id
+  - idx_budget_items_period
+
+
+TABLE: budget_lines
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - budget_id: uuid NOT NULL
+  - building_id: uuid NOT NULL
+  - schedule_id: uuid NULL
+  - coa_code: text NULL
+  - description: text NULL
+  - annual_amount: numeric NULL DEFAULT 0
+  - vat_rate: numeric NULL DEFAULT 0.2
+  - vendor_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - agency_id: uuid NULL
+
+Constraints:
+  - budget_lines_budget_id_fkey: FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE CASCADE
+  - budget_lines_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - budget_lines_pkey: PRIMARY KEY (id)
+  - budget_lines_schedule_id_fkey: FOREIGN KEY (schedule_id) REFERENCES schedules(id)
+  - budget_lines_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+
+Indexes:
+  - budget_lines_pkey
+  - idx_budget_lines_budget_id
+  - idx_budget_lines_building_id
+  - idx_budget_lines_schedule_id
+  - idx_budget_lines_budget_schedule
+
+
+TABLE: budgets
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - document_id: uuid NULL
+  - period: text NOT NULL
+  - total_amount: numeric NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - start_date: date NULL
+  - end_date: date NULL
+  - demand_date_1: date NULL
+  - demand_date_2: date NULL
+  - year_end_date: date NULL
+  - budget_type: text NULL
+  - agency_id: uuid NULL
+  - schedule_id: uuid NULL
+  - year: integer NULL
+  - name: text NULL
+  - confidence_score: numeric NULL DEFAULT 1.00
+  - year_start: date NULL
+  - year_end: date NULL
+
+Constraints:
+  - budgets_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - budgets_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - budgets_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - budgets_pkey: PRIMARY KEY (id)
+  - budgets_schedule_id_fkey: FOREIGN KEY (schedule_id) REFERENCES schedules(id)
+
+Indexes:
+  - budgets_pkey
+  - idx_budgets_year
+  - idx_budgets_schedule_id
+  - idx_budgets_building_schedule
+  - idx_budgets_building
+
+
+TABLE: building_assignments
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - user_id: uuid NOT NULL
+  - role: text NULL DEFAULT 'viewer'::text
+  - assigned_at: timestamp with time zone NULL DEFAULT now()
+  - assigned_by: uuid NULL
+
+Constraints:
+  - building_assignments_assigned_by_fkey: FOREIGN KEY (assigned_by) REFERENCES auth.users(id)
+  - building_assignments_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_assignments_building_id_user_id_key: UNIQUE (building_id, user_id)
+  - building_assignments_pkey: PRIMARY KEY (id)
+  - building_assignments_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+
+Indexes:
+  - building_assignments_pkey
+  - building_assignments_building_id_user_id_key
+  - idx_building_assignments_building
+  - idx_building_assignments_user
+
+
+TABLE: building_compliance_assets
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - compliance_asset_id: uuid NULL
+  - document_id: uuid NULL
+  - last_test_date: date NOT NULL
+  - next_due_date: date NOT NULL
+  - status: text NOT NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_compliance_assets_building_id_compliance_asset_id__key: UNIQUE (building_id, compliance_asset_id, last_test_date)
+  - building_compliance_assets_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_compliance_assets_compliance_asset_id_fkey: FOREIGN KEY (compliance_asset_id) REFERENCES compliance_assets(id) ON DELETE CASCADE
+  - building_compliance_assets_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - building_compliance_assets_pkey: PRIMARY KEY (id)
+  - building_compliance_assets_status_check: CHECK ((status = ANY (ARRAY['compliant'::text, 'overdue'::text, 'missing'::text])))
+
+Indexes:
+  - building_compliance_assets_pkey
+  - building_compliance_assets_building_id_compliance_asset_id__key
+
+
+TABLE: building_contractors
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - contractor_type: text NOT NULL
+  - company_name: text NULL
+  - contact_person: text NULL
+  - phone: text NULL
+  - email: text NULL
+  - contract_start: date NULL
+  - contract_end: date NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - retender_status: text NULL DEFAULT 'not_scheduled'::text
+  - retender_due_date: date NULL
+  - next_review_date: date NULL
+  - renewal_notice_period: interval NULL DEFAULT '90 days'::interval
+  - confidence_score: numeric NULL DEFAULT 1.00
+
+Constraints:
+  - building_contractors_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_contractors_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - building_contractors_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_contractors_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_contractors_pkey
+  - idx_building_contractors_building_id
+  - idx_building_contractors_type
+  - idx_building_contractors_retender_due
+  - idx_building_contractors_retender_status
+  - idx_contractors_building
+
+
+TABLE: building_diary_entries
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - entry_date: date NOT NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_diary_entries_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_diary_entries_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_diary_entries_pkey
+
+
+TABLE: building_documents
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - category: text NOT NULL
+  - file_name: text NOT NULL
+  - storage_path: text NOT NULL
+  - entity_type: text NULL
+  - linked_entity_id: uuid NULL
+  - uploaded_at: timestamp with time zone NULL DEFAULT now()
+  - ai_confidence: numeric NULL
+
+Constraints:
+  - building_documents_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_documents_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_documents_pkey
+
+
+TABLE: building_insurance
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - insurance_type: text NOT NULL
+  - broker_name: text NULL
+  - insurer_name: text NULL
+  - policy_number: text NULL
+  - renewal_date: date NULL
+  - coverage_amount: numeric NULL
+  - premium_amount: numeric NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - expiry_date: date NULL
+
+Constraints:
+  - building_insurance_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_insurance_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_insurance_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - idx_building_insurance_expiry
+  - building_insurance_pkey
+  - idx_building_insurance_building_id
+  - idx_building_insurance_type
+  - idx_building_insurance_building
+
+
+TABLE: building_keys_access
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - access_type: text NOT NULL
+  - description: text NULL
+  - code: text NULL
+  - location: text NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - category: text NULL
+  - label: text NULL
+  - visibility: text NULL DEFAULT 'team'::text
+
+Constraints:
+  - building_keys_access_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_keys_access_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_keys_access_pkey
+  - idx_building_keys_access_building_id
+  - idx_building_keys_access_type
+  - idx_building_keys_access_category
+  - idx_building_keys_access_search
+
+
+TABLE: building_knowledge
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - question: text NOT NULL
+  - answer: text NOT NULL
+  - category: text NULL
+  - source_type: text NULL DEFAULT 'user_input'::text
+  - confidence: numeric NULL DEFAULT 1.00
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - related_document_id: uuid NULL
+  - keywords: ARRAY NULL
+  - verified: boolean NULL DEFAULT false
+  - verified_by: text NULL
+  - verified_at: timestamp with time zone NULL
+  - created_by: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_knowledge_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_knowledge_pkey: PRIMARY KEY (id)
+  - building_knowledge_related_document_id_fkey: FOREIGN KEY (related_document_id) REFERENCES building_documents(id)
+  - building_knowledge_source_type_check: CHECK ((source_type = ANY (ARRAY['user_input'::text, 'document'::text, 'ai_inference'::text, 'system'::text, 'document_generation'::text])))
+
+Indexes:
+  - building_knowledge_pkey
+  - idx_building_knowledge_building
+  - idx_building_knowledge_category
+  - idx_building_knowledge_date
+  - idx_building_knowledge_verified
+  - idx_building_knowledge_search
+
+
+TABLE: building_knowledge_audit
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - exported_by: text NULL
+  - export_format: text NOT NULL
+  - total_records: integer NOT NULL
+  - category_filter: text NULL
+  - date_range_start: date NULL
+  - date_range_end: date NULL
+  - file_url: text NULL
+  - file_size_bytes: integer NULL
+  - exported_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_knowledge_audit_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_knowledge_audit_export_format_check: CHECK ((export_format = ANY (ARRAY['pdf'::text, 'csv'::text, 'json'::text])))
+  - building_knowledge_audit_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_knowledge_audit_pkey
+  - idx_knowledge_audit_building
+  - idx_knowledge_audit_date
+
+
+TABLE: building_legal
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - record_type: text NOT NULL
+  - description: text NULL
+  - party_name: text NULL
+  - solicitor_name: text NULL
+  - solicitor_contact: text NULL
+  - status: text NULL
+  - date_opened: date NULL
+  - date_closed: date NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_legal_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_legal_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_legal_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_legal_pkey
+  - idx_building_legal_building_id
+  - idx_building_legal_type
+  - idx_building_legal_status
+
+
+TABLE: building_safety_case
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - version: integer NOT NULL DEFAULT 1
+  - status: text NULL DEFAULT 'draft'::text
+  - summary: text NULL
+  - executive_summary: text NULL
+  - golden_thread: jsonb NULL DEFAULT '{}'::jsonb
+  - compiled_at: timestamp with time zone NULL DEFAULT now()
+  - compiled_by: uuid NULL
+  - published_at: timestamp with time zone NULL
+  - document_path: text NULL
+  - document_id: uuid NULL
+  - review_due_date: date NULL
+  - next_review_date: date NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_safety_case_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_safety_case_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_safety_case_pkey: PRIMARY KEY (id)
+  - building_safety_case_status_check: CHECK ((status = ANY (ARRAY['draft'::text, 'published'::text, 'superseded'::text])))
+
+Indexes:
+  - building_safety_case_pkey
+  - idx_safety_case_building
+  - idx_safety_case_status
+  - idx_safety_case_review_due
+
+
+TABLE: building_staff
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - staff_type: text NULL
+  - description: text NULL
+  - employee_name: text NULL
+  - position: text NULL
+  - start_date: date NULL
+  - end_date: date NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_staff_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_staff_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_staff_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_staff_pkey
+  - idx_building_staff_building_id
+  - idx_building_staff_type
+  - idx_building_staff_building
+
+
+TABLE: building_statutory_reports
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - report_type: text NOT NULL
+  - document_id: uuid NULL
+  - report_date: date NULL
+  - next_due_date: date NULL
+  - status: text NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_statutory_reports_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_statutory_reports_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_statutory_reports_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_statutory_reports_pkey
+  - idx_building_statutory_reports_building_id
+  - idx_building_statutory_reports_type
+  - idx_building_statutory_reports_next_due
+
+
+TABLE: building_summary
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: text NOT NULL
+  - total_units: integer NOT NULL DEFAULT 0
+  - occupied_units: integer NOT NULL DEFAULT 0
+  - total_arrears: numeric NOT NULL DEFAULT 0
+  - reserve_balance: numeric NOT NULL DEFAULT 0
+  - monthly_income: numeric NOT NULL DEFAULT 0
+  - monthly_expenses: numeric NOT NULL DEFAULT 0
+  - last_updated: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_summary_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_summary_pkey
+  - idx_building_summary_building_id
+  - idx_building_summary_last_updated
+
+
+TABLE: building_timeline_events
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - event_type: text NOT NULL
+  - ref_table: text NULL
+  - ref_id: uuid NULL
+  - summary: text NOT NULL
+  - description: text NULL
+  - meta: jsonb NULL DEFAULT '{}'::jsonb
+  - created_by: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_timeline_events_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_timeline_events_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_timeline_events_pkey
+  - idx_timeline_building
+  - idx_timeline_event_type
+  - idx_timeline_ref
+
+
+TABLE: building_title_deeds
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - record_type: text NOT NULL
+  - title_number: text NULL
+  - description: text NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_title_deeds_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_title_deeds_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_title_deeds_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_title_deeds_pkey
+  - idx_building_title_deeds_building_id
+  - idx_building_title_deeds_type
+
+
+TABLE: building_todo
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - title: text NOT NULL
+  - description: text NULL
+  - priority: text NULL
+  - status: text NULL DEFAULT 'Todo'::text
+  - due_date: date NULL
+  - assigned_to: uuid NULL
+  - source: text NULL
+  - source_id: uuid NULL
+  - metadata: jsonb NULL
+  - created_by: uuid NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - completed_at: timestamp with time zone NULL
+
+Constraints:
+  - building_todo_assigned_to_fkey: FOREIGN KEY (assigned_to) REFERENCES auth.users(id) ON DELETE SET NULL
+  - building_todo_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_todo_created_by_fkey: FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL
+  - building_todo_pkey: PRIMARY KEY (id)
+  - building_todo_priority_check: CHECK ((priority = ANY (ARRAY['Low'::text, 'Medium'::text, 'High'::text, 'Critical'::text])))
+  - building_todo_status_check: CHECK ((status = ANY (ARRAY['Todo'::text, 'InProgress'::text, 'Completed'::text, 'Cancelled'::text])))
+
+Indexes:
+  - building_todo_pkey
+  - idx_building_todo_building_id
+  - idx_building_todo_status
+  - idx_building_todo_priority
+  - idx_building_todo_due_date
+  - idx_building_todo_assigned_to
+  - idx_building_todo_source
+
+
+TABLE: building_todos
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - title: text NOT NULL
+  - description: text NULL
+  - due_date: date NULL
+  - status: text NULL DEFAULT 'open'::text
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - source: text NULL DEFAULT 'manual'::text
+  - linked_work_order_id: uuid NULL
+  - priority: text NULL DEFAULT 'normal'::text
+  - created_by: text NULL
+  - details: text NULL
+
+Constraints:
+  - building_todos_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_todos_linked_work_order_id_fkey: FOREIGN KEY (linked_work_order_id) REFERENCES works_orders(id)
+  - building_todos_pkey: PRIMARY KEY (id)
+  - building_todos_status_check: CHECK ((status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'awaiting_invoice'::text, 'awaiting_review'::text, 'completed'::text, 'done'::text])))
+
+Indexes:
+  - building_todos_pkey
+  - idx_building_todos_work_order
+  - idx_building_todos_status
+  - idx_building_todos_source
+
+
+TABLE: building_utilities
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - utility_type: text NOT NULL
+  - provider_name: text NULL
+  - account_number: text NULL
+  - meter_numbers: text NULL
+  - contact_phone: text NULL
+  - location: text NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_utilities_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_utilities_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_utilities_pkey
+  - idx_building_utilities_building_id
+  - idx_building_utilities_type
+
+
+TABLE: building_warranties
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - item_type: text NOT NULL
+  - supplier: text NULL
+  - installation_date: date NULL
+  - warranty_expiry: date NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - building_warranties_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - building_warranties_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - building_warranties_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - building_warranties_pkey
+  - idx_building_warranties_building_id
+  - idx_building_warranties_type
+  - idx_building_warranties_expiry
+
+
+TABLE: buildings
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - portfolio_id: uuid NULL
+  - name: text NOT NULL
+  - address: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - number_of_units: integer NULL
+  - previous_agents: text NULL
+  - current_accountants: text NULL
+  - accountant_contact: text NULL
+  - demand_date_1: date NULL
+  - demand_date_2: date NULL
+  - year_end_date: date NULL
+  - management_fee_ex_vat: numeric NULL
+  - management_fee_inc_vat: numeric NULL
+  - company_secretary_fee_ex_vat: numeric NULL
+  - company_secretary_fee_inc_vat: numeric NULL
+  - ground_rent_applicable: boolean NULL
+  - ground_rent_charges: text NULL
+  - insurance_broker: text NULL
+  - insurance_renewal_date: date NULL
+  - section_20_limit_inc_vat: numeric NULL
+  - expenditure_limit: numeric NULL
+  - additional_info: text NULL
+  - agency_id: uuid NULL
+
+Constraints:
+  - buildings_agency_id_fkey: FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+  - buildings_pkey: PRIMARY KEY (id)
+  - buildings_portfolio_id_fkey: FOREIGN KEY (portfolio_id) REFERENCES portfolios(id) ON DELETE CASCADE
+
+Indexes:
+  - buildings_pkey
+  - idx_buildings_agency_id
+
+
+TABLE: chat_messages
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - session_id: uuid NOT NULL
+  - role: text NOT NULL
+  - content: text NOT NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - chat_messages_pkey: PRIMARY KEY (id)
+  - chat_messages_role_check: CHECK ((role = ANY (ARRAY['user'::text, 'ai'::text, 'system'::text])))
+  - chat_messages_session_id_fkey: FOREIGN KEY (session_id) REFERENCES lead_chat_sessions(id) ON DELETE CASCADE
+
+Indexes:
+  - chat_messages_pkey
+  - idx_chat_messages_session_id
+  - idx_chat_messages_created_at
+
+
+TABLE: chat_sessions
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - title: text NOT NULL DEFAULT 'New Chat'::text
+  - building_id: uuid NULL
+  - user_id: uuid NULL
+  - created_at: timestamp with time zone NOT NULL DEFAULT now()
+  - updated_at: timestamp with time zone NOT NULL DEFAULT now()
+
+Constraints:
+  - chat_sessions_pkey1: PRIMARY KEY (id)
+
+Indexes:
+  - chat_sessions_pkey1
+
+
+TABLE: communications_log
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - communication_type: text NOT NULL
+  - subject: text NOT NULL
+  - summary: text NULL
+  - content: text NULL
+  - from_party: text NULL
+  - to_party: text NULL
+  - leaseholder_id: uuid NULL
+  - status: text NULL DEFAULT 'sent'::text
+  - direction: text NOT NULL
+  - is_section20: boolean NULL DEFAULT false
+  - consultation_deadline: date NULL
+  - document_ids: ARRAY NULL
+  - communication_date: timestamp with time zone NULL DEFAULT now()
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - recipients: ARRAY NULL
+  - audience: text NULL
+  - channel: text NULL DEFAULT 'email'::text
+  - related_works_order_id: uuid NULL
+  - related_todo_id: uuid NULL
+  - sent_by: text NULL
+  - body: text NULL
+
+Constraints:
+  - communications_log_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - communications_log_communication_type_check: CHECK ((communication_type = ANY (ARRAY['email'::text, 'letter'::text, 'phone'::text, 'meeting'::text, 'section20'::text, 'notice'::text, 'complaint'::text, 'general'::text])))
+  - communications_log_direction_check: CHECK ((direction = ANY (ARRAY['inbound'::text, 'outbound'::text])))
+  - communications_log_leaseholder_id_fkey: FOREIGN KEY (leaseholder_id) REFERENCES leaseholders(id)
+  - communications_log_pkey: PRIMARY KEY (id)
+  - communications_log_related_todo_id_fkey: FOREIGN KEY (related_todo_id) REFERENCES building_todos(id)
+  - communications_log_related_works_order_id_fkey: FOREIGN KEY (related_works_order_id) REFERENCES works_orders(id)
+  - communications_log_status_check: CHECK ((status = ANY (ARRAY['draft'::text, 'sent'::text, 'delivered'::text, 'read'::text, 'responded'::text, 'archived'::text, 'open'::text])))
+
+Indexes:
+  - communications_log_pkey
+  - idx_communications_building
+  - idx_communications_type
+  - idx_communications_date
+  - idx_communications_section20
+  - idx_comms_work_order
+  - idx_comms_todo
+  - idx_comms_audience
+
+
+TABLE: company_secretary
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - company_house_filing_code: text NULL
+  - memorandum_articles: text NULL
+  - stock_transfer_forms: boolean NULL
+  - certificate_of_incorporation: boolean NULL
+  - seal_available: boolean NULL
+  - audited_accounts_years: integer NULL
+  - document_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - company_secretary_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - company_secretary_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - company_secretary_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - company_secretary_pkey
+  - idx_company_secretary_building_id
+
+
+TABLE: compliance_actions
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - report_id: uuid NULL
+  - building_id: uuid NULL
+  - description: text NOT NULL
+  - category: text NOT NULL
+  - recommended_action: text NULL
+  - location: text NULL
+  - priority: text NULL DEFAULT 'medium'::text
+  - urgency_days: integer NULL
+  - deadline: date NULL
+  - status: text NULL DEFAULT 'open'::text
+  - completed_at: timestamp with time zone NULL
+  - linked_todo_id: uuid NULL
+  - linked_work_order_id: uuid NULL
+  - assigned_contractor_id: uuid NULL
+  - estimated_cost: numeric NULL
+  - actual_cost: numeric NULL
+  - requires_section20: boolean NULL DEFAULT false
+  - notes: text NULL
+  - internal_notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - bsr_ref: text NULL
+  - reviewed_by: uuid NULL
+  - reviewed_at: timestamp with time zone NULL
+
+Constraints:
+  - compliance_actions_assigned_contractor_id_fkey: FOREIGN KEY (assigned_contractor_id) REFERENCES contractors(id)
+  - compliance_actions_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - compliance_actions_linked_todo_id_fkey: FOREIGN KEY (linked_todo_id) REFERENCES building_todos(id)
+  - compliance_actions_linked_work_order_id_fkey: FOREIGN KEY (linked_work_order_id) REFERENCES works_orders(id)
+  - compliance_actions_pkey: PRIMARY KEY (id)
+  - compliance_actions_report_id_fkey: FOREIGN KEY (report_id) REFERENCES compliance_reports(id) ON DELETE CASCADE
+
+Indexes:
+  - compliance_actions_pkey
+  - idx_compliance_actions_report
+  - idx_compliance_actions_building
+  - idx_compliance_actions_category
+  - idx_compliance_actions_status
+  - idx_compliance_actions_deadline
+  - idx_compliance_actions_work_order
+  - idx_compliance_actions_bsr_ref
+  - idx_compliance_actions_reviewed
+
+
+TABLE: compliance_alerts
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: text NOT NULL
+  - alert_type: text NOT NULL
+  - severity: text NOT NULL
+  - title: text NOT NULL
+  - description: text NOT NULL
+  - due_date: timestamp with time zone NULL
+  - status: text NOT NULL DEFAULT 'active'::text
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - resolved_at: timestamp with time zone NULL
+  - metadata: jsonb NULL
+
+Constraints:
+  - compliance_alerts_pkey: PRIMARY KEY (id)
+  - compliance_alerts_severity_check: CHECK ((severity = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text, 'critical'::text])))
+  - compliance_alerts_status_check: CHECK ((status = ANY (ARRAY['active'::text, 'resolved'::text, 'dismissed'::text])))
+
+Indexes:
+  - compliance_alerts_pkey
+  - idx_compliance_alerts_building_id
+  - idx_compliance_alerts_status
+  - idx_compliance_alerts_due_date
+
+
+TABLE: compliance_assets
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - description: text NULL
+  - building_id: uuid NOT NULL
+  - asset_name: text NOT NULL
+  - asset_type: text NOT NULL
+  - inspection_frequency: interval NULL
+  - last_inspection_date: date NULL
+  - next_due_date: date NULL
+  - compliance_status: character varying NULL DEFAULT 'unknown'::character varying
+  - location: character varying NULL
+  - responsible_party: character varying NULL
+  - notes: text NULL
+  - is_active: boolean NULL DEFAULT true
+  - confidence_score: numeric NULL DEFAULT 1.00
+  - extraction_source: USER-DEFINED NULL DEFAULT 'ai_extraction'::source_type
+  - reinspection_date: date NULL
+  - inspection_contractor: text NULL
+
+Constraints:
+  - compliance_assets_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - compliance_assets_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - compliance_assets_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - compliance_assets_pkey
+  - idx_compliance_assets_building_id
+  - idx_compliance_assets_type
+  - idx_compliance_next_due_date
+  - idx_compliance_status
+  - idx_compliance_assets_status
+  - idx_compliance_assets_next_due
+  - idx_compliance_building_status
+  - idx_compliance_next_inspection
+  - idx_compliance_confidence
+
+
+TABLE: compliance_reports
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - type: text NOT NULL
+  - title: text NULL
+  - assessor: text NULL
+  - assessor_company: text NULL
+  - assessed_date: date NOT NULL
+  - next_due_date: date NULL
+  - uploaded_date: timestamp with time zone NULL DEFAULT now()
+  - risk_summary: jsonb NULL DEFAULT '{}'::jsonb
+  - overall_status: text NULL
+  - raw_text: text NULL
+  - extracted_data: jsonb NULL DEFAULT '{}'::jsonb
+  - source_file: text NULL
+  - document_id: uuid NULL
+  - bsr_category: text NULL
+  - is_bsr_critical: boolean NULL DEFAULT false
+  - is_active: boolean NULL DEFAULT true
+  - processing_status: text NULL DEFAULT 'completed'::text
+  - confidence_score: numeric NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - hazard_type: text NULL
+  - risk_rating: integer NULL
+
+Constraints:
+  - compliance_reports_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - compliance_reports_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id)
+  - compliance_reports_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - compliance_reports_pkey
+  - idx_compliance_reports_building
+  - idx_compliance_reports_type
+  - idx_compliance_reports_next_due
+  - idx_compliance_reports_bsr
+  - idx_compliance_reports_status
+  - idx_compliance_reports_bsr_category
+  - idx_compliance_reports_hazard_type
+  - idx_compliance_reports_risk_rating
+
+
+TABLE: compliance_templates
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - name: text NOT NULL
+  - type: text NOT NULL
+  - category: text NULL
+  - subject: text NULL
+  - body_template: text NOT NULL
+  - variables: jsonb NULL DEFAULT '[]'::jsonb
+  - is_active: boolean NULL DEFAULT true
+  - is_default: boolean NULL DEFAULT false
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - compliance_templates_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - compliance_templates_pkey
+  - idx_compliance_templates_type
+  - idx_compliance_templates_category
+
+
+TABLE: compliance_todo
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - action_id: uuid NULL
+  - title: text NOT NULL
+  - description: text NULL
+  - category: text NULL
+  - risk_level: text NULL DEFAULT 'C3'::text
+  - status: text NULL DEFAULT 'open'::text
+  - linked_work_order_id: uuid NULL
+  - linked_communication_id: uuid NULL
+  - due_date: date NULL
+  - completed_at: timestamp with time zone NULL
+  - created_by: uuid NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - compliance_todo_action_id_fkey: FOREIGN KEY (action_id) REFERENCES compliance_actions(id) ON DELETE SET NULL
+  - compliance_todo_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - compliance_todo_linked_communication_id_fkey: FOREIGN KEY (linked_communication_id) REFERENCES communications_log(id) ON DELETE SET NULL
+  - compliance_todo_linked_work_order_id_fkey: FOREIGN KEY (linked_work_order_id) REFERENCES works_orders(id) ON DELETE SET NULL
+  - compliance_todo_pkey: PRIMARY KEY (id)
+  - compliance_todo_risk_level_check: CHECK ((risk_level = ANY (ARRAY['C1'::text, 'C2'::text, 'C3'::text, 'Info'::text, 'FPN'::text])))
+  - compliance_todo_status_check: CHECK ((status = ANY (ARRAY['open'::text, 'in_progress'::text, 'awaiting_review'::text, 'complete'::text, 'cancelled'::text])))
+
+Indexes:
+  - compliance_todo_pkey
+  - idx_compliance_todo_building
+  - idx_compliance_todo_action
+  - idx_compliance_todo_status
+  - idx_compliance_todo_risk_level
+  - idx_compliance_todo_due_date
+
+
+TABLE: contractor_contracts
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - contractor_id: uuid NULL
+  - service_category: text NOT NULL
+  - contract_value: numeric NULL
+  - payment_frequency: text NULL
+  - start_date: date NOT NULL
+  - end_date: date NOT NULL
+  - notice_period_days: integer NULL DEFAULT 90
+  - actual_spend: numeric NULL DEFAULT 0
+  - budget_variance: numeric NULL DEFAULT 0
+  - linked_budget_id: uuid NULL
+  - linked_compliance_id: uuid NULL
+  - is_active: boolean NULL DEFAULT true
+  - auto_renew: boolean NULL DEFAULT false
+  - notes: text NULL
+  - contract_document_id: uuid NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - contractor_contracts_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - contractor_contracts_contract_document_id_fkey: FOREIGN KEY (contract_document_id) REFERENCES building_documents(id)
+  - contractor_contracts_contractor_id_fkey: FOREIGN KEY (contractor_id) REFERENCES contractors(id) ON DELETE CASCADE
+  - contractor_contracts_linked_budget_id_fkey: FOREIGN KEY (linked_budget_id) REFERENCES budgets(id) ON DELETE SET NULL
+  - contractor_contracts_linked_compliance_id_fkey: FOREIGN KEY (linked_compliance_id) REFERENCES compliance_assets(id) ON DELETE SET NULL
+  - contractor_contracts_pkey: PRIMARY KEY (id)
+  - contractor_contracts_service_category_check: CHECK ((service_category = ANY (ARRAY['lifts'::text, 'security'::text, 'fire_alarm'::text, 'cleaning'::text, 'maintenance'::text, 'insurance'::text, 'legal'::text, 'utilities'::text, 'grounds'::text, 'waste'::text, 'other'::text, 'unspecified'::text])))
+
+Indexes:
+  - contractor_contracts_pkey
+  - idx_contractor_contracts_building
+  - idx_contractor_contracts_contractor
+  - idx_contractor_contracts_service
+  - idx_contractor_contracts_dates
+
+
+TABLE: contractors
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - name: text NOT NULL
+  - company_name: text NULL
+  - email: text NULL
+  - phone: text NULL
+  - mobile: text NULL
+  - address: text NULL
+  - city: text NULL
+  - postcode: text NULL
+  - trade: text NULL
+  - services: ARRAY NULL
+  - hourly_rate: numeric NULL
+  - payment_terms_days: integer NULL DEFAULT 30
+  - insurance_provider: text NULL
+  - insurance_expiry: date NULL
+  - public_liability_amount: numeric NULL DEFAULT 5000000.00
+  - rating: numeric NULL
+  - total_jobs: integer NULL DEFAULT 0
+  - notes: text NULL
+  - is_active: boolean NULL DEFAULT true
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - contractors_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - contractors_pkey
+  - idx_contractors_trade
+  - idx_contractors_active
+
+
+TABLE: conversation_state
+------------------------------------------------------------
+Columns:
+  - user_id: text NOT NULL
+  - last_intent: text NULL
+  - last_files: jsonb NULL
+  - last_result: jsonb NULL
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - conversation_state_pkey: PRIMARY KEY (user_id)
+
+Indexes:
+  - conversation_state_pkey
+  - idx_conversation_state_updated
+
+
+TABLE: correspondence
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - document_id: uuid NULL
+  - subject: text NULL
+  - correspondent: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - correspondence_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - correspondence_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - correspondence_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - correspondence_pkey
+
+
+TABLE: document_ai_audit_log
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - document_id: uuid NULL
+  - document_name: text NULL
+  - field_extracted: text NULL
+  - original_value: text NULL
+  - suggested_value: text NULL
+  - confidence: numeric NULL
+  - extraction_model: text NULL DEFAULT 'claude-sonnet-4'::text
+  - action_taken: text NULL
+  - notes: text NULL
+  - created_at: timestamp without time zone NULL DEFAULT now()
+
+Constraints:
+  - document_ai_audit_log_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - document_ai_audit_log_confidence_check: CHECK (((confidence >= (0)::numeric) AND (confidence <= (1)::numeric)))
+  - document_ai_audit_log_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - document_ai_audit_log_pkey
+  - idx_ai_audit_building
+  - idx_ai_audit_document
+  - idx_ai_audit_created
+  - idx_ai_audit_confidence
+
+
+TABLE: document_chunks
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - document_id: uuid NULL
+  - chunk_index: integer NOT NULL
+  - content: text NOT NULL
+  - embedding: USER-DEFINED NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - document_chunks_document_id_fkey: FOREIGN KEY (document_id) REFERENCES founder_knowledge(id) ON DELETE CASCADE
+  - document_chunks_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - document_chunks_pkey
+  - idx_document_chunks_embedding
+  - idx_document_chunks_document
+
+
+TABLE: document_processing_status
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - document_id: uuid NULL
+  - status: text NOT NULL
+  - processing_type: text NOT NULL
+  - error_message: text NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - document_processing_status_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - document_processing_status_pkey
+  - idx_doc_processing_status
+  - idx_doc_processing_document
+
+
+TABLE: document_templates
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - name: text NOT NULL
+  - type: text NOT NULL
+  - description: text NULL
+  - field_map: jsonb NULL
+  - file_url: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - document_templates_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - document_templates_pkey
+  - idx_document_templates_type
+
+
+TABLE: email_communications
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - leaseholder_id: uuid NULL
+  - subject: text NOT NULL
+  - from_email: text NOT NULL
+  - from_name: text NULL
+  - to_email: text NOT NULL
+  - cc_emails: ARRAY NULL
+  - bcc_emails: ARRAY NULL
+  - body: text NOT NULL
+  - html_body: text NULL
+  - category: text NULL
+  - urgency: text NULL
+  - sentiment: text NULL
+  - is_complaint: boolean NULL DEFAULT false
+  - is_urgent: boolean NULL DEFAULT false
+  - requires_action: boolean NULL DEFAULT false
+  - conversation_id: text NULL
+  - in_reply_to: text NULL
+  - email_references: ARRAY NULL
+  - extracted_info: jsonb NULL
+  - intent_data: jsonb NULL
+  - status: text NULL DEFAULT 'received'::text
+  - reply_sent_at: timestamp with time zone NULL
+  - resolved_at: timestamp with time zone NULL
+  - source: text NULL DEFAULT 'outlook'::text
+  - metadata: jsonb NULL
+  - sent_at: timestamp with time zone NOT NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - email_communications_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - email_communications_leaseholder_id_fkey: FOREIGN KEY (leaseholder_id) REFERENCES leaseholders(id) ON DELETE SET NULL
+  - email_communications_pkey: PRIMARY KEY (id)
+  - email_communications_sentiment_check: CHECK ((sentiment = ANY (ARRAY['positive'::text, 'neutral'::text, 'negative'::text])))
+  - email_communications_source_check: CHECK ((source = ANY (ARRAY['outlook'::text, 'manual'::text, 'api'::text, 'chat'::text])))
+  - email_communications_status_check: CHECK ((status = ANY (ARRAY['received'::text, 'replied'::text, 'resolved'::text, 'escalated'::text, 'archived'::text])))
+  - email_communications_urgency_check: CHECK ((urgency = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text, 'urgent'::text])))
+
+Indexes:
+  - email_communications_pkey
+  - idx_email_comms_building
+  - idx_email_comms_leaseholder
+  - idx_email_comms_conversation
+  - idx_email_comms_category
+  - idx_email_comms_status
+  - idx_email_comms_sent_at
+  - idx_email_comms_from_email
+  - idx_email_comms_subject
+  - idx_email_comms_body
+  - idx_email_comms_search
+
+
+TABLE: email_reply_drafts
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - email_id: uuid NULL
+  - user_id: uuid NOT NULL
+  - draft_content: text NOT NULL
+  - building_id: uuid NULL
+  - metadata: jsonb NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - email_reply_drafts_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - email_reply_drafts_pkey: PRIMARY KEY (id)
+  - email_reply_drafts_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id)
+
+Indexes:
+  - email_reply_drafts_pkey
+  - idx_email_reply_drafts_user_id
+  - idx_email_reply_drafts_building_id
+  - idx_email_reply_drafts_created_at
+
+
+TABLE: email_templates
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - name: text NOT NULL
+  - description: text NULL
+  - category: text NOT NULL
+  - subject_template: text NOT NULL
+  - body_template: text NOT NULL
+  - html_template: text NULL
+  - variables: jsonb NULL
+  - usage_count: integer NULL DEFAULT 0
+  - last_used_at: timestamp with time zone NULL
+  - is_active: boolean NULL DEFAULT true
+  - created_by: uuid NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - email_templates_created_by_fkey: FOREIGN KEY (created_by) REFERENCES auth.users(id)
+  - email_templates_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - email_templates_pkey
+  - idx_email_templates_category
+  - idx_email_templates_active
+
+
+TABLE: events
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - title: text NOT NULL
+  - description: text NULL
+  - event_type: text NOT NULL
+  - event_date: date NOT NULL
+  - event_time: time without time zone NULL
+  - duration_minutes: integer NULL
+  - location: text NULL
+  - is_virtual: boolean NULL DEFAULT false
+  - meeting_link: text NULL
+  - attendees: ARRAY NULL
+  - required_quorum: integer NULL
+  - status: text NULL DEFAULT 'scheduled'::text
+  - related_document_id: uuid NULL
+  - related_compliance_id: uuid NULL
+  - send_reminder: boolean NULL DEFAULT true
+  - reminder_days_before: integer NULL DEFAULT 7
+  - notes: text NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_by: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - events_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - events_event_type_check: CHECK ((event_type = ANY (ARRAY['agm'::text, 'egm'::text, 'inspection'::text, 'works'::text, 'meeting'::text, 'deadline'::text, 'other'::text])))
+  - events_pkey: PRIMARY KEY (id)
+  - events_related_compliance_id_fkey: FOREIGN KEY (related_compliance_id) REFERENCES compliance_assets(id)
+  - events_related_document_id_fkey: FOREIGN KEY (related_document_id) REFERENCES building_documents(id)
+  - events_status_check: CHECK ((status = ANY (ARRAY['scheduled'::text, 'confirmed'::text, 'in_progress'::text, 'completed'::text, 'cancelled'::text])))
+
+Indexes:
+  - events_pkey
+  - idx_events_building
+  - idx_events_date
+  - idx_events_type
+  - idx_events_status
+
+
+TABLE: fire_door_inspections
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - unit_id: uuid NULL
+  - location: text NULL
+  - inspection_date: date NULL
+  - status: text NULL
+  - notes: text NULL
+  - document_path: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - fire_door_inspections_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - fire_door_inspections_pkey: PRIMARY KEY (id)
+  - fire_door_inspections_status_check: CHECK ((status = ANY (ARRAY['compliant'::text, 'non-compliant'::text, 'overdue'::text, 'unknown'::text])))
+  - fire_door_inspections_unit_id_fkey: FOREIGN KEY (unit_id) REFERENCES units(id)
+
+Indexes:
+  - fire_door_inspections_pkey
+  - idx_fire_door_inspections_building
+  - idx_fire_door_inspections_status
+
+
+TABLE: founder_knowledge
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - title: text NOT NULL
+  - content: text NOT NULL
+  - category: text NOT NULL
+  - subcategory: text NULL
+  - tags: ARRAY NULL DEFAULT '{}'::text[]
+  - contexts: ARRAY NULL DEFAULT '{}'::text[]
+  - priority: integer NULL DEFAULT 1
+  - version: integer NULL DEFAULT 1
+  - is_active: boolean NULL DEFAULT true
+  - source_url: text NULL
+  - last_validated_by: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - founder_knowledge_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - founder_knowledge_pkey
+  - idx_founder_knowledge_category
+  - idx_founder_knowledge_active
+  - idx_founder_knowledge_tags
+
+
+TABLE: invoices
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - unit_id: uuid NULL
+  - document_id: uuid NULL
+  - amount: numeric NOT NULL
+  - due_date: date NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - works_order_id: uuid NULL
+  - contractor_id: uuid NULL
+  - invoice_number: text NULL
+  - invoice_date: date NULL DEFAULT CURRENT_DATE
+  - status: text NULL DEFAULT 'posted'::text
+  - payment_date: date NULL
+  - document_path: text NULL
+  - description: text NULL
+  - notes: text NULL
+  - created_by: text NULL
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - invoices_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - invoices_contractor_id_fkey: FOREIGN KEY (contractor_id) REFERENCES contractors(id)
+  - invoices_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - invoices_pkey: PRIMARY KEY (id)
+  - invoices_unit_id_fkey: FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE
+  - invoices_works_order_id_fkey: FOREIGN KEY (works_order_id) REFERENCES works_orders(id) ON DELETE SET NULL
+
+Indexes:
+  - invoices_pkey
+  - idx_invoices_building
+  - idx_invoices_work_order
+  - idx_invoices_contractor
+  - idx_invoices_status
+  - idx_invoices_date
+
+
+TABLE: lead_chat_sessions
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - title: text NOT NULL DEFAULT 'New Chat'::text
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - building_id: text NULL
+  - user_id: text NULL
+
+Constraints:
+  - chat_sessions_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - chat_sessions_pkey
+  - idx_chat_sessions_created_at
+  - idx_chat_sessions_building_id
+  - idx_chat_sessions_user_id
+
+
+TABLE: lease_variations
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - lease_id: uuid NULL
+  - document_id: uuid NULL
+  - variation_type: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - lease_variations_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - lease_variations_lease_id_fkey: FOREIGN KEY (lease_id) REFERENCES leases(id) ON DELETE CASCADE
+  - lease_variations_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - lease_variations_pkey
+
+
+TABLE: leaseholders
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - unit_id: uuid NULL
+  - name: text NOT NULL
+  - email: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - correspondence_address: text NULL
+  - building_id: uuid NULL
+  - confidence_score: numeric NULL DEFAULT 1.00
+  - unit_number: character varying NULL
+
+Constraints:
+  - fk_leaseholders_building: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - leaseholders_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - leaseholders_pkey: PRIMARY KEY (id)
+  - leaseholders_unit_id_fkey: FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE
+
+Indexes:
+  - leaseholders_pkey
+  - idx_leaseholders_building_id
+  - idx_leaseholders_building
+  - idx_leaseholders_unit
+
+
+TABLE: leases
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - unit_id: uuid NULL
+  - leaseholder_id: uuid NULL
+  - document_id: uuid NULL
+  - lease_type: text NULL
+  - start_date: date NULL
+  - end_date: date NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - confidence_score: numeric NULL DEFAULT 1.00
+  - building_id: uuid NULL
+  - expiry_date: date NULL
+
+Constraints:
+  - leases_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - leases_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - leases_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - leases_leaseholder_id_fkey: FOREIGN KEY (leaseholder_id) REFERENCES leaseholders(id) ON DELETE CASCADE
+  - leases_pkey: PRIMARY KEY (id)
+  - leases_unit_id_fkey: FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE
+
+Indexes:
+  - leases_pkey
+  - idx_leases_building
+  - idx_leases_expiry
+  - idx_leases_unit
+
+
+TABLE: major_works
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: text NOT NULL
+  - project_name: text NOT NULL
+  - budget: numeric NOT NULL DEFAULT 0
+  - spent: numeric NOT NULL DEFAULT 0
+  - status: text NOT NULL DEFAULT 'planned'::text
+  - start_date: timestamp with time zone NULL
+  - completion_date: timestamp with time zone NULL
+  - description: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - major_works_pkey: PRIMARY KEY (id)
+  - major_works_status_check: CHECK ((status = ANY (ARRAY['planned'::text, 'in_progress'::text, 'completed'::text, 'on_hold'::text])))
+
+Indexes:
+  - major_works_pkey
+  - idx_major_works_building_id
+  - idx_major_works_status
+
+
+TABLE: major_works_notices
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - project_id: uuid NULL
+  - document_id: uuid NULL
+  - notice_type: text NOT NULL
+  - issued_date: date NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - building_id: uuid NULL
+
+Constraints:
+  - fk_major_works_notices_building: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - major_works_notices_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - major_works_notices_notice_type_check: CHECK ((notice_type = ANY (ARRAY['NOI'::text, 'SOE'::text, 'Final'::text, 'Other'::text])))
+  - major_works_notices_pkey: PRIMARY KEY (id)
+  - major_works_notices_project_id_fkey: FOREIGN KEY (project_id) REFERENCES major_works_projects(id) ON DELETE CASCADE
+
+Indexes:
+  - major_works_notices_pkey
+  - idx_major_works_notices_building_id
+
+
+TABLE: major_works_projects
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - document_id: uuid NULL
+  - project_name: text NOT NULL
+  - status: text NULL
+  - start_date: date NULL
+  - end_date: date NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - major_works_projects_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - major_works_projects_document_id_fkey: FOREIGN KEY (document_id) REFERENCES building_documents(id) ON DELETE CASCADE
+  - major_works_projects_pkey: PRIMARY KEY (id)
+  - major_works_projects_status_check: CHECK ((status = ANY (ARRAY['planned'::text, 'in_progress'::text, 'completed'::text, 'cancelled'::text])))
+
+Indexes:
+  - major_works_projects_pkey
+
+
+TABLE: management_pack_audit
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - pack_type: text NULL DEFAULT 'lpe1'::text
+  - generated_by: text NULL
+  - generated_at: timestamp with time zone NULL DEFAULT now()
+  - included: jsonb NULL
+  - missing: jsonb NULL
+  - document_count: integer NULL DEFAULT 0
+  - total_size_mb: numeric NULL
+  - download_url: text NULL
+  - status: text NULL DEFAULT 'completed'::text
+  - notes: text NULL
+
+Constraints:
+  - management_pack_audit_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - management_pack_audit_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - management_pack_audit_pkey
+  - idx_management_pack_audit_building
+  - idx_management_pack_audit_date
+
+
+TABLE: meeting_transcripts
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - meeting_type: text NOT NULL
+  - meeting_date: date NULL
+  - transcript: text NOT NULL
+  - confidence_score: numeric NULL
+  - audio_file_path: text NULL
+  - minutes_word_path: text NULL
+  - minutes_pdf_path: text NULL
+  - attendees: jsonb NULL
+  - speaker_diarization: jsonb NULL
+  - metadata: jsonb NULL
+  - created_by: uuid NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - meeting_transcripts_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - meeting_transcripts_created_by_fkey: FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL
+  - meeting_transcripts_meeting_type_check: CHECK ((meeting_type = ANY (ARRAY['AGM'::text, 'EGM'::text, 'Directors'::text, 'Committee'::text, 'Section20Consultation'::text, 'Other'::text])))
+  - meeting_transcripts_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - meeting_transcripts_pkey
+  - idx_meeting_transcripts_building_id
+  - idx_meeting_transcripts_meeting_type
+  - idx_meeting_transcripts_meeting_date
+  - idx_meeting_transcripts_created_at
+
+
+TABLE: portfolios
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - agency_id: uuid NULL
+  - name: text NOT NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - portfolios_agency_id_fkey: FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+  - portfolios_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - portfolios_pkey
+
+
+TABLE: profiles
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL
+  - agency_id: uuid NOT NULL
+  - role: text NOT NULL DEFAULT 'user'::text
+  - full_name: text NULL
+  - email: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - profiles_agency_id_fkey: FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+  - profiles_id_fkey: FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+  - profiles_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - profiles_pkey
+  - idx_profiles_agency_id
+
+
+TABLE: retender_events
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - contractor_contract_id: uuid NULL
+  - event_type: text NOT NULL
+  - event_date: date NOT NULL
+  - reminder_days_before: integer NULL
+  - is_actioned: boolean NULL DEFAULT false
+  - actioned_at: timestamp with time zone NULL
+  - actioned_by: text NULL
+  - retender_session_id: uuid NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - retender_events_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - retender_events_contractor_contract_id_fkey: FOREIGN KEY (contractor_contract_id) REFERENCES contractor_contracts(id) ON DELETE CASCADE
+  - retender_events_event_type_check: CHECK ((event_type = ANY (ARRAY['expiry_reminder'::text, 'review_due'::text, 'retender_required'::text])))
+  - retender_events_pkey: PRIMARY KEY (id)
+  - retender_events_retender_session_id_fkey: FOREIGN KEY (retender_session_id) REFERENCES retender_sessions(id)
+
+Indexes:
+  - retender_events_pkey
+  - idx_retender_events_building
+  - idx_retender_events_contract
+  - idx_retender_events_date
+  - idx_retender_events_actioned
+
+
+TABLE: retender_quotes
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - retender_session_id: uuid NULL
+  - contractor_id: uuid NULL
+  - contractor_name: text NOT NULL
+  - quoted_amount: numeric NOT NULL
+  - contract_term_years: integer NULL
+  - payment_terms: text NULL
+  - is_selected: boolean NULL DEFAULT false
+  - evaluation_score: numeric NULL
+  - evaluation_notes: text NULL
+  - quote_document_id: uuid NULL
+  - received_at: timestamp with time zone NULL DEFAULT now()
+  - valid_until: date NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - retender_quotes_contractor_id_fkey: FOREIGN KEY (contractor_id) REFERENCES contractors(id)
+  - retender_quotes_pkey: PRIMARY KEY (id)
+  - retender_quotes_quote_document_id_fkey: FOREIGN KEY (quote_document_id) REFERENCES building_documents(id)
+  - retender_quotes_retender_session_id_fkey: FOREIGN KEY (retender_session_id) REFERENCES retender_sessions(id) ON DELETE CASCADE
+
+Indexes:
+  - retender_quotes_pkey
+  - idx_retender_quotes_session
+  - idx_retender_quotes_contractor
+  - idx_retender_quotes_selected
+
+
+TABLE: retender_sessions
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - contractor_contract_id: uuid NULL
+  - building_id: uuid NULL
+  - service_category: text NOT NULL
+  - initiated_by: text NULL
+  - status: text NULL DEFAULT 'in_progress'::text
+  - started_at: timestamp with time zone NULL DEFAULT now()
+  - deadline_date: date NULL
+  - completed_at: timestamp with time zone NULL
+  - winning_quote_id: uuid NULL
+  - comparison_pdf: text NULL
+  - notes: text NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - retender_sessions_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - retender_sessions_contractor_contract_id_fkey: FOREIGN KEY (contractor_contract_id) REFERENCES contractor_contracts(id) ON DELETE CASCADE
+  - retender_sessions_pkey: PRIMARY KEY (id)
+  - retender_sessions_status_check: CHECK ((status = ANY (ARRAY['in_progress'::text, 'quotes_received'::text, 'reviewed'::text, 'completed'::text, 'cancelled'::text])))
+
+Indexes:
+  - idx_retender_sessions_status
+  - retender_sessions_pkey
+  - idx_retender_sessions_building
+  - idx_retender_sessions_contract
+
+
+TABLE: roles
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - role_name: text NOT NULL
+
+Constraints:
+  - roles_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - roles_pkey
+
+
+TABLE: safety_case_documents
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - document_type: USER-DEFINED NULL
+  - status: USER-DEFINED NULL DEFAULT 'missing'::document_status
+  - received_date: date NULL
+  - expected_upload_date: date NULL
+  - file_url: text NULL
+  - source: USER-DEFINED NULL DEFAULT 'upload'::source_type
+  - notes: text NULL
+  - confidence_score: numeric NULL DEFAULT 1.00
+  - created_at: timestamp without time zone NULL DEFAULT now()
+  - updated_at: timestamp without time zone NULL DEFAULT now()
+
+Constraints:
+  - safety_case_documents_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - safety_case_documents_confidence_score_check: CHECK (((confidence_score >= (0)::numeric) AND (confidence_score <= (1)::numeric)))
+  - safety_case_documents_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - safety_case_documents_pkey
+  - idx_safety_docs_building_status
+  - idx_safety_docs_type
+  - idx_safety_docs_received
+
+
+TABLE: schedules
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NOT NULL
+  - name: text NOT NULL
+  - description: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - agency_id: uuid NULL
+
+Constraints:
+  - schedules_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - schedules_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - schedules_pkey
+  - idx_schedules_building_id
+
+
+TABLE: tenders
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - budget_line_id: uuid NULL
+  - building_id: uuid NOT NULL
+  - schedule_id: uuid NULL
+  - vendor_id: uuid NULL
+  - type: text NULL
+  - status: text NULL DEFAULT 'sent'::text
+  - amount: numeric NULL
+  - document_url: text NULL
+  - sent_at: timestamp with time zone NULL DEFAULT now()
+  - responded_at: timestamp with time zone NULL
+  - approved_at: timestamp with time zone NULL
+  - notes: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - agency_id: uuid NULL
+
+Constraints:
+  - tenders_budget_line_id_fkey: FOREIGN KEY (budget_line_id) REFERENCES budget_lines(id) ON DELETE CASCADE
+  - tenders_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - tenders_pkey: PRIMARY KEY (id)
+  - tenders_schedule_id_fkey: FOREIGN KEY (schedule_id) REFERENCES schedules(id)
+  - tenders_vendor_id_fkey: FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+
+Indexes:
+  - tenders_pkey
+  - idx_tenders_budget_line_id
+  - idx_tenders_building_id
+  - idx_tenders_schedule_id
+  - idx_tenders_vendor_id
+
+
+TABLE: timeline_events
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - event_type: text NOT NULL
+  - event_date: timestamp with time zone NULL DEFAULT now()
+  - description: text NULL
+  - metadata: jsonb NULL
+  - severity: text NULL DEFAULT 'info'::text
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - timeline_events_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id)
+  - timeline_events_pkey: PRIMARY KEY (id)
+  - timeline_events_severity_check: CHECK ((severity = ANY (ARRAY['info'::text, 'warning'::text, 'error'::text])))
+
+Indexes:
+  - timeline_events_pkey
+  - idx_timeline_events_building
+  - idx_timeline_events_type
+  - idx_timeline_events_date
+
+
+TABLE: units
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - building_id: uuid NULL
+  - unit_number: text NOT NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - units_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - units_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - units_pkey
+
+
+TABLE: user_buildings
+------------------------------------------------------------
+Columns:
+  - user_id: uuid NOT NULL
+  - building_id: uuid NOT NULL
+  - assigned_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - user_buildings_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - user_buildings_pkey: PRIMARY KEY (user_id, building_id)
+  - user_buildings_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+Indexes:
+  - user_buildings_pkey
+
+
+TABLE: user_calendar_events
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - user_id: uuid NULL
+  - event_id: text NOT NULL
+  - subject: text NOT NULL
+  - start_time: timestamp with time zone NOT NULL
+  - end_time: timestamp with time zone NOT NULL
+  - location: text NULL
+  - organizer_email: text NULL
+  - organizer_name: text NULL
+  - attendees: jsonb NULL DEFAULT '[]'::jsonb
+  - body_preview: text NULL
+  - is_all_day: boolean NULL DEFAULT false
+  - category: text NULL
+  - related_building_id: uuid NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - synced_at: timestamp with time zone NULL DEFAULT now()
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+
+Constraints:
+  - user_calendar_events_pkey: PRIMARY KEY (id)
+  - user_calendar_events_related_building_id_fkey: FOREIGN KEY (related_building_id) REFERENCES buildings(id) ON DELETE SET NULL
+  - user_calendar_events_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+
+Indexes:
+  - user_calendar_events_pkey
+  - idx_user_calendar_events_user_id
+  - idx_user_calendar_events_start_time
+  - idx_user_calendar_events_category
+  - idx_user_calendar_events_event_id
+  - idx_user_calendar_events_user_event
+
+
+TABLE: user_roles
+------------------------------------------------------------
+Columns:
+  - user_id: uuid NOT NULL
+  - role_id: uuid NOT NULL
+
+Constraints:
+  - user_roles_pkey: PRIMARY KEY (user_id, role_id)
+  - user_roles_role_id_fkey: FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+  - user_roles_user_id_fkey: FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
+Indexes:
+  - user_roles_pkey
+
+
+TABLE: users
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT uuid_generate_v4()
+  - agency_id: uuid NULL
+  - email: text NOT NULL
+  - name: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - auth_user_id: uuid NULL
+
+Constraints:
+  - users_agency_id_fkey: FOREIGN KEY (agency_id) REFERENCES agencies(id) ON DELETE CASCADE
+  - users_auth_user_id_fkey: FOREIGN KEY (auth_user_id) REFERENCES auth.users(id)
+  - users_email_key: UNIQUE (email)
+  - users_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - users_pkey
+  - users_email_key
+
+
+TABLE: vendors
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - name: text NOT NULL
+  - contact_name: text NULL
+  - email: text NULL
+  - phone: text NULL
+  - address: text NULL
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - agency_id: uuid NULL
+
+Constraints:
+  - vendors_pkey: PRIMARY KEY (id)
+
+Indexes:
+  - vendors_pkey
+
+
+TABLE: works_orders
+------------------------------------------------------------
+Columns:
+  - id: uuid NOT NULL DEFAULT gen_random_uuid()
+  - building_id: uuid NULL
+  - contractor_id: uuid NULL
+  - contractor_contract_id: uuid NULL
+  - compliance_asset_id: uuid NULL
+  - title: text NOT NULL
+  - summary: text NOT NULL
+  - description: text NULL
+  - service_category: text NULL
+  - priority: text NULL DEFAULT 'medium'::text
+  - cost_estimate: numeric NULL
+  - actual_cost: numeric NULL
+  - invoice_number: text NULL
+  - status: text NULL DEFAULT 'open'::text
+  - reported_date: timestamp with time zone NULL DEFAULT now()
+  - assigned_date: timestamp with time zone NULL
+  - completed_at: timestamp with time zone NULL
+  - reported_by: text NULL
+  - unit_number: text NULL
+  - notes: text NULL
+  - metadata: jsonb NULL DEFAULT '{}'::jsonb
+  - created_at: timestamp with time zone NULL DEFAULT now()
+  - updated_at: timestamp with time zone NULL DEFAULT now()
+  - agency_id: uuid NULL
+  - schedule_id: uuid NULL
+
+Constraints:
+  - works_orders_building_id_fkey: FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+  - works_orders_compliance_asset_id_fkey: FOREIGN KEY (compliance_asset_id) REFERENCES compliance_assets(id) ON DELETE SET NULL
+  - works_orders_contractor_contract_id_fkey: FOREIGN KEY (contractor_contract_id) REFERENCES contractor_contracts(id) ON DELETE SET NULL
+  - works_orders_contractor_id_fkey: FOREIGN KEY (contractor_id) REFERENCES contractors(id) ON DELETE SET NULL
+  - works_orders_pkey: PRIMARY KEY (id)
+  - works_orders_priority_check: CHECK ((priority = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text, 'urgent'::text])))
+  - works_orders_schedule_id_fkey: FOREIGN KEY (schedule_id) REFERENCES schedules(id)
+  - works_orders_status_check: CHECK ((status = ANY (ARRAY['open'::text, 'assigned'::text, 'in_progress'::text, 'awaiting_invoice'::text, 'complete'::text, 'cancelled'::text])))
+
+Indexes:
+  - works_orders_pkey
+  - idx_works_orders_building
+  - idx_works_orders_contractor
+  - idx_works_orders_contract
+  - idx_works_orders_status
+  - idx_works_orders_service
+  - idx_works_orders_compliance
+  - idx_works_orders_schedule_id
+  - idx_works_orders_building_schedule
+
