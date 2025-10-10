@@ -802,6 +802,19 @@ class SupabaseSchemaMapper:
     
     def validate_data(self, table_name: str, data: Dict) -> Dict:
         """Validate and filter data to only include valid columns"""
+        # Apply column name mappings FIRST (before filtering)
+        column_mappings = {
+            'major_works_projects': {'name': 'project_name'},
+            'building_documents': {'file_path': 'storage_path'},
+        }
+
+        if table_name in column_mappings:
+            mapped_data = {}
+            for k, v in data.items():
+                new_k = column_mappings[table_name].get(k, k)
+                mapped_data[new_k] = v
+            data = mapped_data
+
         valid_columns = self.get_table_columns(table_name)
         return {k: v for k, v in data.items() if k in valid_columns}
     
