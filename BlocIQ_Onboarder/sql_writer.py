@@ -1157,14 +1157,15 @@ class SQLWriter:
         self.sql_statements.append("")
 
     def _generate_maintenance_schedules_inserts(self, schedules: List[Dict]):
-        """Generate INSERT statements for maintenance_schedules table"""
+        """Generate INSERT statements for schedules table (maintenance_schedules mapped to schedules)"""
         if not schedules:
             return
 
-        self.sql_statements.append(f"-- Insert {len(schedules)} maintenance schedules")
+        self.sql_statements.append(f"-- Insert {len(schedules)} maintenance schedules (into schedules table)")
         for schedule in schedules:
+            # Map maintenance_schedules to schedules table
             self.sql_statements.append(
-                self._create_insert_statement('maintenance_schedules', schedule, use_upsert=False)
+                self._create_insert_statement('schedules', schedule, use_upsert=False)
             )
         self.sql_statements.append("")
 

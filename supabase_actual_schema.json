@@ -1,0 +1,6334 @@
+{
+  "actuals": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "budget_line_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "schedule_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "amount",
+      "type": "numeric",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "invoice_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "vendor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "agencies": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "ai_conversations": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "rolling_summary",
+      "type": "text",
+      "nullable": true,
+      "default": "''::text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "ai_logs": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "question",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "response",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "context_type",
+      "type": "text",
+      "nullable": true,
+      "default": "'general'::text"
+    },
+    {
+      "name": "document_ids",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": "'{}'::uuid[]"
+    },
+    {
+      "name": "leaseholder_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email_thread_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "ai_memory": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "scope",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "conversation_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "key",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "value",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "weight",
+      "type": "integer",
+      "nullable": true,
+      "default": "1"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "ai_messages": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "conversation_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "apportionments": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "unit_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "budget_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "percentage",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    }
+  ],
+  "arrears_records": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "unit_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "tenant_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "amount_owed",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "days_overdue",
+      "type": "integer",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "last_payment_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": false,
+      "default": "'current'::text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "assets": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "asset_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "asset_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "location_description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "model_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "serial_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "manufacturer",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "installation_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_service_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "next_service_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "warranty_expiry",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "compliance_category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'active'::text"
+    },
+    {
+      "name": "linked_documents",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "audit_trail": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "timestamp",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "intent",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": false,
+      "default": "'success'::text"
+    },
+    {
+      "name": "user_id",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "response",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "files_generated",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "error_message",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "balances_daily": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "as_of_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "balance",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "arrears_total",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "bsr_compliance_tracking": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "bsr_registration_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "accountable_person",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "principal_accountable_person",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_higher_risk",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "height_metres",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "number_of_storeys",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "number_of_residential_units",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "overall_compliance_status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_assessment_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "next_assessment_due",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "safety_case_report_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "safety_case_status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "safety_case_last_updated",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "structure_compliant",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "fire_safety_compliant",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "mechanical_electrical_compliant",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "resident_engagement_compliant",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "bsr_helpers": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "helper_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "severity",
+      "type": "text",
+      "nullable": true,
+      "default": "'info'::text"
+    },
+    {
+      "name": "action_label",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "action_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "action_payload",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "context_data",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "dismissed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "dismissed_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "generated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "budget_items": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "budgeted_amount",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "actual_amount",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "variance",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "period",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "budget_lines": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "budget_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "schedule_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "coa_code",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "annual_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "name": "vat_rate",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0.2"
+    },
+    {
+      "name": "vendor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "budgets": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "period",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "total_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "end_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "demand_date_1",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "demand_date_2",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "year_end_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "budget_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "schedule_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "year",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    },
+    {
+      "name": "year_start",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "year_end",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "building_assignments": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "nullable": true,
+      "default": "'viewer'::text"
+    },
+    {
+      "name": "assigned_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "assigned_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "building_compliance_assets": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "compliance_asset_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_test_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "next_due_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_contractors": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "contractor_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "company_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contact_person",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contract_start",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contract_end",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "retender_status",
+      "type": "text",
+      "nullable": true,
+      "default": "'not_scheduled'::text"
+    },
+    {
+      "name": "retender_due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "next_review_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "renewal_notice_period",
+      "type": "interval",
+      "nullable": true,
+      "default": "'90 days'::interval"
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    }
+  ],
+  "building_diary_entries": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "entry_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_documents": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "file_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "storage_path",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "entity_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "linked_entity_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "uploaded_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "ai_confidence",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "building_insurance": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "insurance_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "broker_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "insurer_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "policy_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "renewal_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "coverage_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "premium_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "expiry_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "building_keys_access": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "access_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "code",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "label",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "visibility",
+      "type": "text",
+      "nullable": true,
+      "default": "'team'::text"
+    }
+  ],
+  "building_knowledge": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "question",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "answer",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "source_type",
+      "type": "text",
+      "nullable": true,
+      "default": "'user_input'::text"
+    },
+    {
+      "name": "confidence",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "related_document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "keywords",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "verified",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "verified_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "verified_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_knowledge_audit": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "exported_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "export_format",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "total_records",
+      "type": "integer",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category_filter",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "date_range_start",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "date_range_end",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "file_url",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "file_size_bytes",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "exported_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_legal": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "record_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "party_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "solicitor_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "solicitor_contact",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "date_opened",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "date_closed",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_safety_case": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "version",
+      "type": "integer",
+      "nullable": false,
+      "default": "1"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'draft'::text"
+    },
+    {
+      "name": "summary",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "executive_summary",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "golden_thread",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "compiled_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "compiled_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "published_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_path",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "review_due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "next_review_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_staff": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "staff_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "employee_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "position",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "end_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_statutory_reports": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "report_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "report_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "next_due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_summary": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "total_units",
+      "type": "integer",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "occupied_units",
+      "type": "integer",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "total_arrears",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "reserve_balance",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "monthly_income",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "monthly_expenses",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "last_updated",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_timeline_events": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "event_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "ref_table",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "ref_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "summary",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "meta",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_title_deeds": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "record_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "title_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_todo": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "priority",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'Todo'::text"
+    },
+    {
+      "name": "due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "assigned_to",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "source_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "building_todos": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'open'::text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "nullable": true,
+      "default": "'manual'::text"
+    },
+    {
+      "name": "linked_work_order_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "priority",
+      "type": "text",
+      "nullable": true,
+      "default": "'normal'::text"
+    },
+    {
+      "name": "created_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "details",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "building_utilities": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "utility_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "provider_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "account_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "meter_numbers",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contact_phone",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "building_warranties": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "item_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "supplier",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "installation_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "warranty_expiry",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "buildings": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "portfolio_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "number_of_units",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "previous_agents",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "current_accountants",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "accountant_contact",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "demand_date_1",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "demand_date_2",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "year_end_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "management_fee_ex_vat",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "management_fee_inc_vat",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "company_secretary_fee_ex_vat",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "company_secretary_fee_inc_vat",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "ground_rent_applicable",
+      "type": "boolean",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "ground_rent_charges",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "insurance_broker",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "insurance_renewal_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "section_20_limit_inc_vat",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "expenditure_limit",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "additional_info",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "chat_messages": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "session_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "chat_sessions": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": "'New Chat'::text"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": false,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": false,
+      "default": "now()"
+    }
+  ],
+  "communications_log": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "communication_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "subject",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "summary",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "from_party",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "to_party",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "leaseholder_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'sent'::text"
+    },
+    {
+      "name": "direction",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "is_section20",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "consultation_deadline",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_ids",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "communication_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "recipients",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "audience",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "channel",
+      "type": "text",
+      "nullable": true,
+      "default": "'email'::text"
+    },
+    {
+      "name": "related_works_order_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "related_todo_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "sent_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "body",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "company_secretary": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "company_house_filing_code",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "memorandum_articles",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "stock_transfer_forms",
+      "type": "boolean",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "certificate_of_incorporation",
+      "type": "boolean",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "seal_available",
+      "type": "boolean",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "audited_accounts_years",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "compliance_actions": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "report_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "recommended_action",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "priority",
+      "type": "text",
+      "nullable": true,
+      "default": "'medium'::text"
+    },
+    {
+      "name": "urgency_days",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "deadline",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'open'::text"
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "linked_todo_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "linked_work_order_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "assigned_contractor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "estimated_cost",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "actual_cost",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "requires_section20",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "internal_notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "bsr_ref",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "reviewed_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "reviewed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "compliance_alerts": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "alert_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "severity",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "due_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": false,
+      "default": "'active'::text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "resolved_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "compliance_assets": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "asset_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "asset_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "inspection_frequency",
+      "type": "interval",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_inspection_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "next_due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "compliance_status",
+      "type": "character varying",
+      "nullable": true,
+      "default": "'unknown'::character varying"
+    },
+    {
+      "name": "location",
+      "type": "character varying",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "responsible_party",
+      "type": "character varying",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    },
+    {
+      "name": "extraction_source",
+      "type": "USER-DEFINED",
+      "nullable": true,
+      "default": "'ai_extraction'::source_type"
+    },
+    {
+      "name": "reinspection_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "inspection_contractor",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "compliance_reports": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "assessor",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "assessor_company",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "assessed_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "next_due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "uploaded_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "risk_summary",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "overall_status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "raw_text",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "extracted_data",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "source_file",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "bsr_category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_bsr_critical",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "processing_status",
+      "type": "text",
+      "nullable": true,
+      "default": "'completed'::text"
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "hazard_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "risk_rating",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "compliance_templates": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "subject",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "body_template",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "variables",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'[]'::jsonb"
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "is_default",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "compliance_todo": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "action_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "risk_level",
+      "type": "text",
+      "nullable": true,
+      "default": "'C3'::text"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'open'::text"
+    },
+    {
+      "name": "linked_work_order_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "linked_communication_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "contractor_contracts": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "service_category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "contract_value",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "payment_frequency",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "end_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "notice_period_days",
+      "type": "integer",
+      "nullable": true,
+      "default": "90"
+    },
+    {
+      "name": "actual_spend",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "name": "budget_variance",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "name": "linked_budget_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "linked_compliance_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "auto_renew",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contract_document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "contractors": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "company_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "mobile",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "city",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "postcode",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "trade",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "services",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "hourly_rate",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "payment_terms_days",
+      "type": "integer",
+      "nullable": true,
+      "default": "30"
+    },
+    {
+      "name": "insurance_provider",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "insurance_expiry",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "public_liability_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": "5000000.00"
+    },
+    {
+      "name": "rating",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "total_jobs",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "conversation_state": [
+    {
+      "name": "user_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "last_intent",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_files",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_result",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "correspondence": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "subject",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "correspondent",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "document_ai_audit_log": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "field_extracted",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "original_value",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "suggested_value",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "confidence",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "extraction_model",
+      "type": "text",
+      "nullable": true,
+      "default": "'claude-sonnet-4'::text"
+    },
+    {
+      "name": "action_taken",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "document_chunks": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "chunk_index",
+      "type": "integer",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "embedding",
+      "type": "USER-DEFINED",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "document_processing_status": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "processing_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "error_message",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "document_templates": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "field_map",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "file_url",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "email_communications": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "leaseholder_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "subject",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "from_email",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "from_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "to_email",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "cc_emails",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "bcc_emails",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "body",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "html_body",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "urgency",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "sentiment",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_complaint",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "is_urgent",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "requires_action",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "conversation_id",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "in_reply_to",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email_references",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "extracted_info",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "intent_data",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'received'::text"
+    },
+    {
+      "name": "reply_sent_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "resolved_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "source",
+      "type": "text",
+      "nullable": true,
+      "default": "'outlook'::text"
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "sent_at",
+      "type": "timestamp with time zone",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "email_reply_drafts": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "email_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "draft_content",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "email_templates": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "subject_template",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "body_template",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "html_template",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "variables",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "usage_count",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "name": "last_used_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "created_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "events": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "event_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "event_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "event_time",
+      "type": "time without time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "duration_minutes",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_virtual",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "meeting_link",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "attendees",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "required_quorum",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'scheduled'::text"
+    },
+    {
+      "name": "related_document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "related_compliance_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "send_reminder",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "reminder_days_before",
+      "type": "integer",
+      "nullable": true,
+      "default": "7"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "fire_door_inspections": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "unit_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "inspection_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_path",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "founder_knowledge": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "subcategory",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "tags",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": "'{}'::text[]"
+    },
+    {
+      "name": "contexts",
+      "type": "ARRAY",
+      "nullable": true,
+      "default": "'{}'::text[]"
+    },
+    {
+      "name": "priority",
+      "type": "integer",
+      "nullable": true,
+      "default": "1"
+    },
+    {
+      "name": "version",
+      "type": "integer",
+      "nullable": true,
+      "default": "1"
+    },
+    {
+      "name": "is_active",
+      "type": "boolean",
+      "nullable": true,
+      "default": "true"
+    },
+    {
+      "name": "source_url",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "last_validated_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "invoices": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "unit_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "amount",
+      "type": "numeric",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "due_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "works_order_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "invoice_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "invoice_date",
+      "type": "date",
+      "nullable": true,
+      "default": "CURRENT_DATE"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'posted'::text"
+    },
+    {
+      "name": "payment_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_path",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "lead_chat_sessions": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": "'New Chat'::text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "user_id",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "lease_variations": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "lease_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "variation_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "leaseholders": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "unit_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "correspondence_address",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    },
+    {
+      "name": "unit_number",
+      "type": "character varying",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "leases": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "unit_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "leaseholder_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "lease_type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "end_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "expiry_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "major_works": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "project_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "budget",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "spent",
+      "type": "numeric",
+      "nullable": false,
+      "default": "0"
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": false,
+      "default": "'planned'::text"
+    },
+    {
+      "name": "start_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "completion_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "major_works_notices": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "project_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notice_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "issued_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "major_works_projects": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "project_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "start_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "end_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "management_pack_audit": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "pack_type",
+      "type": "text",
+      "nullable": true,
+      "default": "'lpe1'::text"
+    },
+    {
+      "name": "generated_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "generated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "included",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "missing",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_count",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "name": "total_size_mb",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "download_url",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'completed'::text"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "meeting_transcripts": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "meeting_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "meeting_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "transcript",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "audio_file_path",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "minutes_word_path",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "minutes_pdf_path",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "attendees",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "speaker_diarization",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_by",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "portfolios": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "profiles": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "role",
+      "type": "text",
+      "nullable": false,
+      "default": "'user'::text"
+    },
+    {
+      "name": "full_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "retender_events": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_contract_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "event_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "event_date",
+      "type": "date",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "reminder_days_before",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_actioned",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "actioned_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "actioned_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "retender_session_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "retender_quotes": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "retender_session_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "quoted_amount",
+      "type": "numeric",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "contract_term_years",
+      "type": "integer",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "payment_terms",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_selected",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "evaluation_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "evaluation_notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "quote_document_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "received_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "valid_until",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "retender_sessions": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "contractor_contract_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "service_category",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "initiated_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'in_progress'::text"
+    },
+    {
+      "name": "started_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "deadline_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "winning_quote_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "comparison_pdf",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "roles": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "role_name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    }
+  ],
+  "safety_case_documents": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_type",
+      "type": "USER-DEFINED",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "USER-DEFINED",
+      "nullable": true,
+      "default": "'missing'::document_status"
+    },
+    {
+      "name": "received_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "expected_upload_date",
+      "type": "date",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "file_url",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "source",
+      "type": "USER-DEFINED",
+      "nullable": true,
+      "default": "'upload'::source_type"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "confidence_score",
+      "type": "numeric",
+      "nullable": true,
+      "default": "1.00"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp without time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "schedules": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "tenders": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "budget_line_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "schedule_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "vendor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "type",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'sent'::text"
+    },
+    {
+      "name": "amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "document_url",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "sent_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "responded_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "approved_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "timeline_events": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "event_type",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "event_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "severity",
+      "type": "text",
+      "nullable": true,
+      "default": "'info'::text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "units": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "unit_number",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "user_buildings": [
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "assigned_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "user_calendar_events": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "event_id",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "subject",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "start_time",
+      "type": "timestamp with time zone",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "end_time",
+      "type": "timestamp with time zone",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "organizer_email",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "organizer_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "attendees",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'[]'::jsonb"
+    },
+    {
+      "name": "body_preview",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "is_all_day",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "name": "category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "related_building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "synced_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "user_roles": [
+    {
+      "name": "user_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "role_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": null
+    }
+  ],
+  "users": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "uuid_generate_v4()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "auth_user_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "vendors": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "contact_name",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ],
+  "works_orders": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "name": "building_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "contractor_contract_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "compliance_asset_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "title",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "summary",
+      "type": "text",
+      "nullable": false,
+      "default": null
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "service_category",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "priority",
+      "type": "text",
+      "nullable": true,
+      "default": "'medium'::text"
+    },
+    {
+      "name": "cost_estimate",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "actual_cost",
+      "type": "numeric",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "invoice_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'open'::text"
+    },
+    {
+      "name": "reported_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "assigned_date",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "reported_by",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "unit_number",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "metadata",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "name": "agency_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    },
+    {
+      "name": "schedule_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": null
+    }
+  ]
+}

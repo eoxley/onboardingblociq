@@ -620,10 +620,10 @@ class BuildingHealthCheckV2:
         ins_data = [['Provider', 'Policy No.', 'Period', 'Sum Insured', 'Premium', 'Status']]
         
         for policy in insurance:
-            provider = policy.get('provider', 'Unknown')
-            policy_no = policy.get('policy_number', 'Not recorded')
-            start = policy.get('policy_start_date', '')
-            end = policy.get('expiry_date', '')
+            provider = policy.get('provider') or 'Unknown'
+            policy_no = policy.get('policy_number') or 'Not recorded'
+            start = policy.get('policy_start_date') or ''
+            end = policy.get('expiry_date') or ''
             sum_insured = policy.get('sum_insured')
             premium = policy.get('premium_amount')
             
@@ -713,7 +713,7 @@ class BuildingHealthCheckV2:
             budget_data = [['Cost Heading', 'Budget', 'Status']]
             
             for budget in period_budgets[:10]:  # First 10 items
-                heading = budget.get('cost_heading', budget.get('name', 'General'))[:40]
+                heading = (budget.get('cost_heading') or budget.get('name') or 'General')[:40]
                 amount = budget.get('total_amount')
                 status = budget.get('status', 'draft')
                 
@@ -787,7 +787,7 @@ class BuildingHealthCheckV2:
             comp_data = [['Asset Name', 'Last Inspection', 'Next Due', 'Status']]
             
             for asset in assets[:8]:  # First 8 per category
-                name = asset.get('asset_name', 'Unknown')[:35]
+                name = (asset.get('asset_name') or 'Unknown')[:40]
                 last_insp = asset.get('last_inspection_date', '—')
                 next_due = asset.get('next_due_date', '—')
                 status = asset.get('compliance_status', 'unknown')
@@ -858,7 +858,7 @@ class BuildingHealthCheckV2:
         contract_data = [['Contractor', 'Service Type', 'End Date', 'Status']]
         
         for contract in contracts[:20]:  # First 20
-            contractor = contract.get('contractor_name', 'Unknown')[:30]
+            contractor = (contract.get('contractor_name') or 'Unknown')[:30]
             service = contract.get('service_type', 'General')
             end_date = contract.get('end_date', '—')
             status = contract.get('contract_status', 'unknown')
