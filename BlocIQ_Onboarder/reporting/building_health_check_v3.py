@@ -436,6 +436,11 @@ class BuildingHealthCheckV3:
             elements.append(PageBreak())
             elements.extend(self._build_major_works())
 
+        # Utilities
+        if self.data.get('utilities') or self.data.get('building_utilities'):
+            elements.append(PageBreak())
+            elements.extend(self._build_utilities_summary())
+
         # Data Completeness Checklist
         elements.append(PageBreak())
         elements.extend(self._build_completeness_checklist())
@@ -1105,6 +1110,106 @@ class BuildingHealthCheckV3:
                 ParagraphStyle('ProjectDetails', parent=self.styles['Body'], fontSize=9, textColor=BlocIQBrand.GREY)
             ))
             elements.append(Spacer(1, 0.15*inch))
+
+        return elements
+
+    def _build_utilities_summary(self) -> List:
+        """Build utilities summary with providers, accounts, and meter numbers"""
+        elements = []
+
+        elements.append(Paragraph("UTILITIES & SERVICES", self.styles['SectionHeader']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Get utilities from both possible sources
+        utilities = self.data.get('utilities', []) or self.data.get('building_utilities', [])
+
+        if not utilities:
+            elements.append(Paragraph("⚠️ No utility data available.", self.styles['WarningBox']))
+            return elements
+
+        elements.append(Paragraph(
+            f"<b>Total Utility Accounts:</b> {len(utilities)}",
+            self.styles['Subsection']
+        ))
+        elements.append(Spacer(1, 0.1*inch))
+
+        # Group by utility type
+        by_type = defaultdict(list)
+        for utility in utilities:
+            util_type = utility.get('utility_type') or 'other'
+            by_type[util_type].append(utility)
+
+        # Show each utility type
+        for util_type, type_utilities in sorted(by_type.items()):
+            type_title = str(util_type).replace('_', ' ').title()
+            elements.append(Paragraph(
+                f"<b>{type_title}</b> ({len(type_utilities)} account{'' if len(type_utilities) == 1 else 's'})",
+                ParagraphStyle('UtilityType', parent=self.styles['Body'], fontSize=11, textColor=BlocIQBrand.INFO)
+            ))
+            elements.append(Spacer(1, 0.05*inch))
+
+            util_data = [['Provider', 'Account Number', 'Meter/MPAN', 'Contract Status']]
+
+            for utility in type_utilities[:10]:  # First 10 per type
+                provider = utility.get('supplier') or utility.get('provider_name') or '—'
+                account = utility.get('account_number') or '—'
+
+                # Get meter number or MPAN/MPRN
+                meter = utility.get('meter_numbers') or utility.get('mpan') or utility.get('mprn') or '—'
+
+                # Contract status
+                status = utility.get('contract_status', 'unknown')
+                if status == 'active':
+                    status_icon = '✅ Active'
+                elif status == 'expired':
+                    status_icon = '❌ Expired'
+                else:
+                    status_icon = '❔ Unknown'
+
+                util_data.append([
+                    str(provider)[:25],
+                    str(account)[:20],
+                    str(meter)[:18],
+                    status_icon
+                ])
+
+            if len(type_utilities) > 10:
+                util_data.append([f"... and {len(type_utilities) - 10} more", '', '', ''])
+
+            util_table = Table(util_data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 1*inch])
+            util_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), BlocIQBrand.GREY_MEDIUM),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [BlocIQBrand.WHITE, BlocIQBrand.GREY_LIGHT])
+            ]))
+
+            elements.append(util_table)
+            elements.append(Spacer(1, 0.15*inch))
+
+        # Add helpful notes about important utilities
+        elements.append(Paragraph(
+            "<b>Important Notes:</b>",
+            ParagraphStyle('UtilityNotes', parent=self.styles['Body'], fontSize=10, textColor=BlocIQBrand.PRIMARY_DARK)
+        ))
+        elements.append(Spacer(1, 0.05*inch))
+
+        notes = [
+            "• MPAN (Meter Point Administration Number) - 13-digit electricity meter identifier",
+            "• MPRN (Meter Point Reference Number) - 6-10 digit gas meter identifier",
+            "• Ensure all utility accounts are up to date before property transfer",
+            "• Check meter readings are recent and accurate",
+            "• Verify lift line phone contracts are active (required for lift alarms)"
+        ]
+
+        for note in notes:
+            elements.append(Paragraph(
+                note,
+                ParagraphStyle('UtilityNote', parent=self.styles['Body'], fontSize=8, textColor=BlocIQBrand.GREY)
+            ))
 
         return elements
 
