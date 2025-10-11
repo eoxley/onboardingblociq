@@ -307,6 +307,8 @@ class SQLWriter:
             "  period text NOT NULL,",
             "  start_date date,",
             "  end_date date,",
+            "  year_start date,",
+            "  year_end date,",
             "  total_amount numeric,",
             "  demand_date_1 date,",
             "  demand_date_2 date,",
@@ -602,13 +604,37 @@ LEFT JOIN lease_scores ls ON b.id = ls.building_id
 LEFT JOIN contractor_scores cont ON b.id = cont.building_id;
 
 -- =====================================
--- Indexes for Performance
+-- Indexes for Performance (with defensive column checks)
 -- =====================================
-CREATE INDEX IF NOT EXISTS idx_compliance_assets_status_building ON compliance_assets(building_id, compliance_status) WHERE is_active = TRUE;
-CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);
-CREATE INDEX IF NOT EXISTS idx_insurance_expiry ON building_insurance(building_id, expiry_date);
-CREATE INDEX IF NOT EXISTS idx_budgets_dates ON budgets(building_id, year_start, year_end);
-CREATE INDEX IF NOT EXISTS idx_contractors_retender ON building_contractors(building_id, retender_status);
+DO $$
+BEGIN
+    -- Index on compliance_assets (compliance_status, is_active)
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='compliance_assets' AND column_name='compliance_status')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='compliance_assets' AND column_name='is_active') THEN
+        CREATE INDEX IF NOT EXISTS idx_compliance_assets_status_building ON compliance_assets(building_id, compliance_status) WHERE is_active = TRUE;
+    END IF;
+
+    -- Index on leases (unit_id)
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='leases' AND column_name='unit_id') THEN
+        CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);
+    END IF;
+
+    -- Index on building_insurance (expiry_date)
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='building_insurance' AND column_name='expiry_date') THEN
+        CREATE INDEX IF NOT EXISTS idx_insurance_expiry ON building_insurance(building_id, expiry_date);
+    END IF;
+
+    -- Index on budgets (year_start, year_end)
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='budgets' AND column_name='year_start')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='budgets' AND column_name='year_end') THEN
+        CREATE INDEX IF NOT EXISTS idx_budgets_dates ON budgets(building_id, year_start, year_end);
+    END IF;
+
+    -- Index on building_contractors (retender_status)
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='building_contractors' AND column_name='retender_status') THEN
+        CREATE INDEX IF NOT EXISTS idx_contractors_retender ON building_contractors(building_id, retender_status);
+    END IF;
+END $$;
 """
         self.sql_statements.append(views_sql)
 
@@ -1042,7 +1068,8 @@ CREATE INDEX IF NOT EXISTS idx_contractors_retender ON building_contractors(buil
             'budgets': ['id', 'building_id', 'period'],
             'building_insurance': ['id', 'building_id', 'insurance_type'],
             'contractors': ['id', 'name'],
-            'major_works_projects': ['id', 'building_id', 'project_name']
+            'major_works_projects': ['id', 'building_id', 'project_name'],
+            'schedules': ['id', 'building_id', 'name']
         }
 
         # Filter out None values, but keep required columns even if None (will error early)
@@ -1064,6 +1091,17 @@ CREATE INDEX IF NOT EXISTS idx_contractors_retender ON building_contractors(buil
                     filtered_data['period'] = year_str
                 else:
                     filtered_data['period'] = 'Unknown'
+
+        if table == 'schedules':
+            # Schedule name is NOT NULL - ensure it's always set
+            if 'name' not in filtered_data or not filtered_data.get('name'):
+                # Try to infer from description or other fields
+                if filtered_data.get('description'):
+                    # Use first 50 chars of description as name
+                    desc = filtered_data['description']
+                    filtered_data['name'] = desc[:50] if len(desc) > 50 else desc
+                else:
+                    filtered_data['name'] = 'Unnamed Schedule'
 
         if table == 'compliance_assets':
             print(f"  Filtered data: {filtered_data}")
