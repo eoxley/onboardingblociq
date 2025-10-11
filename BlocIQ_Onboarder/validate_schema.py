@@ -216,7 +216,7 @@ class SchemaValidator:
 
         for idx, project in enumerate(projects):
             validated = self.mapper.validate_data('major_works_projects', project)
-            required_fields = ['id', 'building_id', 'project_name', 'project_type']
+            required_fields = ['id', 'building_id', 'project_name']  # Removed 'project_type' - doesn't exist in schema
 
             for field in required_fields:
                 if field not in validated or not validated[field]:
@@ -238,7 +238,7 @@ class SchemaValidator:
 
         for idx, budget in enumerate(budgets):
             validated = self.mapper.validate_data('budgets', budget)
-            required_fields = ['id', 'building_id', 'financial_year']
+            required_fields = ['id', 'building_id']  # Changed 'financial_year' to match actual schema field 'year' which is nullable
 
             for field in required_fields:
                 if field not in validated or not validated[field]:

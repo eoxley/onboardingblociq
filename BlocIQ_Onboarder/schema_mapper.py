@@ -60,6 +60,26 @@ class SupabaseSchemaMapper:
                 'created_at': 'timestamp with time zone DEFAULT now()',
                 'updated_at': 'timestamp with time zone DEFAULT now()'
             },
+            'leases': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'unit_id': 'uuid REFERENCES units(id)',
+                'leaseholder_id': 'uuid REFERENCES leaseholders(id)',
+                'lessor': 'text',  # Landlord/freeholder name
+                'leaseholder_name': 'text',  # Tenant name (for reference)
+                'lease_start_date': 'date',  # Lease commencement date
+                'original_term_years': 'integer',  # Original term in years (e.g., 125)
+                'lease_expiry_date': 'date',  # Calculated or explicit expiry date
+                'ground_rent': 'numeric',  # Annual ground rent amount
+                'service_charge_amount': 'numeric',  # Annual service charge
+                'ground_rent_review_frequency': 'text',  # Review frequency (e.g., "10 years")
+                'major_clauses': 'text',  # Key clauses (forfeiture, break, RTM, etc.)
+                'covenants': 'text',  # Leaseholder covenants
+                'demise_description': 'text',  # Property description from lease
+                'lease_document_url': 'text',  # Link to lease document in storage
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
+            },
             'building_documents': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',

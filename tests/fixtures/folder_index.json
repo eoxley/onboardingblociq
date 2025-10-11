@@ -1,0 +1,68 @@
+{
+  "building_name": "Connaught Square",
+  "total_files": 125,
+  "categories": {
+    "leases": {
+      "count": 6,
+      "files": [
+        {"filename": "Flat_259_Lease.pdf", "has_text": true, "unit_ref": "259"},
+        {"filename": "Flat_260_Lease.pdf", "has_text": true, "unit_ref": "260"},
+        {"filename": "Flat_259_Lease_Copy.pdf", "has_text": true, "unit_ref": "259"},
+        {"filename": "Flat_261_Lease.pdf", "has_text": false, "unit_ref": "261"},
+        {"filename": "Flat_262_Lease.pdf", "has_text": true, "unit_ref": "262"},
+        {"filename": "Flat_263_Lease.pdf", "has_text": true, "unit_ref": "263"}
+      ]
+    },
+    "insurance_certificates": {
+      "count": 14,
+      "files": [
+        {"filename": "Buildings_Insurance_2024.pdf", "has_text": true, "year": "2024"},
+        {"filename": "Buildings_Insurance_2023.pdf", "has_text": true, "year": "2023"},
+        {"filename": "Liability_Insurance_2024.pdf", "has_text": true, "year": "2024"},
+        {"filename": "Buildings_Insurance_2022.pdf", "has_text": false, "year": "2022"}
+      ]
+    },
+    "insurance_policy_wordings": {
+      "count": 3,
+      "archived": true,
+      "files": [
+        {"filename": "Policy_Wording_Aviva_2024.pdf", "has_text": true},
+        {"filename": "Policy_Schedule_Terms.pdf", "has_text": true}
+      ]
+    },
+    "compliance": {
+      "count": 93,
+      "subcategories": {
+        "FRA": {"count": 3, "has_dates": true},
+        "EL": {"count": 12, "has_dates": true},
+        "EICR": {"count": 5, "has_dates": true},
+        "Fire_Doors": {"count": 18, "has_dates": false, "dates_missing": true},
+        "LOLER": {"count": 8, "has_dates": true},
+        "Legionella": {"count": 15, "has_dates": true},
+        "Gas": {"count": 22, "has_dates": false, "dates_missing": true},
+        "LPS": {"count": 6, "has_dates": false, "dates_missing": true},
+        "Asbestos": {"count": 4, "has_dates": true}
+      }
+    },
+    "budgets": {
+      "count": 6,
+      "files": [
+        {"filename": "Budget_2024-2025.xlsx", "has_text": true, "year": "2024/25"},
+        {"filename": "Budget_2023-2024.xlsx", "has_text": true, "year": "2023/24"},
+        {"filename": "Budget_2022-2023.xlsx", "has_text": true, "year": "2022/23"}
+      ]
+    },
+    "accounts": {
+      "count": 3,
+      "archived": false
+    },
+    "contracts": {
+      "count": 8,
+      "archived": true
+    },
+    "correspondence": {
+      "count": 42,
+      "archived": true
+    }
+  }
+}

@@ -1,0 +1,1880 @@
+
+======================================================================
+📦 DOCUMENT VAULT UPLOAD
+======================================================================
+
+📁 Source: /Users/ellie/Downloads/219.01 CONNAUGHT SQUARE
+🏢 Building ID: ceec21e6-b91e-4c40-9a57-51994caf3ab7
+☁️  Destination: building_documents/ceec21e6-b91e-4c40-9a57-51994caf3ab7/
+
+======================================================================
+📄 Processing documents...
+======================================================================
+
+📄 Connaught Square New property information.xlsx
+   Source folder: root
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Connaught Square Meeting Minutes 2.docx
+   Source folder: root
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 connaught apportionment.xlsx
+   Source folder: root
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 2024 Directors Meeting-Notes.docx
+   Source folder: root
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 connaught.xlsx
+   Source folder: root
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Boiler Room.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 Fire Alarm.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 Roof.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 Basement Coded Door.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 Water Tank Door.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: legionella 
+   ⏭️  Skipped (unsupported type)
+
+📄 Lift.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: loler 
+   ⏭️  Skipped (unsupported type)
+
+📄 Meter Room In Basement.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 Basement Bin.jfif
+   Source folder: 9.BUILDING DRAWINGS & PLANS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 External Decorations SOI - 28042025.docx
+   Source folder: 6. MAJOR WORKS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CGBI3964546XB6-Cunaku Construction Ltd-Business-Certificate of insurance.pdf
+   Source folder: 6. MAJOR WORKS
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 CGBI3964546XB7-Cunaku Construction Ltd-Business-Certificate of insurance.pdf
+   Source folder: 6. MAJOR WORKS
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 External Dec SOE 03072025.docx
+   Source folder: 6. MAJOR WORKS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 24.07.24- Comments and costs from Ardent.msg
+   Source folder: 6. MAJOR WORKS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Notice of intention for lift.docx
+   Source folder: 6. MAJOR WORKS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 matrix - pp.xlsx
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 12. Change of Tenancy - EDF supporting document.docx
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Correspondence letter.pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 tenant list - pp.xlsx
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 32-34 Connaught Square - Drainage Maintenance.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 RE_ 32-34 Connaught Square - Drainage Maintenance.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Fire Door (Communal) Inspection (11m +) (7).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (13).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (18).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (14).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Real Estate Insurance NTP (01.23).pdf
+   Source folder: 11. HANDOVER
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 EICR Cuanku 32-34 conaught square.pdf
+   Source folder: 11. HANDOVER
+   Category: eicr → Health and Safety/EICR
+   ✅ Uploaded
+
+📄 Real Estate Policy (01.23).pdf
+   Source folder: 11. HANDOVER
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (15).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Summary of Cover (01.23).pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FW_ 32-34 CONNAUGHT SQUARE_LONDON_W2 2HL - Change of Managing Agent .msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_risk_assessment → Health and Safety/Fire Risk Assessments
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (19).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 CM434 - 32-34 CONNAUGHT SQUARE - ANNUAL SERVICE AGREEMENT 2024-2025.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 001132-3234-Connaught-Square-London.pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32-34 CONNAUGHT SQUARE_LONDON_W2 2HL.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf
+   Source folder: 11. HANDOVER
+   Category: asbestos 
+   ❌ Failed: The read operation timed out
+
+📄 British Gas Invoice-862451083.pdf
+   Source folder: 11. HANDOVER
+   Category: gas_safety → Health and Safety/Gas Safety
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (16).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (17).pdf
+   Source folder: 11. HANDOVER
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 WHM Legionella Risk Assessment 07.06.22.pdf
+   Source folder: 11. HANDOVER
+   Category: legionella → Health and Safety/Legionella
+   ✅ Uploaded
+
+📄 32-34 Connaught Square - job sheet - 63219.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Important Information .pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Report - 32-34 Connaught Square BCH 78350.pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf
+   Source folder: 11. HANDOVER
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FW_ B24729 - 32-34 Connaught Square - Order Number Request (5TH) - VISIT 05_12_23.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Job no_ 18917 PPM FEB - MV Connaught Square (32-34) 23550.msg
+   Source folder: 11. HANDOVER
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 32-34 Connaught Sq Buildings Insurance 2023-2024.pdf
+   Source folder: 11. HANDOVER
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Policy Limits Document.pdf
+   Source folder: 11. HANDOVER
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 EICR Report Cunaku SATISFACTORY 2023 .pdf
+   Source folder: 11. HANDOVER
+   Category: eicr → Health and Safety/EICR
+   ✅ Uploaded
+
+📄 Official Copy (Lease) 13.06.2003 - NGL823646-Flat 4.pdf
+   Source folder: 8. FLAT CORRESPONDENCE
+   Category: lease → Leases/Original Leases
+   ✅ Uploaded
+
+📄 CONTACT INFORMATION FORM - FEB 2024.png
+   Source folder: 8. FLAT CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf
+   Source folder: 8. FLAT CORRESPONDENCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf
+   Source folder: 8. FLAT CORRESPONDENCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 Letter of Authority - Connaught Square.doc.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Letter to report - Connaught Square.doc.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: lease → Leases/Original Leases
+   ✅ Uploaded
+
+📄 Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: lease → Leases/Original Leases
+   ✅ Uploaded
+
+📄 Official Copy (Lease) 13.06.2003 - NGL827422.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: lease → Leases/Original Leases
+   ✅ Uploaded
+
+📄 Official Copy (Lease) 04.08.2022 - NGL809841.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: lease → Leases/Original Leases
+   ✅ Uploaded
+
+📄 Connaught Square Meeting Minutes 2.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square Meeting Minutes 20241120.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square Meeting Minutes.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 2024 Directors Meeting-Notes.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Signed 2025 Connaught Square Management Agreement.docx.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Signed April 2025 Arrears Collection Procedure.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square Management Agreement.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 2025 Connaught Square Management Agreement.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Signed Connaught Square Management Agreement.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square Admin Duties of Co Sec.docx
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Signed Connaught Square Admin Duties of Co Sec.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32_34 CONNAUGHT SQUARE FREEHOLD LIMITED - Statutory Registers on 22.03.2024.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Memorandum of Association.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Incorporation documents.pdf
+   Source folder: 1. CLIENT INFORMATION
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Contractors list.xlsx
+   Source folder: 7. CONTRACTS
+   Category: contract_other 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Re Connaught Square-Rex.msg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Contractors list.xlsx
+   Source folder: 7. CONTRACTS
+   Category: contract_other 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Rex-Caretaker.vcf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 EMERGENCY CALL OUT DETAILS 2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CM434.PRO 2024-2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CM434.PRO.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 B25676 RS 21.05.24 RM CM.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Report-20.08.2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Gas Contract 24-5.pdf
+   Source folder: 7. CONTRACTS
+   Category: gas_safety → Health and Safety/Gas Safety
+   ✅ Uploaded
+
+📄 Pricing Quote - 32_34 Connaught Square Freehold Ltd - 109 - Gas - 10.03.2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: gas_safety → Health and Safety/Gas Safety
+   ✅ Uploaded
+
+📄 001457-3234-Connaught-Square-London Certificate.pdf
+   Source folder: 7. CONTRACTS
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 PN0119V1.7 Privacy Notice (Website).pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 WP0005V17 Welcome Pack.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Contract_10-03-2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: contract_other → Contracts/Other Contracts
+   ✅ Uploaded
+
+📄 PN0119V1.8 Privacy Notice (Website).pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Gas Contract 25-26.pdf
+   Source folder: 7. CONTRACTS
+   Category: gas_safety → Health and Safety/Gas Safety
+   ✅ Uploaded
+
+📄 Welcome Letter - CG1885574.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 TC0001V31 General Terms and Conditions.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32-34 Connaught Square - Drainage Maintenance.msg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 RE_ 32-34 Connaught Square - Drainage Maintenance.msg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 32-34 Connaught Square - job sheet - 63219.msg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 REPORT 31-07-25.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Job 67141.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32-34 Connought Square Condtion Assessments.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Signed Conract.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Latest Report.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Latest Report 24.04.2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Latest Report 19.09.2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 10.02.25-Pest Control.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Latest Report.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 17.01.2025-Pest Control.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 J18503 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 J18502 - MIH, CONNAUGHT SQR, W2 - 04.04.25.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.01.24.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 19.05.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 22.03.24.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 22.03.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 25.09.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 29.11.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL PHOTO - 18.12.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, 32-34 CONNAUGHT, W2 2HL - 26.06.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 BLENHEIMS, CONNAUGHT, W2 2HL PHOTO - 23.02.24.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 INV 11546 Mr Martin Samworth.xlsx
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 QB4126 Mr Martin Samworth.docx
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CQ2879 Mr Martin Samworth   (IP) CCTV.docx
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_32810_17-03-2025_1311.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Hot fail.jpeg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_33844_07-04-2025_1143.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_32344_12-03-2025_1426.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_34012_01-05-2025_1616.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_32759_17-03-2025_1147.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_37675_25-07-2025_1549.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_32344_12-03-2025_1426.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_34012_01-05-2025_1616.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_32759_17-03-2025_1145.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_32810_17-03-2025_1311.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_33844_07-04-2025_1143.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Low flow calorifier 2.jpg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_25732_03-10-2024_1337.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_27067_07-10-2024_1147.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_19665_28-03-2024_0936.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_22634_03-07-2024_1649.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_22634_03-07-2024_1650.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_27067_07-10-2024_1147.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_25732_03-10-2024_1337.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_19665_05-04-2024_1048.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_28992_24-01-2025_1545.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: contractor_quote → Major Works/Contractor Quotes
+   ✅ Uploaded
+
+📄 Connaught Square (32-34) - 09.12.24 LRA.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square (32-34) - 09.12.24 Schematic.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Licence_Document_352024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square-Lift Quotes.xlsx
+   Source folder: 7. CONTRACTS
+   Category: loler 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Lift Contract-Jacksons lift.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 JLGCalloutVisit-5455045-12-07-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-12-09-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGCalloutVisit-5483206-26-10-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-13-11-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGCalloutVisit-5498439-16-12-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGCalloutVisit-5455462-16-07-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGCalloutVisit-5497480-13-12-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-02-12-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-08-07-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-08-10-2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Engineering Report - 32-34 CONNAUGHT SQUARE.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-12-02-2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-17-03-2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-14-04-2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 REP-40343473-L1.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 JLGServiceVisit-M00813-13-05-2025.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Allianz - Lift Report 14.03.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 Allianz-Lift Report 18.03.2024.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 Allianz - Lift Report - 15.09.21.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 Allianz - Lift Report 27.09.23.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 Allianz - Lift Report 10.03.22.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 Allianz - Lift Report 09.09.22.pdf
+   Source folder: 7. CONTRACTS
+   Category: loler → Health and Safety/LOLER
+   ✅ Uploaded
+
+📄 Communal Cleaning-First Port.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Job no_ 18917 PPM FEB - MV Connaught Square (32-34) 23550.msg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 LXBI3559280XB2-NEW STEP-Business-Certificate of el insurance.pdf
+   Source folder: 7. CONTRACTS
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 New Step - Cleaning of Com Part- Jan- 2023.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 LXBI3559280XB2-NEW STEP-Business-Certificate of insurance.pdf
+   Source folder: 7. CONTRACTS
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 SC Certificate - 10072023.pdf
+   Source folder: 7. CONTRACTS
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 SC Health and Safety Product - Accredited 10072023.pdf
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FW Entryphone Installation - 3234 Connaught Square  W2 2HL.msg
+   Source folder: 7. CONTRACTS
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Connaught Square - Tenant Statement.msg
+   Source folder: 2. FINANCE
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Aged debtors by property.pdf
+   Source folder: 2. FINANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Tenancy Schedule by Property.pdf
+   Source folder: 2. FINANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square, 32-34 Approved xlsx.xlsx
+   Source folder: 2. FINANCE
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Connaught Square Budget 2025-6 Draft.xlsx
+   Source folder: 2. FINANCE
+   Category: budget 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Connaught Square Budget 2025-Final.pdf
+   Source folder: 2. FINANCE
+   Category: budget → Finance/Budgets
+   ✅ Uploaded
+
+📄 BvA 24 Jan 25.xlsx
+   Source folder: 2. FINANCE
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Connaught Square Budget 2025-Final.xlsx
+   Source folder: 2. FINANCE
+   Category: budget 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 pdf.pdf
+   Source folder: 2. FINANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Accounts YE 31.03.2022 32-34 Connaught Square MJP.pdf
+   Source folder: 2. FINANCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 197-YE 31.03.22 SC Accs FINAL MAY 2023.pdf
+   Source folder: 2. FINANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Accounts to 31322.msg
+   Source folder: 2. FINANCE
+   Category: accounts 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 To 31321.msg
+   Source folder: 2. FINANCE
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf
+   Source folder: 2. FINANCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf
+   Source folder: 2. FINANCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 27039 Accounts Pack - YE 2023.pdf
+   Source folder: 2. FINANCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 Connaught Sq SC YE 23.pdf
+   Source folder: 2. FINANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 27039 - 32-34 Connaught Square Closing Statement lost 31.3.24.xlsm
+   Source folder: 2. FINANCE
+   Category: general_correspondence 
+   ⏭️  Skipped (unsupported type)
+
+📄 FW Connaught Sq YE 23 Letter-Cover letter.msg
+   Source folder: 2. FINANCE
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Connaught Square YE 24 Accounts.pdf
+   Source folder: 2. FINANCE
+   Category: accounts → Finance/Service Charge Accounts
+   ✅ Uploaded
+
+📄 Connaught Square-Agenda 20.11.24.docx
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square-Agenda 26.04.2024.docx
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square-House Rules.docx
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Garden Notice-Connaught Square.docx
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square-Key Cut Authorisation Letter.docx
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 House Rules-Connaught Square.pdf
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square 26.04.24.docx
+   Source folder: 3. GENERAL CORRESPONDENCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 2023 Allianz VOC - 32-34 Connuaght Square (Freehold) Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 2023 Engineering Renewal Notice - 32 34 Connuaght Square (Freehold) Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 MO - Policy Wording - NZ0411.pdf
+   Source folder: 5. INSURANCE
+   Category: policy_wording → Insurance/Policy Wordings
+   ✅ Uploaded
+
+📄 Feature and Benefits of Allianz Engineering Inspection Service.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 REP-39659654.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Quote_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: contractor_quote → Major Works/Contractor Quotes
+   ✅ Uploaded
+
+📄 StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: policy_wording → Insurance/Policy Wordings
+   ✅ Uploaded
+
+📄 StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Quote_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: contractor_quote → Major Works/Contractor Quotes
+   ✅ Uploaded
+
+📄 StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: policy_wording → Insurance/Policy Wordings
+   ✅ Uploaded
+
+📄 StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Statement of Facts_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Engineering New Business Policy for 32-34 Connaught Square Our Ref LO-00023650.msg
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Invoice_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: invoice → Finance/Invoices
+   ✅ Uploaded
+
+📄 StG_Certificate_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Insurer pack_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Invoice_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: invoice → Finance/Invoices
+   ✅ Uploaded
+
+📄 Arch Directors and Officers Liability Insurance for Residents Associations (12.22).pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 32-34 Connaught Square Freehold Limited - Arch D&O Schedule.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Certificate_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Policy Wording_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: policy_wording → Insurance/Policy Wordings
+   ✅ Uploaded
+
+📄 StG_D&O Endorsements_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Demands & Needs_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Quote_32-34 Connaught Square Freehold Limited.pdf
+   Source folder: 5. INSURANCE
+   Category: contractor_quote → Major Works/Contractor Quotes
+   ✅ Uploaded
+
+📄 StG_Insurance Report_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 FBR113382303-20230405-B.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Real Estate Insurance NTP (01.23).pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Real Estate Policy (01.23).pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Summary of Cover (01.23).pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Important Information .pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Report - 32-34 Connaught Square BCH 78350.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32-34 Connaught Sq Buildings Insurance 2023-2024.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Policy Limits Document.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Zurich Real Estate Policy Summary.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 Zurich Real Estate Policy Wording.pdf
+   Source folder: 5. INSURANCE
+   Category: policy_wording → Insurance/Policy Wordings
+   ✅ Uploaded
+
+📄 Zurich Real Estate Insurance NTP (01.23) ZCYP895.02.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Invoice_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: invoice → Finance/Invoices
+   ✅ Uploaded
+
+📄 StG_Certificate_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Supporting Docs_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Policy Wording_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: policy_wording → Insurance/Policy Wordings
+   ✅ Uploaded
+
+📄 Alternative Terrorism New Business Policy for 32-34 Connaught Square Our Ref LO-00023650.msg
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Property New Business Policy for 32-34 Connaught Square Our Ref LO-00023650.msg
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 StG_Invoice_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: invoice → Finance/Invoices
+   ✅ Uploaded
+
+📄 StG_Certificate_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 StG_Invoice_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: invoice → Finance/Invoices
+   ✅ Uploaded
+
+📄 StG_Certificate_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: insurance_certificate → Insurance/Certificates
+   ✅ Uploaded
+
+📄 StG_Statement of Fact_32-34 Connaught Square W2 2HL.pdf
+   Source folder: 5. INSURANCE
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Door (Communal) Inspection (11m +) (7).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (13).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (18).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (14).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (15).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (19).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (16).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) (17).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_risk_assessment → Health and Safety/Fire Risk Assessments
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.552.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Connaught Square (32-34) - 15.11.23 (886) wa.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.875.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) - 2024-01-24T120746.424.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Fire Door (Communal) Inspection (11m +) - 2024-01-24T120743.986.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_16617_27-11-2023_1522.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) - 2024-01-24T120744.738.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_16808_28-11-2023_1340.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) - 2024-01-24T120747.015.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Door (Flats) Inspection (11m +) - 2024-01-24T120745.174.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_doors → Health and Safety/Fire Door Inspections
+   ✅ Uploaded
+
+📄 EX-NC (CONNAUGHT SQUARE) EXTRA 01102024.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Extinguisher Signed Contract- Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: contract_other → Contracts/Other Contracts
+   ✅ Uploaded
+
+📄 Q51691 - 32-34 Connaught Square Contract.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: contract_other → Contracts/Other Contracts
+   ✅ Uploaded
+
+📄 Hsfra1-L-422971-210225 32-34 Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_risk_assessment → Health and Safety/Fire Risk Assessments
+   ✅ Uploaded
+
+📄 Hsfra1-L-422971-210225 32-34 Connaught Square.docx
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_risk_assessment → Health and Safety/Fire Risk Assessments
+   ✅ Uploaded
+
+📄 H&S recomendations - Spreadsheet with comments.xlsx
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_risk_assessment → Health and Safety/Fire Risk Assessments
+   ✅ Uploaded
+
+📄 221038_Hsra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759 (1).pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FRA-Connaught Square Reccommendations.xlsx
+   Source folder: 4. HEALTH & SAFETY
+   Category: fire_risk_assessment 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 2025-2026 Boiler Maintenance Contract.jpg
+   Source folder: 4. HEALTH & SAFETY
+   Category: contract_other → Contracts/Other Contracts
+   ✅ Uploaded
+
+📄 CM434.AnnualServiceAgreement2025-2026.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CM434.AnnualServiceAgreement2024-2025.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 001534-3234-Connaught-Square-London.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 C1047 - Job card.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 REP-40324834-E3.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Ellie@mihproperty.co.uk - BES Group - E-Report.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CM434 RS 32-34 Connaught Square - VISIT 1 OF 2 - 30-04-25.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 RE Barrie House  Fire Alarm Panel  Firetechnics.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 FW Connaught Square-Handover.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Engineering Report - 32-34 CONNAUGHT SQUARE.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 RE 3234 Connaught Square-Contract Advise For Forthcoming Years.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: contract_other 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 RE 3234 Connaught Square-Details Of Emergency Lighting.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: emergency_lighting 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 Q49511 - 32-34 Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Fire Alarm+Emergency Lighting Signed Contract-3234 Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: emergency_lighting → Health and Safety/Emergency Lighting
+   ✅ Uploaded
+
+📄 Fire Alarm+Emergency Lighting Contract Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: emergency_lighting → Health and Safety/Emergency Lighting
+   ✅ Uploaded
+
+📄 BT3205 03072025.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FA7817 SERVICE 08042025.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Engineer Report - 32-34 Connaught Square Flat 5.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FA7817 CALL OUT 26032025.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Engineering Report - 32-34 CONNAUGHT SQUARE.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 32 Connaught Sq - PAT .pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 WHM Legionella Risk Assessment 09.12.25.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: legionella → Health and Safety/Legionella
+   ✅ Uploaded
+
+📄 WHM Legionella Risk Assessment 07.06.22.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: legionella → Health and Safety/Legionella
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_38609_26-08-2025_0741.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_35146_03-06-2025_0906.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Connaught Square (32-34) - 29.05.25 (201) wa.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_31162_30-01-2025_1603.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_28737_25-11-2024_0907.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_37675_25-07-2025_1549.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_35402_03-06-2025_0916.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_22171_14-05-2024_1202.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_35654_03-06-2025_0911.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Cold Water Storage Tank 1 full after clean.jpg
+   Source folder: 4. HEALTH & SAFETY
+   Category: legionella → Health and Safety/Legionella
+   ✅ Uploaded
+
+📄 Cold Water Storage Tank after clean.jpg
+   Source folder: 4. HEALTH & SAFETY
+   Category: legionella → Health and Safety/Legionella
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_37675_25-07-2025_1549.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Cold Water Storage Tank 1 before clean.jpg
+   Source folder: 4. HEALTH & SAFETY
+   Category: legionella → Health and Safety/Legionella
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_28737_25-11-2024_0907.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_35402_03-06-2025_0916.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_22171_14-05-2024_1202.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_35654_03-06-2025_0912.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_38609_26-08-2025_0740.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_35146_03-06-2025_0906.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Asset_Record_For_Job_No_36465_20-06-2025_1038.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_31162_30-01-2025_1602.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Jobcard_For_Job_No_36465_20-06-2025_1037.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 Low flow calorifier 2.jpg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 EICR Cuanku 32-34 conaught square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: eicr → Health and Safety/EICR
+   ✅ Uploaded
+
+📄 EICR Report Cunaku SATISFACTORY 2023 .pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: eicr → Health and Safety/EICR
+   ✅ Uploaded
+
+📄 001132-3234-Connaught-Square-London.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 British Gas Invoice-862451083.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: gas_safety → Health and Safety/Gas Safety
+   ✅ Uploaded
+
+📄 001534-3234-Connaught-Square-London.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 26368 Report.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 26474 Report.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 CM434 - 32-34 CONNAUGHT SQUARE - ANNUAL SERVICE AGREEMENT 2024-2025.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 FW_ B24729 - 32-34 Connaught Square - Order Number Request (5TH) - VISIT 05_12_23.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 FW_ 32-34 CONNAUGHT SQUARE_LONDON_W2 2HL - Change of Managing Agent .msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 32-34 CONNAUGHT SQUARE_LONDON_W2 2HL.msg
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence 
+   ❌ Failed: {'statusCode': 400, 'error': InvalidRequest, 'mess
+
+📄 MT8825 03072025.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 January Monthly Test For EL-Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 February Monthly Test For EL-Connaught Square.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 FINAL L-432900 32-34 Connaught Square Management Survey Report Issue 1.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: general_correspondence → General Correspondence/Letters
+   ✅ Uploaded
+
+📄 TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf
+   Source folder: 4. HEALTH & SAFETY
+   Category: asbestos → Health and Safety/Asbestos Surveys
+   ✅ Uploaded
+
+======================================================================
+📊 UPLOAD COMPLETE
+======================================================================
+
+Building ID: ceec21e6-b91e-4c40-9a57-51994caf3ab7
+
+📈 Statistics:
+  Total files processed: 366
+  ✅ Uploaded: 310
+  ⏭️  Skipped: 10
+  ❌ Failed: 46
+
+📋 By Category:
+  general_correspondence............. 199 → General Correspondence/Letters
+  insurance_certificate..............  25 → Insurance/Certificates
+  fire_doors.........................  23 → Health and Safety/Fire Door Inspections
+  loler..............................   8 → Health and Safety/LOLER
+  accounts...........................   7 → Finance/Service Charge Accounts
+  legionella.........................   6 → Health and Safety/Legionella
+  policy_wording.....................   6 → Insurance/Policy Wordings
+  fire_risk_assessment...............   5 → Health and Safety/Fire Risk Assessments
+  gas_safety.........................   5 → Health and Safety/Gas Safety
+  lease..............................   5 → Leases/Original Leases
+  invoice............................   5 → Finance/Invoices
+  eicr...............................   4 → Health and Safety/EICR
+  contract_other.....................   4 → Contracts/Other Contracts
+  contractor_quote...................   4 → Major Works/Contractor Quotes
+  emergency_lighting.................   2 → Health and Safety/Emergency Lighting
+  asbestos...........................   1 → Health and Safety/Asbestos Surveys
+  budget.............................   1 → Finance/Budgets
+
+🔗 Access documents in Supabase:
+   Storage → building_documents → ceec21e6-b91e-4c40-9a57-51994caf3ab7
+   Database → documents table (building_id = 'ceec21e6-b91e-4c40-9a57-51994caf3ab7')
+
+======================================================================
+

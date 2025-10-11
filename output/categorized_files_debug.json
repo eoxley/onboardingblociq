@@ -4326,7 +4326,7 @@
     ]
   },
   "uncategorized": {
-    "count": 91,
+    "count": 92,
     "files": [
       {
         "file_name": "Connaught Square New property information.xlsx",
@@ -4359,6 +4359,23 @@
           "paragraphs",
           "tables",
           "full_text",
+          "parsed",
+          "category",
+          "confidence"
+        ]
+      },
+      {
+        "file_name": "~$Connaught Square New property information.xlsx",
+        "has_data_key": true,
+        "has_raw_data_key": false,
+        "top_level_keys": [
+          "file_name",
+          "file_path",
+          "file_type",
+          "file_size",
+          "parsed_at",
+          "error",
+          "data",
           "parsed",
           "category",
           "confidence"

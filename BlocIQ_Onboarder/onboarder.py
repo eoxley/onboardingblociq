@@ -14,6 +14,7 @@ import shutil
 import json
 import argparse
 import uuid
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict
@@ -38,6 +39,7 @@ from extractors.contracts_extractor import ContractsExtractor
 from extractors.utilities_extractor import UtilitiesExtractor
 from extractors.meetings_extractor import MeetingsExtractor
 from extractors.client_money_extractor import ClientMoneyExtractor
+from extractors.lease_extractor import LeaseExtractor
 
 
 class BlocIQOnboarder:
@@ -78,6 +80,7 @@ class BlocIQOnboarder:
         self.utilities_extractor = UtilitiesExtractor()
         self.meetings_extractor = MeetingsExtractor()
         self.client_money_extractor = ClientMoneyExtractor()
+        self.lease_extractor = LeaseExtractor()
 
         # Results storage
         self.parsed_files = []
@@ -1594,6 +1597,55 @@ class BlocIQOnboarder:
         if client_money:
             self.mapped_data['client_money_snapshots'] = client_money
             print(f"  ✅ Extracted {len(client_money)} client money snapshots")
+
+        # Extract leases from lease documents
+        leases = []
+        if self.categorized_files.get('units_leaseholders'):
+            print(f"  📋 Processing {len(self.categorized_files['units_leaseholders'])} lease documents...")
+
+            # Build unit and leaseholder maps for linking
+            unit_map = {}
+            leaseholder_map = {}
+
+            if 'units' in self.mapped_data:
+                for unit in self.mapped_data['units']:
+                    unit_number = unit.get('unit_number', '').strip().lower()
+                    if unit_number:
+                        unit_map[unit_number] = unit['id']
+
+            if 'leaseholders' in self.mapped_data:
+                for lh in self.mapped_data['leaseholders']:
+                    lh_name = lh.get('name', '').strip().lower()
+                    if lh_name:
+                        leaseholder_map[lh_name] = lh['id']
+
+            for file_data in self.categorized_files['units_leaseholders']:
+                # Try to match unit and leaseholder from filename or content
+                file_name_lower = file_data.get('file_name', '').lower()
+
+                # Extract unit number from filename (e.g., "Flat 1 Lease.pdf")
+                unit_id = None
+                unit_match = re.search(r'(?:flat|unit|apartment)\s*(\d+[a-z]?)', file_name_lower)
+                if unit_match:
+                    unit_num = unit_match.group(1).strip()
+                    unit_id = unit_map.get(unit_num)
+
+                # Extract from lease extractor (handles leaseholder name matching)
+                result = self.lease_extractor.extract(file_data, building_id, unit_id=unit_id)
+                if result and result.get('lease'):
+                    lease = result['lease']
+
+                    # Try to link leaseholder if not already linked
+                    if not lease.get('leaseholder_id') and lease.get('leaseholder_name'):
+                        lh_name_lower = lease['leaseholder_name'].strip().lower()
+                        lease['leaseholder_id'] = leaseholder_map.get(lh_name_lower)
+
+                    leases.append(lease)
+                    print(f"     ✓ {file_data['file_name']}: {lease.get('leaseholder_name', 'Unknown')} ({lease.get('original_term_years', '?')} years)")
+
+        if leases:
+            self.mapped_data['leases'] = leases
+            print(f"  ✅ Extracted {len(leases)} lease records")
 
         # Extract assets from all documents
         assets = []
