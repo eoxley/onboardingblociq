@@ -485,72 +485,72 @@ CREATE OR REPLACE VIEW v_building_health_score AS
 WITH compliance_scores AS (
     SELECT
         building_id,
-        CASE
+        (CASE
             WHEN total_assets = 0 THEN 0
             WHEN ok_pct >= 90 THEN 100
             WHEN ok_pct >= 75 THEN 80
             WHEN ok_pct >= 50 THEN 60
             WHEN ok_pct >= 25 THEN 40
             ELSE 20
-        END as compliance_score
+        END)::numeric as compliance_score
     FROM v_compliance_rollup
 ),
 insurance_scores AS (
     SELECT
         building_id,
-        CASE
+        (CASE
             WHEN COUNT(*) = 0 THEN 0
             WHEN COUNT(*) FILTER (WHERE expiry_date > CURRENT_DATE) = COUNT(*) THEN 100
             WHEN COUNT(*) FILTER (WHERE expiry_date > CURRENT_DATE) >= COUNT(*) * 0.5 THEN 50
             ELSE 25
-        END as insurance_score
+        END)::numeric as insurance_score
     FROM building_insurance
     GROUP BY building_id
 ),
 budget_scores AS (
     SELECT
         building_id,
-        CASE
+        (CASE
             WHEN COUNT(*) = 0 THEN 0
             WHEN COUNT(*) FILTER (WHERE year_start IS NOT NULL AND year_end IS NOT NULL) = COUNT(*) THEN 100
             WHEN COUNT(*) FILTER (WHERE year_start IS NOT NULL OR year_end IS NOT NULL) >= COUNT(*) * 0.5 THEN 60
             ELSE 30
-        END as budget_score
+        END)::numeric as budget_score
     FROM budgets
     GROUP BY building_id
 ),
 lease_scores AS (
     SELECT
         building_id,
-        CASE
+        (CASE
             WHEN lease_pct >= 90 THEN 100
             WHEN lease_pct >= 75 THEN 80
             WHEN lease_pct >= 50 THEN 60
             WHEN lease_pct >= 25 THEN 40
             ELSE 20
-        END as lease_score
+        END)::numeric as lease_score
     FROM v_lease_coverage
 ),
 contractor_scores AS (
     SELECT
         building_id,
-        CASE
+        (CASE
             WHEN COUNT(*) = 0 THEN 0
             WHEN COUNT(*) FILTER (WHERE retender_status = 'not_scheduled' OR retender_status IS NULL) = COUNT(*) THEN 100
             WHEN COUNT(*) FILTER (WHERE retender_status = 'due') >= COUNT(*) * 0.5 THEN 50
             ELSE 75
-        END as contractor_score
+        END)::numeric as contractor_score
     FROM building_contractors
     GROUP BY building_id
 )
 SELECT
     b.id as building_id,
     b.name as building_name,
-    COALESCE(cs.compliance_score, 0) as compliance_score,
-    COALESCE(ins.insurance_score, 0) as insurance_score,
-    COALESCE(bud.budget_score, 0) as budget_score,
-    COALESCE(ls.lease_score, 0) as lease_score,
-    COALESCE(cont.contractor_score, 0) as contractor_score,
+    COALESCE(cs.compliance_score, 0)::numeric as compliance_score,
+    COALESCE(ins.insurance_score, 0)::numeric as insurance_score,
+    COALESCE(bud.budget_score, 0)::numeric as budget_score,
+    COALESCE(ls.lease_score, 0)::numeric as lease_score,
+    COALESCE(cont.contractor_score, 0)::numeric as contractor_score,
     -- Weighted overall score
     ROUND(
         (COALESCE(cs.compliance_score, 0) * 0.40) +
