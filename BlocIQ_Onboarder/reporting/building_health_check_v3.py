@@ -436,6 +436,10 @@ class BuildingHealthCheckV3:
             elements.append(PageBreak())
             elements.extend(self._build_major_works())
 
+        # Data Completeness Checklist
+        elements.append(PageBreak())
+        elements.extend(self._build_completeness_checklist())
+
         # AI Validation Notes
         elements.append(PageBreak())
         elements.extend(self._build_validation_notes())
@@ -1101,6 +1105,206 @@ class BuildingHealthCheckV3:
                 ParagraphStyle('ProjectDetails', parent=self.styles['Body'], fontSize=9, textColor=BlocIQBrand.GREY)
             ))
             elements.append(Spacer(1, 0.15*inch))
+
+        return elements
+
+    def _build_completeness_checklist(self) -> List:
+        """Build data completeness checklist showing what's present vs missing"""
+        elements = []
+
+        elements.append(Paragraph("DATA COMPLETENESS CHECKLIST", self.styles['SectionHeader']))
+        elements.append(Spacer(1, 0.2*inch))
+
+        elements.append(Paragraph(
+            "The following checklist shows which data categories were successfully extracted from the provided documents:",
+            self.styles['Body']
+        ))
+        elements.append(Spacer(1, 0.15*inch))
+
+        # Define all categories we check for
+        checklist_data = [
+            ['Category', 'Status', 'Records', 'Notes'],
+        ]
+
+        # Building Information
+        building = self.data.get('building', {})
+        building_complete = building.get('name') and building.get('address')
+        checklist_data.append([
+            'Building Details',
+            '✓ Present' if building_complete else '— Missing',
+            f"{1 if building_complete else 0}/1",
+            'Name, address, unit count'
+        ])
+
+        # Units & Leaseholders
+        units = self.data.get('units', [])
+        leaseholders = self.data.get('leaseholders', [])
+        checklist_data.append([
+            'Units & Leaseholders',
+            '✓ Present' if (units and leaseholders) else '⚠ Partial' if (units or leaseholders) else '— Missing',
+            f"{len(units)} units, {len(leaseholders)} leaseholders",
+            'Contact details, unit assignments'
+        ])
+
+        # Leases
+        leases = self.data.get('leases', [])
+        lease_coverage = (len(leases) / len(units) * 100) if units else 0
+        checklist_data.append([
+            'Lease Documents',
+            '✓ Present' if leases else '— Missing',
+            f"{len(leases)} leases ({lease_coverage:.0f}% coverage)",
+            'Terms, ground rent, service charges'
+        ])
+
+        # Financial - Budgets
+        budgets = self.data.get('budgets', [])
+        checklist_data.append([
+            'Budgets & Service Charges',
+            '✓ Present' if budgets else '— Missing',
+            f"{len(budgets)} budget periods",
+            'Annual budgets, demand dates'
+        ])
+
+        # Financial - Accounts
+        bank_details = building.get('bank_account') or building.get('sort_code')
+        checklist_data.append([
+            'Bank Account Details',
+            '✓ Present' if bank_details else '— Missing',
+            '—',
+            'Account numbers, sort codes'
+        ])
+
+        # Insurance
+        insurance = self.data.get('insurance_policies', [])
+        checklist_data.append([
+            'Insurance Policies',
+            '✓ Present' if insurance else '— Missing',
+            f"{len(insurance)} policies",
+            'Buildings, terrorism, liability'
+        ])
+
+        # Compliance
+        compliance = self.data.get('compliance_assets', [])
+        compliance_types = len(set(c.get('asset_type') for c in compliance if c.get('asset_type')))
+        checklist_data.append([
+            'Compliance Certificates',
+            '✓ Present' if compliance else '— Missing',
+            f"{len(compliance)} assets ({compliance_types} types)",
+            'FRA, EICR, gas safety, legionella'
+        ])
+
+        # Contractors
+        contractors = self.data.get('building_contractors', []) or self.data.get('contracts', [])
+        checklist_data.append([
+            'Contractors & Contracts',
+            '✓ Present' if contractors else '— Missing',
+            f"{len(contractors)} contractors",
+            'Service contracts, contact details'
+        ])
+
+        # Major Works
+        major_works = self.data.get('major_works_projects', [])
+        checklist_data.append([
+            'Major Works & Section 20',
+            '✓ Present' if major_works else '— Missing',
+            f"{len(major_works)} projects",
+            'Ongoing, planned, completed works'
+        ])
+
+        # Utilities
+        utilities = self.data.get('utilities', [])
+        checklist_data.append([
+            'Utilities',
+            '✓ Present' if utilities else '— Missing',
+            f"{len(utilities)} accounts",
+            'Providers, meter numbers, MPAN'
+        ])
+
+        # Legal
+        legal = self.data.get('building_legal', [])
+        checklist_data.append([
+            'Legal / Disputes',
+            '✓ Present' if legal else '— Missing',
+            f"{len(legal)} records",
+            'Lease disputes, litigation'
+        ])
+
+        # Title Deeds
+        title_deeds = self.data.get('building_title_deeds', [])
+        checklist_data.append([
+            'Title Deeds & Plans',
+            '✓ Present' if title_deeds else '— Missing',
+            f"{len(title_deeds)} documents",
+            'Freehold title, building plans'
+        ])
+
+        # Company Secretary
+        company_sec = self.data.get('company_secretary', [])
+        checklist_data.append([
+            'Company Secretary',
+            '✓ Present' if company_sec else '— Missing',
+            f"{len(company_sec)} records",
+            'Companies House, memorandum'
+        ])
+
+        # Staff
+        staff = self.data.get('building_staff', [])
+        checklist_data.append([
+            'Staff Records',
+            '✓ Present' if staff else '— Missing',
+            f"{len(staff)} employees",
+            'Contracts, PAYE, pensions'
+        ])
+
+        # Warranties
+        warranties = self.data.get('building_warranties', [])
+        checklist_data.append([
+            'Warranties & Guarantees',
+            '✓ Present' if warranties else '— Missing',
+            f"{len(warranties)} warranties",
+            'Boilers, pumps, roofing'
+        ])
+
+        # Access Codes
+        access = self.data.get('building_keys_access', [])
+        checklist_data.append([
+            'Access Codes & Keys',
+            '✓ Present' if access else '— Missing',
+            f"{len(access)} items",
+            'Gate codes, entrance codes, keys'
+        ])
+
+        # Create table
+        table = Table(checklist_data, colWidths=[2*inch, 1*inch, 1.2*inch, 2*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), BlocIQBrand.PRIMARY),
+            ('TEXTCOLOR', (0, 0), (-1, 0), BlocIQBrand.WHITE),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [BlocIQBrand.WHITE, BlocIQBrand.GREY_LIGHT])
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Summary stats
+        total_categories = len(checklist_data) - 1  # Exclude header
+        present_categories = sum(1 for row in checklist_data[1:] if row[1].startswith('✓'))
+        partial_categories = sum(1 for row in checklist_data[1:] if row[1].startswith('⚠'))
+        missing_categories = sum(1 for row in checklist_data[1:] if row[1].startswith('—'))
+
+        completeness_pct = (present_categories / total_categories * 100) if total_categories > 0 else 0
+
+        elements.append(Paragraph(
+            f"<b>Completeness Summary:</b> {present_categories} present | "
+            f"{partial_categories} partial | {missing_categories} missing | "
+            f"<b>Overall: {completeness_pct:.0f}% complete</b>",
+            ParagraphStyle('CompletenessSummary', parent=self.styles['Body'], fontSize=10, textColor=BlocIQBrand.PRIMARY_DARK)
+        ))
 
         return elements
 
