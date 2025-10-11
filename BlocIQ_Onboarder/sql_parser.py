@@ -408,15 +408,12 @@ def load_data_from_migration_sql(sql_file_path: str) -> Dict[str, Any]:
             'id': comp_asset.get('id'),
             'asset_name': comp_asset.get('asset_name') or comp_asset.get('name'),
             'asset_type': comp_asset.get('asset_type', 'general'),
-            'compliance_asset_id': comp_asset.get('id'),
-            'contractor_id': None,  # Would need to be looked up
-            'service_frequency': comp_asset.get('service_frequency'),
             'last_service_date': comp_asset.get('last_inspection_date'),
-            'next_due_date': comp_asset.get('next_due_date'),
+            'next_service_date': comp_asset.get('next_due_date'),
             'compliance_category': comp_asset.get('asset_type'),
-            'compliance_status': comp_asset.get('compliance_status', 'unknown'),
             'location_description': comp_asset.get('location'),
-            'condition_rating': None
+            'status': comp_asset.get('compliance_status', 'unknown'),
+            'notes': comp_asset.get('service_frequency')  # Store service_frequency in notes
         }
         data['assets'].append(asset)
     

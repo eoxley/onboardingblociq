@@ -371,20 +371,18 @@ class SupabaseSchemaMapper:
             'assets': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
-                'contractor_id': 'uuid REFERENCES contractors(id)',
-                'compliance_asset_id': 'uuid REFERENCES compliance_assets(id)',
                 'asset_type': 'text NOT NULL',
-                'asset_name': 'text',
+                'asset_name': 'text NOT NULL',
                 'location_description': 'text',
-                'manufacturer': 'text',
                 'model_number': 'text',
                 'serial_number': 'text',
+                'manufacturer': 'text',
                 'installation_date': 'date',
-                'service_frequency': 'text',
                 'last_service_date': 'date',
-                'next_due_date': 'date',
-                'condition_rating': 'text',
+                'next_service_date': 'date',
+                'warranty_expiry': 'date',
                 'compliance_category': 'text',
+                'status': 'text',
                 'linked_documents': 'text[]',
                 'notes': 'text',
                 'created_at': 'timestamp with time zone DEFAULT now()',
@@ -864,20 +862,38 @@ class SupabaseSchemaMapper:
         return ''
 
     def _extract_building_address_from_property_form(self, property_form_data: Dict) -> Optional[str]:
-        """Extract building address from property information form"""
+        """Extract building address from property information form - full address with postcode"""
         # Try to extract from 'Client Name & Address' field
         address = self._extract_field(property_form_data, ['client name & address', 'address', 'property address'])
         if address:
             import re
-            # Clean up the address - remove company name, keep actual address
+            # Extract postcode first (UK format)
+            postcode_match = re.search(r'\b([A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})\b', address, re.IGNORECASE)
+            postcode = postcode_match.group(1).upper() if postcode_match else None
+
+            # Extract street number and name (e.g., "32-34 Connaught Square")
+            street_match = re.search(r'\b(\d+[-/]?\d*\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b', address)
+            street = street_match.group(1) if street_match else None
+
+            # Build full address
+            if street and postcode:
+                # Check if "London" is explicitly mentioned
+                if 'london' in address.lower():
+                    return f"{street}, London, {postcode}"
+                else:
+                    return f"{street}, {postcode}"
+            elif street:
+                return street
+
+            # Fallback: Clean up the address - remove company name, keep actual address
             lines = address.split('\n')
             if len(lines) >= 2:
                 # Second line is usually the actual address
-                return lines[1].strip()
-            # Try to extract address pattern
-            match = re.search(r'(\d+[-/]?\d*\s+[A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?[^,\n]*(?:,\s*[^,\n]+)?(?:,\s*London)?(?:,?\s*[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})?)', address, re.IGNORECASE)
-            if match:
-                return match.group(1).strip()
+                addr_line = lines[1].strip()
+                if postcode:
+                    return f"{addr_line}, {postcode}" if postcode not in addr_line else addr_line
+                return addr_line
+
         return None
 
     def _extract_units_from_tenancy_schedule(self, file_data: Dict, building_id: str) -> List[Dict]:

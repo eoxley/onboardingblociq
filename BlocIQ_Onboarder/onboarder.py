@@ -978,18 +978,23 @@ class BlocIQOnboarder:
 
         print(f"  ✅ Summary: {summary_file}")
 
-        # Generate Building Health Check Report (replaces old summary report)
+        # Save mapped_data.json for health check generator
+        mapped_data_file = self.output_dir / 'mapped_data.json'
+        with open(mapped_data_file, 'w') as f:
+            json.dump(self.mapped_data, f, indent=2, default=str)
+
+        print(f"  ✅ Mapped Data: {mapped_data_file}")
+
+        # Generate Building Health Check Report from extraction data (no database query)
         try:
-            # Always generate health check report - create building_id if needed
+            # Get building_id for optional upload
             building_id = self.mapped_data.get('building', {}).get('id')
             if not building_id:
-                # Generate a temporary ID for the report
                 import uuid
                 building_id = 'temp-building-id'
-                print("\n  ℹ️  No building ID found, using temporary ID for report generation")
 
-            print("\n📊 Generating Building Health Check Report (V2)...")
-            from reporting.building_health_check_v2 import generate_health_check_v2
+            print("\n📊 Generating Building Health Check Report (V3 - From Extraction)...")
+            from generate_health_check_from_extraction import generate_health_check
             import os
 
             # ALWAYS use local extracted data for onboarding health check
@@ -999,26 +1004,27 @@ class BlocIQOnboarder:
             if not self.mapped_data or not isinstance(self.mapped_data, dict):
                 print("  ⚠️  No valid mapped data available, skipping health check")
             else:
-                # Generate V2 professional health check report using local data
-                print(f"  📊 Generating V2 professional report with {len(self.mapped_data)} data sections...")
-                report_file = generate_health_check_v2(
-                    building_data=self.mapped_data,
-                    output_path=str(self.output_dir / 'building_health_check.pdf')
+                # Generate V3 professional health check report using extraction data
+                print(f"  📊 Generating V3 professional report from extraction data...")
+                report_file = generate_health_check(
+                    output_dir=str(self.output_dir),
+                    output_pdf=str(self.output_dir / 'building_health_check.pdf')
                 )
 
                 if report_file:
-                    print(f"\n  ✅ Building Health Check V2 PDF Generated Successfully!")
+                    print(f"\n  ✅ Building Health Check V3 PDF Generated Successfully!")
                     print(f"  📄 Location: {report_file}")
                     print(f"\n  📊 Report includes:")
-                    print(f"     • Cover Page with Health Score")
-                    print(f"     • Executive Summary with weighted scoring")
-                    print(f"     • Building Overview")
-                    print(f"     • Lease Summary (if available)")
-                    print(f"     • Insurance Summary (if available)")
-                    print(f"     • Budget Summary (if available)")
-                    print(f"     • Compliance Overview by category")
+                    print(f"     • Cover Page with Health Score & Rating")
+                    print(f"     • Executive Summary with weighted scoring (Compliance 40%, Insurance 20%, Budget 20%, Lease 10%, Contractor 10%)")
+                    print(f"     • Building Overview with full address")
+                    print(f"     • Lease Summary with term dates & ground rent")
+                    print(f"     • Budget Summary with periods & amounts")
+                    print(f"     • Compliance Overview by category with inspection dates")
+                    print(f"     • Insurance Policies with expiry tracking")
                     print(f"     • Contractors & Contracts")
-                    print(f"     • Major Works (if available)")
+                    print(f"     • Major Works Projects")
+                    print(f"     • Generated from extraction data (no database query required)")
                     print(f"     • Professional BlocIQ branding")
                     
                     # Upload PDF to Supabase reports bucket if configured

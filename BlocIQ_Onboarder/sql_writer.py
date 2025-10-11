@@ -180,6 +180,9 @@ class SQLWriter:
         if 'building_safety_reports' in mapped_data:
             self._generate_building_safety_reports_inserts(mapped_data['building_safety_reports'])
 
+        # Add health check views for PDF report generation
+        self._add_health_check_views()
+
         # Footer
         self._add_footer()
 
@@ -426,6 +429,188 @@ class SQLWriter:
             "BEGIN;",
             ""
         ])
+
+    def _add_health_check_views(self):
+        """Add database views for health check report generation"""
+        views_sql = """
+-- ============================================================
+-- BlocIQ Health Check Database Views
+-- Creates computed views for health score calculation
+-- ============================================================
+
+-- =====================================
+-- VIEW: v_compliance_rollup
+-- Aggregates compliance asset status by building
+-- =====================================
+CREATE OR REPLACE VIEW v_compliance_rollup AS
+SELECT
+    building_id,
+    COUNT(*) as total_assets,
+    COUNT(*) FILTER (WHERE compliance_status = 'compliant') as ok_count,
+    COUNT(*) FILTER (WHERE compliance_status = 'overdue') as overdue_count,
+    COUNT(*) FILTER (WHERE compliance_status = 'unknown' OR compliance_status IS NULL) as unknown_count,
+    ROUND(
+        (COUNT(*) FILTER (WHERE compliance_status = 'compliant')::numeric / NULLIF(COUNT(*), 0)) * 100,
+        1
+    ) as ok_pct
+FROM compliance_assets
+WHERE is_active = TRUE
+GROUP BY building_id;
+
+-- =====================================
+-- VIEW: v_lease_coverage
+-- Calculates lease coverage by building
+-- =====================================
+CREATE OR REPLACE VIEW v_lease_coverage AS
+SELECT
+    u.building_id,
+    COUNT(DISTINCT u.id) as total_units,
+    COUNT(DISTINCT l.unit_id) as leased_units,
+    ROUND(
+        (COUNT(DISTINCT l.unit_id)::numeric / NULLIF(COUNT(DISTINCT u.id), 0)) * 100,
+        1
+    ) as lease_pct
+FROM units u
+LEFT JOIN leases l ON u.id = l.unit_id
+GROUP BY u.building_id;
+
+-- =====================================
+-- VIEW: v_building_health_score
+-- Calculates overall health score with weighted components
+-- Compliance: 40% | Insurance: 20% | Budget: 20% | Lease: 10% | Contractor: 10%
+-- =====================================
+CREATE OR REPLACE VIEW v_building_health_score AS
+WITH compliance_scores AS (
+    SELECT
+        building_id,
+        CASE
+            WHEN total_assets = 0 THEN 0
+            WHEN ok_pct >= 90 THEN 100
+            WHEN ok_pct >= 75 THEN 80
+            WHEN ok_pct >= 50 THEN 60
+            WHEN ok_pct >= 25 THEN 40
+            ELSE 20
+        END as compliance_score
+    FROM v_compliance_rollup
+),
+insurance_scores AS (
+    SELECT
+        building_id,
+        CASE
+            WHEN COUNT(*) = 0 THEN 0
+            WHEN COUNT(*) FILTER (WHERE expiry_date > CURRENT_DATE) = COUNT(*) THEN 100
+            WHEN COUNT(*) FILTER (WHERE expiry_date > CURRENT_DATE) >= COUNT(*) * 0.5 THEN 50
+            ELSE 25
+        END as insurance_score
+    FROM building_insurance
+    GROUP BY building_id
+),
+budget_scores AS (
+    SELECT
+        building_id,
+        CASE
+            WHEN COUNT(*) = 0 THEN 0
+            WHEN COUNT(*) FILTER (WHERE year_start IS NOT NULL AND year_end IS NOT NULL) = COUNT(*) THEN 100
+            WHEN COUNT(*) FILTER (WHERE year_start IS NOT NULL OR year_end IS NOT NULL) >= COUNT(*) * 0.5 THEN 60
+            ELSE 30
+        END as budget_score
+    FROM budgets
+    GROUP BY building_id
+),
+lease_scores AS (
+    SELECT
+        building_id,
+        CASE
+            WHEN lease_pct >= 90 THEN 100
+            WHEN lease_pct >= 75 THEN 80
+            WHEN lease_pct >= 50 THEN 60
+            WHEN lease_pct >= 25 THEN 40
+            ELSE 20
+        END as lease_score
+    FROM v_lease_coverage
+),
+contractor_scores AS (
+    SELECT
+        building_id,
+        CASE
+            WHEN COUNT(*) = 0 THEN 0
+            WHEN COUNT(*) FILTER (WHERE retender_status = 'not_scheduled' OR retender_status IS NULL) = COUNT(*) THEN 100
+            WHEN COUNT(*) FILTER (WHERE retender_status = 'due') >= COUNT(*) * 0.5 THEN 50
+            ELSE 75
+        END as contractor_score
+    FROM building_contractors
+    GROUP BY building_id
+)
+SELECT
+    b.id as building_id,
+    b.name as building_name,
+    COALESCE(cs.compliance_score, 0) as compliance_score,
+    COALESCE(ins.insurance_score, 0) as insurance_score,
+    COALESCE(bud.budget_score, 0) as budget_score,
+    COALESCE(ls.lease_score, 0) as lease_score,
+    COALESCE(cont.contractor_score, 0) as contractor_score,
+    -- Weighted overall score
+    ROUND(
+        (COALESCE(cs.compliance_score, 0) * 0.40) +
+        (COALESCE(ins.insurance_score, 0) * 0.20) +
+        (COALESCE(bud.budget_score, 0) * 0.20) +
+        (COALESCE(ls.lease_score, 0) * 0.10) +
+        (COALESCE(cont.contractor_score, 0) * 0.10),
+        1
+    ) as health_score,
+    -- Rating based on overall score
+    CASE
+        WHEN ROUND(
+            (COALESCE(cs.compliance_score, 0) * 0.40) +
+            (COALESCE(ins.insurance_score, 0) * 0.20) +
+            (COALESCE(bud.budget_score, 0) * 0.20) +
+            (COALESCE(ls.lease_score, 0) * 0.10) +
+            (COALESCE(cont.contractor_score, 0) * 0.10),
+            1
+        ) >= 90 THEN 'Excellent'
+        WHEN ROUND(
+            (COALESCE(cs.compliance_score, 0) * 0.40) +
+            (COALESCE(ins.insurance_score, 0) * 0.20) +
+            (COALESCE(bud.budget_score, 0) * 0.20) +
+            (COALESCE(ls.lease_score, 0) * 0.10) +
+            (COALESCE(cont.contractor_score, 0) * 0.10),
+            1
+        ) >= 75 THEN 'Good'
+        WHEN ROUND(
+            (COALESCE(cs.compliance_score, 0) * 0.40) +
+            (COALESCE(ins.insurance_score, 0) * 0.20) +
+            (COALESCE(bud.budget_score, 0) * 0.20) +
+            (COALESCE(ls.lease_score, 0) * 0.10) +
+            (COALESCE(cont.contractor_score, 0) * 0.10),
+            1
+        ) >= 50 THEN 'Fair'
+        WHEN ROUND(
+            (COALESCE(cs.compliance_score, 0) * 0.40) +
+            (COALESCE(ins.insurance_score, 0) * 0.20) +
+            (COALESCE(bud.budget_score, 0) * 0.20) +
+            (COALESCE(ls.lease_score, 0) * 0.10) +
+            (COALESCE(cont.contractor_score, 0) * 0.10),
+            1
+        ) >= 25 THEN 'Poor'
+        ELSE 'Critical'
+    END as rating
+FROM buildings b
+LEFT JOIN compliance_scores cs ON b.id = cs.building_id
+LEFT JOIN insurance_scores ins ON b.id = ins.building_id
+LEFT JOIN budget_scores bud ON b.id = bud.building_id
+LEFT JOIN lease_scores ls ON b.id = ls.building_id
+LEFT JOIN contractor_scores cont ON b.id = cont.building_id;
+
+-- =====================================
+-- Indexes for Performance
+-- =====================================
+CREATE INDEX IF NOT EXISTS idx_compliance_assets_status_building ON compliance_assets(building_id, compliance_status) WHERE is_active = TRUE;
+CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);
+CREATE INDEX IF NOT EXISTS idx_insurance_expiry ON building_insurance(building_id, expiry_date);
+CREATE INDEX IF NOT EXISTS idx_budgets_dates ON budgets(building_id, year_start, year_end);
+CREATE INDEX IF NOT EXISTS idx_contractors_retender ON building_contractors(building_id, retender_status);
+"""
+        self.sql_statements.append(views_sql)
 
     def _add_footer(self):
         """Add migration footer"""
@@ -851,6 +1036,7 @@ class SQLWriter:
             'buildings': ['id', 'name'],
             'units': ['id', 'building_id', 'unit_number'],
             'leaseholders': ['id', 'building_id', 'first_name', 'last_name'],
+            'leases': ['id', 'building_id'],
             'building_documents': ['id', 'building_id', 'category', 'file_name', 'storage_path'],
             'compliance_assets': ['id', 'building_id', 'asset_name', 'asset_type'],
             'budgets': ['id', 'building_id', 'period'],
@@ -1196,12 +1382,16 @@ class SQLWriter:
     def _generate_leases_inserts(self, leases: List[Dict]):
         """Generate INSERT statements for leases table"""
         if not leases:
+            print("  ⚠️  No leases to generate SQL for")
             return
 
+        print(f"  📜 Generating SQL for {len(leases)} leases")
         self.sql_statements.append(f"-- Insert {len(leases)} lease records")
         for lease in leases:
+            # Filter out ocr_text - it's used for comprehensive extraction but not stored in leases table
+            lease_data = {k: v for k, v in lease.items() if k != 'ocr_text'}
             self.sql_statements.append(
-                self._create_insert_statement('leases', lease, use_upsert=False)
+                self._create_insert_statement('leases', lease_data, use_upsert=False)
             )
         self.sql_statements.append("")
 

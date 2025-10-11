@@ -193,13 +193,12 @@ class AssetsExtractor:
             'model_number': model_number,
             'serial_number': serial_number,
             'installation_date': installation_date,
-            'service_frequency': service_frequency,
             'last_service_date': last_service,
-            'next_due_date': next_due,
-            'condition_rating': condition,
+            'next_service_date': next_due,
+            'status': condition,  # Map condition_rating -> status
             'compliance_category': compliance_category,
             'linked_documents': [source_file],
-            'notes': None
+            'notes': service_frequency  # Store service_frequency in notes since no dedicated column
         }
 
         return asset
