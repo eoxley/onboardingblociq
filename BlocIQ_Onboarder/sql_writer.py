@@ -175,6 +175,7 @@ class SQLWriter:
             self._generate_lease_enforcement_inserts(mapped_data['lease_enforcement'])
 
         if 'lease_clauses' in mapped_data:
+            print(f"  📋 Generating lease_clauses SQL for {len(mapped_data['lease_clauses'])} clauses")
             self._generate_lease_clauses_inserts(mapped_data['lease_clauses'])
 
         if 'building_safety_reports' in mapped_data:
@@ -206,79 +207,292 @@ class SQLWriter:
             "CREATE EXTENSION IF NOT EXISTS pgcrypto;",
             "",
             "-- =====================================",
-            "-- SCHEMA MIGRATIONS: Add missing columns if they don't exist",
+            "-- CORE TABLE CREATION",
             "-- =====================================",
             "",
-            "-- Remove deprecated role column from building_staff (if exists)",
-            "ALTER TABLE building_staff DROP COLUMN IF EXISTS role;",
+            "-- Buildings table",
+            "CREATE TABLE IF NOT EXISTS buildings (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  agency_id uuid NOT NULL,",
+            "  name text NOT NULL,",
+            "  address text,",
+            "  postcode text,",
+            "  city text,",
+            "  country text DEFAULT 'UK',",
+            "  created_at timestamptz DEFAULT now(),",
+            "  updated_at timestamptz DEFAULT now()",
+            ");",
             "",
-            "-- Add building_id to leaseholders (if not exists)",
-            "ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS building_id uuid;",
+            "CREATE INDEX IF NOT EXISTS idx_buildings_agency ON buildings(agency_id);",
             "",
-            "-- Add unit_number to leaseholders (if not exists)",
-            "ALTER TABLE leaseholders ADD COLUMN IF NOT EXISTS unit_number VARCHAR(50);",
+            "-- Units table",
+            "CREATE TABLE IF NOT EXISTS units (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  unit_number text NOT NULL,",
+            "  floor_number integer,",
+            "  unit_type text,",
+            "  bedrooms integer,",
+            "  square_footage numeric,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
             "",
-            "-- Add year_start and year_end to budgets (if not exists) - ensure before index",
-            "ALTER TABLE budgets ADD COLUMN IF NOT EXISTS year_start DATE;",
-            "ALTER TABLE budgets ADD COLUMN IF NOT EXISTS year_end DATE;",
+            "CREATE INDEX IF NOT EXISTS idx_units_building ON units(building_id);",
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_units_building_number ON units(building_id, unit_number);",
             "",
-            "-- Add expiry_date to building_insurance (if not exists)",
-            "ALTER TABLE building_insurance ADD COLUMN IF NOT EXISTS expiry_date DATE;",
+            "-- Leaseholders table",
+            "CREATE TABLE IF NOT EXISTS leaseholders (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  unit_id uuid REFERENCES units(id) ON DELETE SET NULL,",
+            "  unit_number text,",
+            "  first_name text,",
+            "  last_name text,",
+            "  name text,",
+            "  email text,",
+            "  phone text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
             "",
-            "-- Add expiry_date to leases (if not exists)",
-            "ALTER TABLE leases ADD COLUMN IF NOT EXISTS expiry_date DATE;",
+            "CREATE INDEX IF NOT EXISTS idx_leaseholders_building ON leaseholders(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_leaseholders_unit ON leaseholders(unit_id);",
             "",
-            "-- Add building_id to apportionments (if not exists)",
-            "ALTER TABLE apportionments ADD COLUMN IF NOT EXISTS building_id uuid;",
+            "-- Schedules table",
+            "CREATE TABLE IF NOT EXISTS schedules (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  name text NOT NULL,",
+            "  description text,",
+            "  schedule_type text,",
+            "  frequency text,",
+            "  last_completed_date date,",
+            "  next_due_date date,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
             "",
-            "-- Add building_id to major_works_notices (if not exists)",
-            "ALTER TABLE major_works_notices ADD COLUMN IF NOT EXISTS building_id uuid;",
+            "CREATE INDEX IF NOT EXISTS idx_schedules_building ON schedules(building_id);",
             "",
-            "-- Add foreign key constraints (if not exist)",
-            "DO $$ BEGIN",
-            "  ALTER TABLE leaseholders ADD CONSTRAINT fk_leaseholders_building FOREIGN KEY (building_id) REFERENCES buildings(id);",
-            "EXCEPTION WHEN duplicate_object THEN NULL;",
-            "END $$;",
+            "-- Compliance Assets table",
+            "CREATE TABLE IF NOT EXISTS compliance_assets (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  asset_name text NOT NULL,",
+            "  asset_type text NOT NULL,",
+            "  compliance_category text,",
+            "  last_inspection_date date,",
+            "  next_due_date date,",
+            "  compliance_status text DEFAULT 'unknown',",
+            "  location text,",
+            "  responsible_party text,",
+            "  notes text,",
+            "  is_active boolean DEFAULT true,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
             "",
-            "DO $$ BEGIN",
-            "  ALTER TABLE apportionments ADD CONSTRAINT fk_apportionments_building FOREIGN KEY (building_id) REFERENCES buildings(id);",
-            "EXCEPTION WHEN duplicate_object THEN NULL;",
-            "END $$;",
-            "",
-            "DO $$ BEGIN",
-            "  ALTER TABLE major_works_notices ADD CONSTRAINT fk_major_works_notices_building FOREIGN KEY (building_id) REFERENCES buildings(id);",
-            "EXCEPTION WHEN duplicate_object THEN NULL;",
-            "END $$;",
-            "",
-            "-- Create indexes for performance (if not exist)",
-            "CREATE INDEX IF NOT EXISTS idx_leaseholders_building_id ON leaseholders(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_apportionments_building_id ON apportionments(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_major_works_notices_building_id ON major_works_notices(building_id);",
-            "",
-            "-- Add compliance tracking columns to compliance_assets",
-            "ALTER TABLE compliance_assets "
-            "ADD COLUMN IF NOT EXISTS last_inspection_date DATE, "
-            "ADD COLUMN IF NOT EXISTS next_due_date DATE, "
-            "ADD COLUMN IF NOT EXISTS compliance_status VARCHAR(50) DEFAULT 'unknown', "
-            "ADD COLUMN IF NOT EXISTS location VARCHAR(255), "
-            "ADD COLUMN IF NOT EXISTS responsible_party VARCHAR(255), "
-            "ADD COLUMN IF NOT EXISTS notes TEXT;",
-            "",
-            "-- Create index on compliance status for quick filtering",
+            "CREATE INDEX IF NOT EXISTS idx_compliance_assets_building ON compliance_assets(building_id);",
             "CREATE INDEX IF NOT EXISTS idx_compliance_assets_status ON compliance_assets(compliance_status);",
             "CREATE INDEX IF NOT EXISTS idx_compliance_assets_next_due ON compliance_assets(next_due_date);",
             "",
-            "-- Add contract lifecycle tracking columns to building_contractors",
-            "ALTER TABLE building_contractors "
-            "ADD COLUMN IF NOT EXISTS retender_status text DEFAULT 'not_scheduled', "
-            "ADD COLUMN IF NOT EXISTS retender_due_date date, "
-            "ADD COLUMN IF NOT EXISTS next_review_date date, "
-            "ADD COLUMN IF NOT EXISTS renewal_notice_period interval DEFAULT interval '90 days';",
+            "-- Building Documents table",
+            "CREATE TABLE IF NOT EXISTS building_documents (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  category text NOT NULL,",
+            "  file_name text NOT NULL,",
+            "  storage_path text NOT NULL,",
+            "  file_size bigint,",
+            "  mime_type text,",
+            "  document_date date,",
+            "  notes text,",
+            "  confidence_score numeric DEFAULT 1.0,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
             "",
-            "-- Create index on contract lifecycle for quick filtering",
+            "CREATE INDEX IF NOT EXISTS idx_building_documents_building ON building_documents(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_building_documents_category ON building_documents(category);",
+            "",
+            "-- Major Works Projects table",
+            "CREATE TABLE IF NOT EXISTS major_works_projects (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  project_name text NOT NULL,",
+            "  description text,",
+            "  start_date date,",
+            "  completion_date date,",
+            "  total_cost numeric,",
+            "  status text DEFAULT 'planned',",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_major_works_projects_building ON major_works_projects(building_id);",
+            "",
+            "-- Apportionments table",
+            "CREATE TABLE IF NOT EXISTS apportionments (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  unit_id uuid REFERENCES units(id) ON DELETE CASCADE,",
+            "  budget_id uuid,",
+            "  apportionment_percentage numeric(5,2),",
+            "  apportionment_amount numeric,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_apportionments_building ON apportionments(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_apportionments_unit ON apportionments(unit_id);",
+            "CREATE INDEX IF NOT EXISTS idx_apportionments_budget ON apportionments(budget_id);",
+            "",
+            "-- Contractors table",
+            "CREATE TABLE IF NOT EXISTS contractors (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  name text NOT NULL,",
+            "  email text,",
+            "  phone text,",
+            "  address text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "-- Building Contractors table",
+            "CREATE TABLE IF NOT EXISTS building_contractors (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  contractor_type text,",
+            "  company_name text,",
+            "  contact_person text,",
+            "  phone text,",
+            "  email text,",
+            "  contract_start date,",
+            "  contract_end date,",
+            "  document_id uuid,",
+            "  notes text,",
+            "  retender_status text DEFAULT 'not_scheduled',",
+            "  retender_due_date date,",
+            "  next_review_date date,",
+            "  renewal_notice_period interval DEFAULT interval '90 days',",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_contractors_building ON building_contractors(building_id);",
             "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_due ON building_contractors(retender_due_date);",
             "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_status ON building_contractors(retender_status);",
             "",
+            "-- Assets table",
+            "CREATE TABLE IF NOT EXISTS assets (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  asset_type text NOT NULL,",
+            "  asset_name text NOT NULL,",
+            "  location_description text,",
+            "  compliance_category text,",
+            "  source_documents text[],",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_assets_building ON assets(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_assets_type ON assets(asset_type);",
+            "",
+            "-- Building Keys & Access table",
+            "CREATE TABLE IF NOT EXISTS building_keys_access (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  access_type text,",
+            "  category text,",
+            "  label text,",
+            "  code text,",
+            "  location text,",
+            "  description text,",
+            "  visibility text DEFAULT 'team',",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_keys_access_building ON building_keys_access(building_id);",
+            "",
+            "-- Building Utilities table",
+            "CREATE TABLE IF NOT EXISTS building_utilities (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  utility_type text NOT NULL,",
+            "  provider_name text,",
+            "  account_number text,",
+            "  contact_phone text,",
+            "  contact_email text,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_utilities_building ON building_utilities(building_id);",
+            "",
+            "-- Building Legal table",
+            "CREATE TABLE IF NOT EXISTS building_legal (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  legal_type text,",
+            "  description text,",
+            "  document_id uuid,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_legal_building ON building_legal(building_id);",
+            "",
+            "-- Building Statutory Reports table",
+            "CREATE TABLE IF NOT EXISTS building_statutory_reports (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  report_type text NOT NULL,",
+            "  report_date date,",
+            "  expiry_date date,",
+            "  document_id uuid,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_statutory_reports_building ON building_statutory_reports(building_id);",
+            "",
+            "-- Building Warranties table",
+            "CREATE TABLE IF NOT EXISTS building_warranties (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  warranty_type text,",
+            "  provider_name text,",
+            "  start_date date,",
+            "  expiry_date date,",
+            "  document_id uuid,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_warranties_building ON building_warranties(building_id);",
+            "",
+            "-- Company Secretary table",
+            "CREATE TABLE IF NOT EXISTS company_secretary (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  company_name text,",
+            "  secretary_name text,",
+            "  contact_email text,",
+            "  contact_phone text,",
+            "  address text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_company_secretary_building ON company_secretary(building_id);",
+            "",
+            "-- Building Title Deeds table",
+            "CREATE TABLE IF NOT EXISTS building_title_deeds (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  title_number text,",
+            "  tenure_type text,",
+            "  property_description text,",
+            "  document_id uuid,",
+            "  notes text,",
+            "  created_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_building_title_deeds_building ON building_title_deeds(building_id);",
+            "",
+            "-- =====================================",
             "-- =====================================",
             "-- FINANCIAL & COMPLIANCE INTELLIGENCE TABLES",
             "-- =====================================",
@@ -398,6 +612,23 @@ class SQLWriter:
             "CREATE INDEX IF NOT EXISTS idx_leases_building ON leases(building_id);",
             "CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);",
             "CREATE INDEX IF NOT EXISTS idx_leases_expiry ON leases(expiry_date);",
+            "",
+            "-- Lease Clauses (for traceability)",
+            "CREATE TABLE IF NOT EXISTS lease_clauses (",
+            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
+            "  lease_id uuid NOT NULL REFERENCES leases(id) ON DELETE CASCADE,",
+            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
+            "  clause_number text,",
+            "  clause_category text,",
+            "  clause_text text,",
+            "  clause_summary text,",
+            "  created_at timestamptz DEFAULT now(),",
+            "  updated_at timestamptz DEFAULT now()",
+            ");",
+            "",
+            "CREATE INDEX IF NOT EXISTS idx_lease_clauses_lease ON lease_clauses(lease_id);",
+            "CREATE INDEX IF NOT EXISTS idx_lease_clauses_building ON lease_clauses(building_id);",
+            "CREATE INDEX IF NOT EXISTS idx_lease_clauses_category ON lease_clauses(clause_category);",
             "",
             "-- =====================================",
             "-- CONTRACTOR_CONTRACTS: Ensure service_category allows 'unspecified'",
@@ -1042,8 +1273,16 @@ END $$;
         # First validate with legacy schema mapper (for compatibility)
         validated_data = self.schema_mapper.validate_data(table, data)
 
+        # Debug for lease_clauses
+        if table == 'lease_clauses':
+            print(f"  🔍 After schema_mapper: {list(validated_data.keys())}")
+
         # Then apply strict schema validation and transformation
         validated_data = self.schema_validator.validate_and_transform(table, validated_data)
+
+        # Debug for lease_clauses
+        if table == 'lease_clauses':
+            print(f"  🔍 After schema_validator: {list(validated_data.keys())}")
 
         # DEBUG: Print for major_works_projects and compliance_assets
         if table == 'major_works_projects':
@@ -1108,6 +1347,10 @@ END $$;
             print()
 
         if not filtered_data:
+            if table == 'lease_clauses':
+                print(f"  ⚠️  DEBUG lease_clauses: validated_data had {len(validated_data)} fields, all filtered out")
+                print(f"      Original fields: {list(data.keys())}")
+                print(f"      After validation: {list(validated_data.keys())}")
             return f"-- Skipped empty insert for {table}"
 
         columns = ', '.join(filtered_data.keys())
@@ -1483,6 +1726,144 @@ END $$;
         from datetime import datetime
         return datetime.now().isoformat()
 
+    # =========================================
+    # COMPREHENSIVE LEASE EXTRACTION METHODS (28 Index Points)
+    # =========================================
+
+    def _generate_document_texts_inserts(self, documents: List[Dict]):
+        """Generate INSERT statements for document_texts table (OCR storage)"""
+        if not documents:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(documents)} document_texts records (OCR storage)")
+        for doc in documents:
+            self.sql_statements.append(
+                self._create_insert_statement('document_texts', doc, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_parties_inserts(self, parties: List[Dict]):
+        """Generate INSERT statements for lease_parties table"""
+        if not parties:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(parties)} lease_parties records")
+        for party in parties:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_parties', party, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_demise_inserts(self, demise_records: List[Dict]):
+        """Generate INSERT statements for lease_demise table"""
+        if not demise_records:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(demise_records)} lease_demise records")
+        for demise in demise_records:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_demise', demise, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_financial_terms_inserts(self, financial_terms: List[Dict]):
+        """Generate INSERT statements for lease_financial_terms table"""
+        if not financial_terms:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(financial_terms)} lease_financial_terms records")
+        for terms in financial_terms:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_financial_terms', terms, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_insurance_terms_inserts(self, insurance_terms: List[Dict]):
+        """Generate INSERT statements for lease_insurance_terms table"""
+        if not insurance_terms:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(insurance_terms)} lease_insurance_terms records")
+        for terms in insurance_terms:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_insurance_terms', terms, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_covenants_inserts(self, covenants: List[Dict]):
+        """Generate INSERT statements for lease_covenants table"""
+        if not covenants:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(covenants)} lease_covenants records")
+        for covenant in covenants:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_covenants', covenant, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_restrictions_inserts(self, restrictions: List[Dict]):
+        """Generate INSERT statements for lease_restrictions table"""
+        if not restrictions:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(restrictions)} lease_restrictions records")
+        for restriction in restrictions:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_restrictions', restriction, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_rights_inserts(self, rights: List[Dict]):
+        """Generate INSERT statements for lease_rights table"""
+        if not rights:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(rights)} lease_rights records")
+        for right in rights:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_rights', right, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_enforcement_inserts(self, enforcement: List[Dict]):
+        """Generate INSERT statements for lease_enforcement table"""
+        if not enforcement:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(enforcement)} lease_enforcement records")
+        for record in enforcement:
+            self.sql_statements.append(
+                self._create_insert_statement('lease_enforcement', record, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
+    def _generate_lease_clauses_inserts(self, clauses: List[Dict]):
+        """Generate INSERT statements for lease_clauses table"""
+        if not clauses:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(clauses)} lease_clauses records (Clause References for Traceability)")
+        for i, clause in enumerate(clauses):
+            insert_stmt = self._create_insert_statement('lease_clauses', clause, use_upsert=False)
+            if insert_stmt:
+                self.sql_statements.append(insert_stmt)
+            else:
+                print(f"  ⚠️  Clause {i+1} produced empty INSERT statement")
+        self.sql_statements.append("")
+
+    def _generate_building_safety_reports_inserts(self, reports: List[Dict]):
+        """Generate INSERT statements for building_safety_reports table"""
+        if not reports:
+            return
+
+        self.sql_statements.append(f"-- Insert {len(reports)} building_safety_reports records")
+        for report in reports:
+            self.sql_statements.append(
+                self._create_insert_statement('building_safety_reports', report, use_upsert=False)
+            )
+        self.sql_statements.append("")
+
 
 def generate_document_log_csv(documents: List[Dict]) -> str:
     """
@@ -1514,143 +1895,10 @@ def generate_document_log_csv(documents: List[Dict]) -> str:
 
     return '\n'.join(csv_lines)
 
-    # =========================================
-    # COMPREHENSIVE LEASE EXTRACTION METHODS (28 Index Points)
-    # =========================================
 
-    def _generate_document_texts_inserts(self, documents: List[Dict]):
-        """Generate INSERT statements for document_texts table (OCR storage)"""
-        if not documents:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(documents)} document_texts records (OCR storage)")
-        for doc in documents:
-            self.sql_statements.append(
-                self._create_insert_statement('document_texts', doc, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_parties_inserts(self, parties: List[Dict]):
-        """Generate INSERT statements for lease_parties table (Index Point 3)"""
-        if not parties:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(parties)} lease_parties records (Lessor, Lessee, Management Co.)")
-        for party in parties:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_parties', party, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_demise_inserts(self, demise_records: List[Dict]):
-        """Generate INSERT statements for lease_demise table (Index Point 5)"""
-        if not demise_records:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(demise_records)} lease_demise records (Demise Definition)")
-        for demise in demise_records:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_demise', demise, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_financial_terms_inserts(self, financial_terms: List[Dict]):
-        """Generate INSERT statements for lease_financial_terms table (Index Points 12-14, 21-24)"""
-        if not financial_terms:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(financial_terms)} lease_financial_terms records")
-        for terms in financial_terms:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_financial_terms', terms, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_insurance_terms_inserts(self, insurance_terms: List[Dict]):
-        """Generate INSERT statements for lease_insurance_terms table (Index Point 14)"""
-        if not insurance_terms:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(insurance_terms)} lease_insurance_terms records")
-        for terms in insurance_terms:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_insurance_terms', terms, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_covenants_inserts(self, covenants: List[Dict]):
-        """Generate INSERT statements for lease_covenants table (Index Points 6, 8-11)"""
-        if not covenants:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(covenants)} lease_covenants records (Repair, Use, etc.)")
-        for covenant in covenants:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_covenants', covenant, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_restrictions_inserts(self, restrictions: List[Dict]):
-        """Generate INSERT statements for lease_restrictions table (Index Points 9-11, 17-19)"""
-        if not restrictions:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(restrictions)} lease_restrictions records (Pets, Subletting, RMC, etc.)")
-        for restriction in restrictions:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_restrictions', restriction, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_rights_inserts(self, rights: List[Dict]):
-        """Generate INSERT statements for lease_rights table (Index Point 20)"""
-        if not rights:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(rights)} lease_rights records (Access, Easements)")
-        for right in rights:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_rights', right, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_enforcement_inserts(self, enforcement: List[Dict]):
-        """Generate INSERT statements for lease_enforcement table (Index Points 15-16)"""
-        if not enforcement:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(enforcement)} lease_enforcement records (Forfeiture, Remedies)")
-        for record in enforcement:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_enforcement', record, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_clauses_inserts(self, clauses: List[Dict]):
-        """Generate INSERT statements for lease_clauses table (Index Point 25)"""
-        if not clauses:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(clauses)} lease_clauses records (Clause References for Traceability)")
-        for clause in clauses:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_clauses', clause, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_building_safety_reports_inserts(self, reports: List[Dict]):
-        """Generate INSERT statements for building_safety_reports table"""
-        if not reports:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(reports)} building_safety_reports records (FRAs, BSCs)")
-        for report in reports:
-            self.sql_statements.append(
-                self._create_insert_statement('building_safety_reports', report, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-
+# =========================================
+# Helper function for CSV escaping (outside of class)
+# =========================================
 def _csv_escape(value: str) -> str:
     """Escape value for CSV"""
     if not value:
@@ -1660,4 +1908,5 @@ def _csv_escape(value: str) -> str:
     if ',' in value or '"' in value or '\n' in value:
         return f'"{value.replace(chr(34), chr(34)+chr(34))}"'
 
+    return value
     return value
