@@ -1060,13 +1060,35 @@ END $$;
         self.sql_statements.append("")
 
     def _generate_apportionments_inserts(self, apportionments: List[Dict]):
-        """Generate INSERTs for apportionments table"""
+        """Generate INSERTs for apportionments table - deduplicated by unit"""
         if not apportionments:
             return
 
-        self.sql_statements.append(f"-- Insert {len(apportionments)} apportionments")
+        # Deduplicate: Keep only one apportionment per unit_id
+        # Prioritize records with unit_id, and prefer higher percentages (more specific)
+        unit_apportionments = {}
+        for app in apportionments:
+            unit_id = app.get('unit_id')
+            if unit_id:
+                # If we haven't seen this unit, or this one has a higher percentage, use it
+                if unit_id not in unit_apportionments:
+                    unit_apportionments[unit_id] = app
+                else:
+                    # Keep the one with more complete data (has percentage)
+                    current_pct = unit_apportionments[unit_id].get('percentage', 0)
+                    new_pct = app.get('percentage', 0)
+                    if new_pct and new_pct > 0 and (not current_pct or new_pct != current_pct):
+                        # Prefer records from apportionment-specific files
+                        if 'apportionment' in str(app.get('source_document', '')).lower():
+                            unit_apportionments[unit_id] = app
 
-        for apportionment in apportionments:
+        deduplicated = list(unit_apportionments.values())
+
+        print(f"  📊 Deduplicating apportionments: {len(apportionments)} → {len(deduplicated)} (one per unit)")
+
+        self.sql_statements.append(f"-- Insert {len(deduplicated)} apportionments (deduplicated by unit)")
+
+        for apportionment in deduplicated:
             self.sql_statements.append(
                 self._create_insert_statement('apportionments', apportionment, use_upsert=False)
             )

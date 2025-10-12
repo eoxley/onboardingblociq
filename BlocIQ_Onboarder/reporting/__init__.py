@@ -1,9 +1,8 @@
 """
 BlocIQ Onboarder - Reporting Module
-AI-driven Building Health Check reports
+Building Summary Report Generator
 """
 
-# V2 uses generate_health_check_v2 function
-from .building_health_check_v2 import generate_health_check_v2
+from .building_summary_report import generate_building_summary
 
-__all__ = ['generate_health_check_v2']
+__all__ = ['generate_building_summary']
