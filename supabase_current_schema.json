@@ -10388,5 +10388,45 @@
         "definition": "CREATE INDEX idx_works_orders_building_schedule ON public.works_orders USING btree (building_id, schedule_id)"
       }
     ]
+  },
+  "lease_clauses": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "lease_id",
+        "type": "uuid"
+      },
+      {
+        "name": "building_id",
+        "type": "uuid"
+      },
+      {
+        "name": "clause_number",
+        "type": "text"
+      },
+      {
+        "name": "clause_category",
+        "type": "text"
+      },
+      {
+        "name": "clause_text",
+        "type": "text"
+      },
+      {
+        "name": "clause_summary",
+        "type": "text"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      }
+    ]
   }
 }

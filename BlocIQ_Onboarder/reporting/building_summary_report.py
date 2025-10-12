@@ -111,6 +111,61 @@ def generate_building_summary(output_folder: str) -> str:
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)
 
+    # Generate PDF automatically
+    pdf_path = output_dir / f"Building_Summary_Complete_{datetime.now().strftime('%Y%m%d')}.pdf"
+    try:
+        # Try using Chrome/Chromium headless for PDF generation
+        import subprocess
+
+        # Try common Chrome/Chromium paths on macOS
+        chrome_paths = [
+            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            '/Applications/Chromium.app/Contents/MacOS/Chromium',
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium-browser'
+        ]
+
+        chrome_path = None
+        for path in chrome_paths:
+            if Path(path).exists():
+                chrome_path = path
+                break
+
+        if chrome_path:
+            # Use headless Chrome to generate PDF
+            result = subprocess.run([
+                chrome_path,
+                '--headless',
+                '--disable-gpu',
+                '--print-to-pdf=' + str(pdf_path),
+                '--no-margins',
+                str(output_path)
+            ], capture_output=True, timeout=30)
+
+            if result.returncode == 0 and pdf_path.exists():
+                print(f"\n  📄 PDF Generated Successfully!")
+                print(f"     {pdf_path}")
+                return str(output_path)
+
+        # If Chrome not available, try weasyprint
+        try:
+            from weasyprint import HTML
+            HTML(str(output_path)).write_pdf(str(pdf_path))
+            print(f"\n  📄 PDF Generated with WeasyPrint!")
+            print(f"     {pdf_path}")
+        except (ImportError, Exception) as e:
+            # PDF generation failed - provide instructions
+            print(f"\n  📄 HTML Report Generated: {output_path}")
+            print(f"\n  💡 To generate PDF:")
+            print(f"     1. Open {output_path} in browser")
+            print(f"     2. Press Cmd+P (Mac) or Ctrl+P (Windows)")
+            print(f"     3. Select 'Save as PDF'")
+            print(f"     4. Save to: {pdf_path}")
+
+    except Exception as e:
+        print(f"\n  ⚠️  PDF generation skipped: {e}")
+        print(f"  💡 Open {output_path} in browser and print to PDF")
+
     return str(output_path)
 
 

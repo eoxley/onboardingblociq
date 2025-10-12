@@ -80,6 +80,17 @@ class SupabaseSchemaMapper:
                 'created_at': 'timestamp with time zone DEFAULT now()',
                 'updated_at': 'timestamp with time zone DEFAULT now()'
             },
+            'lease_clauses': {
+                'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
+                'lease_id': 'uuid NOT NULL REFERENCES leases(id)',
+                'building_id': 'uuid NOT NULL REFERENCES buildings(id)',
+                'clause_number': 'text',  # e.g., "1.1", "2.3.4"
+                'clause_category': 'text',  # rent, repair, insurance, service_charge, use, alterations, assignment, forfeiture, covenant, other
+                'clause_text': 'text',  # Full clause text (up to 1000 chars)
+                'clause_summary': 'text',  # Short summary (up to 100 chars)
+                'created_at': 'timestamp with time zone DEFAULT now()',
+                'updated_at': 'timestamp with time zone DEFAULT now()'
+            },
             'building_documents': {
                 'id': 'uuid PRIMARY KEY DEFAULT gen_random_uuid()',
                 'building_id': 'uuid NOT NULL REFERENCES buildings(id)',

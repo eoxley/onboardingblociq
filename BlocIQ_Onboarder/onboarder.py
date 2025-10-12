@@ -148,7 +148,11 @@ class BlocIQOnboarder:
         print("\n✅ Validating data against UK block management rules...")
         self._validate_data()
 
-        # Step 4.8: Upload files to Supabase Storage
+        # Step 4.75: Generate Building Health Check PDF (BEFORE upload so it can be uploaded too)
+        print("\n📊 Generating Building Health Check Report...")
+        self._generate_health_check_pdf()
+
+        # Step 4.8: Upload files to Supabase Storage (includes health check PDF)
         print("\n📤 Uploading files to Supabase Storage...")
         self._upload_to_storage()
 
@@ -571,9 +575,59 @@ class BlocIQOnboarder:
                             doc['storage_path'] = upload_info['storage_path']
                             break
 
+            # Upload Building Health Check PDF to reports bucket
+            if hasattr(self, 'health_check_pdf_path') and self.health_check_pdf_path:
+                print(f"\n  📤 Uploading Building Health Check PDF to Supabase...")
+                try:
+                    upload_result = uploader.upload_report_pdf(
+                        pdf_path=str(self.health_check_pdf_path),
+                        building_id=building_id,
+                        report_name=f"building_health_check_{datetime.now().strftime('%Y%m%d')}.pdf"
+                    )
+                    if upload_result:
+                        print(f"  ✅ Health Check PDF uploaded to: {upload_result['bucket']}/{upload_result['path']}")
+                        # Store the uploaded path for reference in building_documents
+                        self.health_check_pdf_storage_path = upload_result['path']
+
+                        # Add health check PDF as a document record in building_documents
+                        import uuid
+                        from pathlib import Path
+                        pdf_path = Path(self.health_check_pdf_path)
+                        health_check_doc = {
+                            'id': str(uuid.uuid4()),
+                            'building_id': building_id,
+                            'category': 'reports',
+                            'file_name': pdf_path.name,
+                            'storage_path': upload_result['path'],
+                            'file_size': pdf_path.stat().st_size if pdf_path.exists() else 0,
+                            'file_type': 'application/pdf',
+                            'entity_type': 'health_check',
+                            'processing_status': 'completed',
+                            'confidence_level': 'high',
+                            'metadata': {
+                                'report_type': 'building_health_check',
+                                'generated_date': datetime.now().isoformat(),
+                                'source': 'onboarding_extraction'
+                            }
+                        }
+
+                        # Add to building_documents if the array exists
+                        if 'building_documents' not in self.mapped_data:
+                            self.mapped_data['building_documents'] = []
+                        self.mapped_data['building_documents'].append(health_check_doc)
+                        print(f"  ✅ Health Check PDF added to building_documents table")
+                    else:
+                        print(f"  ⚠️  Health Check PDF upload failed, but local copy is available")
+                        self.health_check_pdf_storage_path = None
+                except Exception as e:
+                    print(f"  ⚠️  Error uploading Health Check PDF: {e}")
+                    self.health_check_pdf_storage_path = None
+
             # Print summary
             summary = uploader.get_upload_summary()
             print(f"\n  ✅ Uploaded {summary['total_files']} files ({summary['total_size_mb']} MB)")
+            if hasattr(self, 'health_check_pdf_storage_path') and self.health_check_pdf_storage_path:
+                print(f"  ✅ Health Check PDF available at: {self.health_check_pdf_storage_path}")
 
         except Exception as e:
             print(f"  ⚠️  Error uploading to Supabase Storage: {e}")
@@ -648,12 +702,34 @@ class BlocIQOnboarder:
         with open(validation_file, 'w') as f:
             json.dump(validation_result, f, indent=2)
 
-        # Write to file
+        # Write to file (or split if too large)
         sql_file = self.output_dir / 'migration.sql'
-        with open(sql_file, 'w') as f:
-            f.write(sql_script)
 
-        print(f"\n  ✅ SQL migration: {sql_file}")
+        # Check if SQL is too large (> 10MB)
+        sql_size_mb = len(sql_script.encode('utf-8')) / (1024 * 1024)
+
+        if sql_size_mb > 10:
+            print(f"\n  ⚠️  SQL file is large ({sql_size_mb:.1f}MB), splitting into chunks...")
+
+            # Split SQL by table sections
+            chunks = self._split_sql_into_chunks(sql_script)
+
+            for i, (chunk_name, chunk_sql) in enumerate(chunks, 1):
+                chunk_file = self.output_dir / f'migration_part_{i}_{chunk_name}.sql'
+                with open(chunk_file, 'w') as f:
+                    f.write(chunk_sql)
+                chunk_size = len(chunk_sql.encode('utf-8')) / (1024 * 1024)
+                print(f"  ✅ SQL migration part {i}/{len(chunks)}: {chunk_file} ({chunk_size:.1f}MB)")
+
+            # Also write complete file for reference
+            with open(sql_file, 'w') as f:
+                f.write(sql_script)
+            print(f"\n  ✅ Complete SQL migration (reference): {sql_file} ({sql_size_mb:.1f}MB)")
+            print(f"  💡 Run migration parts sequentially in Supabase SQL Editor")
+        else:
+            with open(sql_file, 'w') as f:
+                f.write(sql_script)
+            print(f"\n  ✅ SQL migration: {sql_file} ({sql_size_mb:.1f}MB)")
 
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),
@@ -663,6 +739,44 @@ class BlocIQOnboarder:
             'validation_passed': validation_result['valid'],
             'enrichment_stats': enrichment_stats
         })
+
+    def _split_sql_into_chunks(self, sql_script: str) -> List[tuple]:
+        """Split large SQL script into manageable chunks by table sections"""
+        chunks = []
+
+        # Split into logical sections
+        lines = sql_script.split('\n')
+        current_chunk = []
+        current_chunk_name = 'schema'
+        chunk_lines = 0
+        max_chunk_lines = 5000  # ~5MB chunks
+
+        for line in lines:
+            # Detect table section headers
+            if '-- Generate' in line or 'CREATE TABLE' in line:
+                # Check if current chunk is getting large
+                if chunk_lines > max_chunk_lines:
+                    # Save current chunk
+                    chunks.append((current_chunk_name, '\n'.join(current_chunk)))
+                    current_chunk = []
+                    chunk_lines = 0
+
+                    # Start new chunk with detected table name
+                    if 'CREATE TABLE' in line:
+                        table_match = re.search(r'CREATE TABLE[^(]*?\s+(\w+)', line)
+                        if table_match:
+                            current_chunk_name = table_match.group(1)
+                    else:
+                        current_chunk_name = 'data'
+
+            current_chunk.append(line)
+            chunk_lines += 1
+
+        # Add final chunk
+        if current_chunk:
+            chunks.append((current_chunk_name, '\n'.join(current_chunk)))
+
+        return chunks
 
     def _execute_sql_migration(self):
         """Execute SQL migration to Supabase"""
@@ -988,71 +1102,56 @@ class BlocIQOnboarder:
 
         print(f"  ✅ Mapped Data: {mapped_data_file}")
 
-        # Generate Building Health Check Report from extraction data (no database query)
+    def _generate_health_check_pdf(self):
+        """Generate Building Summary Report (HTML) from extraction data"""
         try:
-            # Get building_id for optional upload
-            building_id = self.mapped_data.get('building', {}).get('id')
-            if not building_id:
-                import uuid
-                building_id = 'temp-building-id'
+            from reporting.building_summary_report import generate_building_summary
 
-            print("\n📊 Generating Building Health Check Report (V3 - From Extraction)...")
-            from generate_health_check_from_extraction import generate_health_check
-            import os
+            # Check if we have required data
+            if not self.output_dir.exists():
+                print("  ⚠️  Output directory does not exist, skipping report")
+                return
 
-            # ALWAYS use local extracted data for onboarding health check
-            # This is a snapshot of what was found in the documents
             print("  ℹ️  Using local extracted data (onboarding snapshot)")
+            print(f"  📊 Generating comprehensive Building Summary Report...")
 
-            if not self.mapped_data or not isinstance(self.mapped_data, dict):
-                print("  ⚠️  No valid mapped data available, skipping health check")
+            # Generate HTML report
+            report_file = generate_building_summary(str(self.output_dir))
+
+            if report_file and Path(report_file).exists():
+                print(f"\n  ✅ Building Summary Report Generated Successfully!")
+                print(f"  📄 Location: {report_file}")
+                print(f"\n  📊 Report includes:")
+                print(f"     • Executive Summary with key statistics")
+                print(f"     • Property Information & Unit Configuration")
+                print(f"     • Data Migration Summary")
+                print(f"     • Document Analysis by Category")
+                print(f"     • Compliance & Safety Overview")
+                print(f"     • Financial Intelligence")
+                print(f"     • Contracts & Services")
+                print(f"     • Complete Leaseholder Directory")
+                print(f"     • Data Conflicts & Resolutions")
+                print(f"     • Validation Warnings")
+                print(f"     • Recommendations")
+                print(f"     • Migration Statistics")
+                print(f"     • Comprehensive Legal Disclaimers")
+                print(f"\n  💡 Open in browser and use Print → Save as PDF")
+
+                # Store the report path (HTML, not PDF)
+                self.health_check_pdf_path = report_file
             else:
-                # Generate V3 professional health check report using extraction data
-                print(f"  📊 Generating V3 professional report from extraction data...")
-                report_file = generate_health_check(
-                    output_dir=str(self.output_dir),
-                    output_pdf=str(self.output_dir / 'building_health_check.pdf')
-                )
-
-                if report_file:
-                    print(f"\n  ✅ Building Health Check V3 PDF Generated Successfully!")
-                    print(f"  📄 Location: {report_file}")
-                    print(f"\n  📊 Report includes:")
-                    print(f"     • Cover Page with Health Score & Rating")
-                    print(f"     • Executive Summary with weighted scoring (Compliance 40%, Insurance 20%, Budget 20%, Lease 10%, Contractor 10%)")
-                    print(f"     • Building Overview with full address")
-                    print(f"     • Lease Summary with term dates & ground rent")
-                    print(f"     • Budget Summary with periods & amounts")
-                    print(f"     • Compliance Overview by category with inspection dates")
-                    print(f"     • Insurance Policies with expiry tracking")
-                    print(f"     • Contractors & Contracts")
-                    print(f"     • Major Works Projects")
-                    print(f"     • Generated from extraction data (no database query required)")
-                    print(f"     • Professional BlocIQ branding")
-                    
-                    # Upload PDF to Supabase reports bucket if configured
-                    if self.config.get('upload_to_supabase') and hasattr(self, 'supabase') and self.supabase:
-                        print(f"\n  📤 Uploading PDF to Supabase reports bucket...")
-                        uploader = SupabaseStorageUploader(self.supabase)
-                        upload_result = uploader.upload_report_pdf(
-                            pdf_path=str(report_file),
-                            building_id=building_id,
-                            report_name=f"building_health_check_{datetime.now().strftime('%Y%m%d')}.pdf"
-                        )
-                        if upload_result:
-                            print(f"  ✅ PDF uploaded to: {upload_result['bucket']}/{upload_result['path']}")
-                        else:
-                            print(f"  ⚠️  PDF upload failed, but local copy is available")
-                else:
-                    print("  ⚠️  PDF generation returned no file path")
+                print("  ⚠️  Report generation returned no file path")
+                self.health_check_pdf_path = None
 
         except ImportError as e:
-            print(f"  ⚠️  Could not generate Building Health Check report: {e}")
-            print(f"  ℹ️  Install dependencies: pip install reportlab>=4.0.0 PyPDF2>=3.0.0")
+            print(f"  ⚠️  Could not generate Building Summary Report: {e}")
+            print(f"  ℹ️  Module not found - check reporting/building_summary_report.py")
+            self.health_check_pdf_path = None
         except Exception as e:
-            print(f"  ⚠️  Error generating Building Health Check report: {e}")
+            print(f"  ⚠️  Error generating Building Summary Report: {e}")
             import traceback
             traceback.print_exc()
+            self.health_check_pdf_path = None
 
     def _extract_compliance_data(self):
         """Extract compliance assets and inspections from parsed files"""
@@ -1600,6 +1699,7 @@ class BlocIQOnboarder:
 
         # Extract leases from lease documents
         leases = []
+        lease_clauses_all = []  # Collect all lease clauses
         if self.categorized_files.get('units_leaseholders'):
             print(f"  📋 Processing {len(self.categorized_files['units_leaseholders'])} lease documents...")
 
@@ -1641,11 +1741,22 @@ class BlocIQOnboarder:
                         lease['leaseholder_id'] = leaseholder_map.get(lh_name_lower)
 
                     leases.append(lease)
+
+                    # Collect lease_clauses if present
+                    if result.get('lease_clauses'):
+                        lease_clauses_all.extend(result['lease_clauses'])
+
                     print(f"     ✓ {file_data['file_name']}: {lease.get('leaseholder_name', 'Unknown')} ({lease.get('original_term_years', '?')} years)")
+                    if result.get('lease_clauses'):
+                        print(f"       └─ Extracted {len(result['lease_clauses'])} clauses")
 
         if leases:
             self.mapped_data['leases'] = leases
             print(f"  ✅ Extracted {len(leases)} lease records")
+
+        if lease_clauses_all:
+            self.mapped_data['lease_clauses'] = lease_clauses_all
+            print(f"  ✅ Extracted {len(lease_clauses_all)} lease clauses total")
 
         # Extract assets from all documents
         assets = []

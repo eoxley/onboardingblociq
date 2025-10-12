@@ -45,6 +45,13 @@ class LeaseData:
     lease_type: Optional[str] = None
     service_charge_apportionment: Optional[str] = None
 
+    # Lease clauses (for traceability)
+    clauses: List[Dict[str, Any]] = field(default_factory=list)  # List of extracted lease clauses
+
+    # Missing fields for health check
+    lessor_name: Optional[str] = None
+    rent_review_period: Optional[int] = None  # Years between rent reviews
+
 
 @dataclass
 class InsurancePolicyData:
