@@ -597,15 +597,13 @@ class SQLWriter:
             "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
             "  building_id uuid REFERENCES buildings(id),",
             "  unit_id uuid REFERENCES units(id),",
-            "  term_start date,",
-            "  term_years integer,",
+            "  leaseholder_id uuid REFERENCES leaseholders(id),",
+            "  document_id uuid,",
+            "  lease_type text,",
+            "  start_date date,",
+            "  end_date date,",
             "  expiry_date date,",
-            "  ground_rent numeric(10,2),",
-            "  rent_review_period integer,",
-            "  leaseholder_name text,",
-            "  lessor_name text,",
-            "  source_document text,",
-            "  notes text,",
+            "  confidence_score numeric(3,2),",
             "  created_at timestamptz DEFAULT now()",
             ");",
             "",
@@ -1669,11 +1667,16 @@ END $$;
         print(f"  📜 Generating SQL for {len(leases)} leases")
         self.sql_statements.append(f"-- Insert {len(leases)} lease records")
         for lease in leases:
-            # Filter out ocr_text - it's used for comprehensive extraction but not stored in leases table
-            lease_data = {k: v for k, v in lease.items() if k != 'ocr_text'}
-            self.sql_statements.append(
-                self._create_insert_statement('leases', lease_data, use_upsert=False)
-            )
+            # Filter out fields not in the leases table schema
+            # Only include: id, building_id, unit_id, leaseholder_id, document_id, lease_type, start_date, end_date, expiry_date, confidence_score
+            allowed_fields = {'id', 'building_id', 'unit_id', 'leaseholder_id', 'document_id', 'lease_type', 'start_date', 'end_date', 'expiry_date', 'confidence_score'}
+            lease_data = {k: v for k, v in lease.items() if k in allowed_fields}
+
+            # Only generate INSERT if we have required fields
+            if lease_data:
+                self.sql_statements.append(
+                    self._create_insert_statement('leases', lease_data, use_upsert=False)
+                )
         self.sql_statements.append("")
 
     def _format_value(self, value: Any) -> str:

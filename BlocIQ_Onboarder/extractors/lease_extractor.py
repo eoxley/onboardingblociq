@@ -56,34 +56,59 @@ class LeaseExtractor:
         major_clauses = self._extract_major_clauses(full_text)
         covenants = self._extract_covenants(full_text)
 
+        # Extract detailed lease clauses for lease_clauses table
+        lease_clauses_list = self._extract_detailed_clauses(full_text)
+
         # Extract property details
         demise_description = self._extract_demise_description(full_text)
 
-        # Build lease record
+        # Build lease record - matching Supabase schema
+        lease_id = str(uuid.uuid4())
         lease = {
-            'id': str(uuid.uuid4()),
+            'id': lease_id,
             'building_id': building_id,
             'unit_id': unit_id,
             'leaseholder_id': leaseholder_id,
+            'document_id': None,  # Set when document is uploaded
+            'lease_type': 'residential',  # Default type
+            'start_date': lease_start_date,  # Maps from lease_start_date
+            'end_date': lease_expiry_date,  # Maps from lease_expiry_date
+            'expiry_date': lease_expiry_date,  # Maps from lease_expiry_date
+            'confidence_score': 0.8,  # Default confidence
+        }
+
+        # Store additional extracted data for related tables
+        lease['_extracted_data'] = {
             'lessor': lessor,
             'leaseholder_name': leaseholder_name,
-            'lease_start_date': lease_start_date,
             'original_term_years': original_term_years,
-            'lease_expiry_date': lease_expiry_date,
             'ground_rent': ground_rent,
             'service_charge_amount': service_charge_amount,
             'ground_rent_review_frequency': ground_rent_review_frequency,
             'major_clauses': major_clauses,
             'covenants': covenants,
             'demise_description': demise_description,
-            'lease_document_url': None,  # Will be set when uploaded to storage
         }
+
+        # Build lease_clauses records (for lease_clauses table)
+        lease_clauses = []
+        for clause_data in lease_clauses_list:
+            lease_clauses.append({
+                'id': str(uuid.uuid4()),
+                'lease_id': lease_id,
+                'building_id': building_id,
+                'clause_number': clause_data.get('clause_number'),
+                'clause_category': clause_data.get('clause_category'),
+                'clause_text': clause_data.get('clause_text'),
+                'clause_summary': clause_data.get('clause_summary'),
+            })
 
         # Calculate confidence
         confidence = self._calculate_confidence(lease)
 
         return {
             'lease': lease,
+            'lease_clauses': lease_clauses,  # New: separate lease_clauses records
             'metadata': {
                 'extracted_from': file_name,
                 'extraction_confidence': confidence
@@ -346,6 +371,66 @@ class LeaseExtractor:
                     return description[:300]
 
         return None
+
+    def _extract_detailed_clauses(self, text: str) -> List[Dict]:
+        """Extract detailed lease clauses with clause numbers and categorization"""
+        clauses = []
+
+        # Pattern to match numbered clauses (e.g., "1.1", "2.3.4", "Clause 5")
+        clause_patterns = [
+            r'(?:^|\n)\s*(\d+(?:\.\d+)*)\s+([A-Z][^\n]{20,500})',  # Numbered clauses
+            r'(?:^|\n)\s*Clause\s+(\d+(?:\.\d+)*)[:\s]+([^\n]{20,500})',  # "Clause X:" format
+        ]
+
+        for pattern in clause_patterns:
+            matches = re.finditer(pattern, text, re.MULTILINE)
+            for match in matches:
+                clause_number = match.group(1)
+                clause_text = match.group(2).strip()
+
+                # Skip if looks like a heading or too short
+                if len(clause_text) < 20:
+                    continue
+
+                # Categorize clause by keywords
+                clause_category = self._categorize_clause(clause_text)
+
+                # Generate summary (first 100 chars)
+                clause_summary = clause_text[:100] + ('...' if len(clause_text) > 100 else '')
+
+                clauses.append({
+                    'clause_number': clause_number,
+                    'clause_text': clause_text[:1000],  # Limit to 1000 chars
+                    'clause_category': clause_category,
+                    'clause_summary': clause_summary,
+                })
+
+        return clauses[:50]  # Limit to 50 clauses max
+
+    def _categorize_clause(self, text: str) -> str:
+        """Categorize clause by content"""
+        text_lower = text.lower()
+
+        if any(word in text_lower for word in ['rent', 'payment', 'ground rent']):
+            return 'rent'
+        elif any(word in text_lower for word in ['repair', 'maintain', 'maintenance']):
+            return 'repair'
+        elif any(word in text_lower for word in ['insurance', 'insure']):
+            return 'insurance'
+        elif any(word in text_lower for word in ['service charge', 'apportionment']):
+            return 'service_charge'
+        elif any(word in text_lower for word in ['use', 'user covenant', 'permitted']):
+            return 'use'
+        elif any(word in text_lower for word in ['alterations', 'alter']):
+            return 'alterations'
+        elif any(word in text_lower for word in ['assignment', 'sublet', 'subletting']):
+            return 'assignment'
+        elif any(word in text_lower for word in ['forfeiture', 'termination', 're-entry']):
+            return 'forfeiture'
+        elif any(word in text_lower for word in ['covenant', 'obligation']):
+            return 'covenant'
+        else:
+            return 'other'
 
     def _normalize_date(self, date_string: str) -> Optional[str]:
         """Normalize date to ISO format YYYY-MM-DD"""
