@@ -281,6 +281,9 @@ class BlocIQOnboarder:
             if address:
                 building['address'] = address
 
+        # Detect if building is a High-Rise Building (HRB) based on documents
+        building['is_hrb'] = self._detect_hrb_from_documents()
+
         self.mapped_data['building'] = building
         building_id = building['id']
 
@@ -2054,6 +2057,67 @@ class BlocIQOnboarder:
 
         except Exception as e:
             print(f"  ⚠️  Error generating classification summary: {e}")
+
+    def _detect_hrb_from_documents(self) -> bool:
+        """
+        Detect if building is a High-Rise Building (HRB) based on document analysis.
+
+        HRB indicators:
+        - Building Safety Case (BSC) documents
+        - References to Building Safety Act 2022
+        - Gateway 3 documents
+        - Principal Accountable Person references
+        - Height/storey indicators (18m+, 7+ storeys)
+
+        Returns:
+            True if building is detected as HRB
+        """
+        hrb_keywords = [
+            'building safety case',
+            'bsc',
+            'high rise building',
+            'high-rise building',
+            'hrb',
+            'gateway 3',
+            'gateway three',
+            'principal accountable person',
+            'pap',
+            'building safety act 2022',
+            'building safety act',
+            'bsa 2022',
+            'accountable person',
+            '18 metres',
+            '18m',
+            'seven storeys',
+            '7 storeys',
+            'bsr registration'
+        ]
+
+        # Check all categorized files for HRB indicators
+        for category, files in self.categorized_files.items():
+            for file_data in files:
+                # Check file name
+                file_name = file_data.get('file_name', '').lower()
+                for keyword in hrb_keywords:
+                    if keyword in file_name:
+                        print(f"  🏢 HRB detected: Found '{keyword}' in {file_name}")
+                        return True
+
+                # Check category
+                if category in ['building_safety', 'bsc', 'gateway']:
+                    print(f"  🏢 HRB detected: Building safety document category found")
+                    return True
+
+                # Check OCR text if available
+                full_text = file_data.get('full_text', '')
+                if full_text:
+                    text_lower = full_text.lower()
+                    for keyword in hrb_keywords:
+                        if keyword in text_lower:
+                            print(f"  🏢 HRB detected: Found '{keyword}' in document text")
+                            return True
+
+        return False
 
     def _find_file_by_category(self, category: str, keywords: List[str] = None) -> Dict:
         """Find first file matching category and keywords"""

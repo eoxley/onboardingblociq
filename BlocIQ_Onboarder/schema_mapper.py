@@ -24,6 +24,13 @@ class SupabaseSchemaMapper:
                 'name': 'text NOT NULL',
                 'address': 'text',
                 'number_of_units': 'integer',
+                'is_hrb': 'boolean DEFAULT false',  # High-Rise Building flag (auto-set if height ≥ 18m OR storeys ≥ 7)
+                'height_metres': 'numeric',  # Building height in metres
+                'number_of_storeys': 'integer',  # Number of storeys
+                'bsr_registration_number': 'text',  # Building Safety Regulator registration number
+                'principal_accountable_person': 'text',  # Principal Accountable Person under BSA 2022
+                'last_safety_case_date': 'date',  # Date of last Safety Case Report
+                'next_safety_case_due_date': 'date',  # Due date for next Safety Case Report
                 'previous_agents': 'text',
                 'current_accountants': 'text',
                 'accountant_contact': 'text',
@@ -983,38 +990,39 @@ class SupabaseSchemaMapper:
         return leaseholders
 
     def _extract_unit_number(self, row: Dict) -> Optional[str]:
-        """Extract unit number from row data"""
-        # ENHANCED: Try 'Unit' column first (common in leaseholder files), then 'Unit description'
-        unit_field = self._extract_field_from_row(row, ['unit', 'unit description', 'unit_description', 'description', 'flat', 'property'])
-
-        # If not found, try 'Unit reference' column
-        if not unit_field:
-            unit_field = self._extract_field_from_row(row, ['reference', 'unit reference', 'unit_reference', 'ref'])
-
-        if not unit_field:
-            return None
-
+        """Extract unit number from row data - prioritize descriptive fields over reference IDs"""
         import re
-        # Try pattern: "Flat 1", "Flat 2", etc.
-        match = re.search(r'Flat\s+(\d+)', unit_field, re.IGNORECASE)
-        if match:
-            return f"Flat {match.group(1)}"
 
-        # Try pattern: "Flat A1", "Flat B2", etc.
-        match = re.search(r'Flat\s+([A-Z]\d+)', unit_field, re.IGNORECASE)
-        if match:
-            return match.group(1).upper()
+        # PRIORITY 1: Try descriptive unit fields first ('Unit description' has actual unit names)
+        unit_field = self._extract_field_from_row(row, ['unit', 'unit description', 'unit_description', 'flat', 'property'])
 
-        # Try pattern: "A1", "B2", etc.
-        match = re.search(r'\b([A-Z]\d+)\b', unit_field)
-        if match:
-            return match.group(1).upper()
+        if unit_field:
+            # Try pattern: "Flat A1", "Flat B2", etc. (alphanumeric) - most common
+            match = re.search(r'Flat\s+([A-Z]\d+)', unit_field, re.IGNORECASE)
+            if match:
+                return match.group(1).upper()
 
-        # Try reference number pattern: "219-01-001" -> extract number and format as Flat X
-        match = re.search(r'\d+-\d+-(\d+)', unit_field)
-        if match:
-            unit_num = int(match.group(1))
-            return f"Flat {unit_num}"
+            # Try pattern: "Flat 1", "Flat 2", etc. (numeric only)
+            match = re.search(r'Flat\s+(\d+)', unit_field, re.IGNORECASE)
+            if match:
+                return f"Flat {match.group(1)}"
+
+            # Try pattern: "A1", "B2", etc. (standalone alphanumeric)
+            match = re.search(r'\b([A-Z]\d+)\b', unit_field)
+            if match:
+                return match.group(1).upper()
+
+        # PRIORITY 2: Fallback to 'Unit reference' only if no descriptive field found
+        # This is typically a numeric ID like "144-01-001" which we convert to sequential numbers
+        unit_ref = self._extract_field_from_row(row, ['reference', 'unit reference', 'unit_reference', 'ref'])
+
+        if unit_ref:
+            # Try reference number pattern: "144-01-001A" -> "Flat 1A" or "144-01-001" -> "Flat 1"
+            match = re.search(r'\d+-\d+-(\d+)([A-Z]?)', unit_ref)
+            if match:
+                unit_num = int(match.group(1))
+                suffix = match.group(2) if match.group(2) else ""
+                return f"Flat {unit_num}{suffix}"
 
         return None
     
@@ -1055,11 +1063,21 @@ class SupabaseSchemaMapper:
         return None
     
     def _extract_field_from_row(self, row: Dict, keywords: List[str]) -> Optional[str]:
-        """Extract field from a single row by matching keywords"""
+        """Extract field from a single row by matching keywords - prioritizes exact matches"""
+        # First pass: Try exact matches (ignoring case and spaces/underscores)
+        for keyword in keywords:
+            normalized_keyword = keyword.lower().replace(' ', '').replace('_', '')
+            for key, value in row.items():
+                normalized_key = str(key).lower().replace(' ', '').replace('_', '')
+                if normalized_keyword == normalized_key:
+                    return str(value).strip() if value else None
+
+        # Second pass: Try substring matches (original behavior)
         for keyword in keywords:
             for key, value in row.items():
                 if keyword.lower() in str(key).lower():
                     return str(value).strip() if value else None
+
         return None
 
     def _normalize_unit_name(self, unit_name: str) -> str:
@@ -1206,7 +1224,7 @@ class SupabaseSchemaMapper:
         """Extract apportionment percentage from row"""
         # Common column names for percentages
         percentage_keywords = [
-            'percentage', 'percent', '%', 'share', 'proportion'
+            'percentage', 'percent', '%', 'share', 'proportion', 'rate'
         ]
 
         for keyword in percentage_keywords:

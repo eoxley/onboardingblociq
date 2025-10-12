@@ -41,7 +41,7 @@ class DocumentClassifier:
         },
         'budgets': {
             'keywords': ['budget', 'service charge', 'expenditure', 'income', 'year end', 'ye 20',
-                        'variance', 'forecast', 'apportionment', 'schedule', 'arrears', 'account'],
+                        'variance', 'forecast', 'schedule', 'arrears', 'account'],
             'filename_patterns': [
                 r'.*budget.*',
                 r'.*ye\s*\d{2}.*',
@@ -50,7 +50,6 @@ class DocumentClassifier:
                 r'.*service[\s_-]?charge.*',
                 r'.*variance.*',
                 r'.*forecast.*',
-                r'.*apportionment.*',
                 r'.*schedule.*',
                 r'.*expenditure.*',
                 r'.*\bq[1-4]\b.*',  # Quarterly reports
@@ -227,6 +226,22 @@ class DocumentClassifier:
         content = self._extract_content(parsed_data)
         search_text = f"{filename} {content}".lower()
 
+        # PRIORITY: Apportionment detection (to prevent false budget classification)
+        # Check if filename or content strongly indicates apportionment
+        if re.search(r'apportion', filename, re.IGNORECASE):
+            # Check for apportionment-specific indicators in columns or content
+            apportionment_indicators = ['percentage', 'share', '%', 'rate', 'allocation']
+
+            # Check search text
+            if any(indicator in search_text for indicator in apportionment_indicators):
+                return 'apportionments', 0.9
+
+            # Also check column names from parsed Excel/CSV data
+            columns = self._extract_columns(parsed_data)
+            columns_lower = [col.lower() for col in columns]
+            if any(indicator in col for col in columns_lower for indicator in apportionment_indicators):
+                return 'apportionments', 0.9
+
         # Use taxonomy if available
         if self.taxonomy and 'document_types' in self.taxonomy:
             return self._classify_with_taxonomy(filename, content, search_text)
@@ -251,6 +266,14 @@ class DocumentClassifier:
         for pattern in insurance_patterns:
             if re.search(pattern, search_text, re.IGNORECASE):
                 return 'insurance', 0.95
+
+        # PRIORITY 2: Apportionment detection (to prevent false budget classification)
+        # Check if filename or content strongly indicates apportionment
+        if re.search(r'apportion', filename, re.IGNORECASE):
+            # Check for apportionment-specific indicators in columns or content
+            apportionment_indicators = ['percentage', 'share', '%', 'rate', 'allocation']
+            if any(indicator in search_text.lower() for indicator in apportionment_indicators):
+                return 'apportionments', 0.9
 
         # Fall back to hardcoded categories
         scores = {}

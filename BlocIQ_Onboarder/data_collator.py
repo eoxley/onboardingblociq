@@ -6,6 +6,7 @@ Intelligently merges data from multiple sources with conflict resolution
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 import hashlib
+import re
 
 
 class DataCollator:
@@ -16,6 +17,36 @@ class DataCollator:
         self.merge_log = []
         self.unit_sources = []
         self.leaseholder_sources = []
+
+    @staticmethod
+    def normalize_unit_number(unit_number: str) -> str:
+        """
+        Normalize unit numbers to a consistent format for deduplication.
+
+        Examples:
+            "Flat A1" -> "A1"
+            "A1" -> "A1"
+            "Flat 1" -> "Flat 1"
+            "Pimlico Place - Flat A1" -> "A1"
+        """
+        if not unit_number:
+            return unit_number
+
+        # Remove building name prefixes (e.g., "Pimlico Place - ")
+        unit_number = re.sub(r'^.*?\s*-\s*', '', unit_number)
+
+        # For "Flat A1" style, extract just "A1"
+        match = re.search(r'Flat\s+([A-Z]\d+)', unit_number, re.IGNORECASE)
+        if match:
+            return match.group(1).upper()
+
+        # For "Flat 1" (numeric only), keep as is
+        match = re.search(r'Flat\s+(\d+)', unit_number, re.IGNORECASE)
+        if match:
+            return f"Flat {match.group(1)}"
+
+        # Already in clean format like "A1"
+        return unit_number.strip()
 
     def add_units_source(self, units: List[Dict], source_file: str, source_type: str, confidence: float = 0.90):
         """Add a source of unit data for collation"""
@@ -57,7 +88,7 @@ class DataCollator:
 
     def collate_units(self, unit_sources: List[Dict]) -> Tuple[List[Dict], Dict]:
         """
-        Collate units from multiple sources, merging by unit_number
+        Collate units from multiple sources, merging by normalized unit_number
 
         Args:
             unit_sources: List of {'source_file': str, 'units': List[Dict]}
@@ -65,7 +96,7 @@ class DataCollator:
         Returns:
             Tuple of (merged_units, collation_report)
         """
-        # Group units by unit_number
+        # Group units by normalized unit_number
         units_by_number = {}
 
         for source in unit_sources:
@@ -77,13 +108,20 @@ class DataCollator:
                 if not unit_number:
                     continue
 
-                if unit_number not in units_by_number:
-                    units_by_number[unit_number] = []
+                # Normalize the unit number for deduplication
+                normalized_number = self.normalize_unit_number(unit_number)
+
+                # Store original unit_number but group by normalized
+                unit['_original_unit_number'] = unit_number
+                unit['unit_number'] = normalized_number  # Update to normalized version
+
+                if normalized_number not in units_by_number:
+                    units_by_number[normalized_number] = []
 
                 # Add source tracking
                 unit['_source'] = source_file
                 unit['_extracted_at'] = datetime.now().isoformat()
-                units_by_number[unit_number].append(unit)
+                units_by_number[normalized_number].append(unit)
 
         # Merge each group
         merged_units = []

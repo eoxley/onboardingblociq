@@ -274,6 +274,89 @@ def score_compliance(
     }
 
 
+def _detect_hrb_status(building_data: Dict) -> bool:
+    """
+    Detect if building is a High-Rise Building (HRB) based on available data.
+
+    HRB indicators:
+    - Building Safety Case (BSC) documents
+    - References to "high rise" or "HRB"
+    - References to Building Safety Act 2022
+    - Gateway 3 documents
+    - Principal Accountable Person (PAP) references
+
+    Args:
+        building_data: Building data with documents, compliance, etc.
+
+    Returns:
+        True if building is detected as HRB, False otherwise
+    """
+    hrb_keywords = [
+        'building safety case',
+        'bsc',
+        'high rise building',
+        'high-rise building',
+        'hrb',
+        'gateway 3',
+        'gateway three',
+        'principal accountable person',
+        'pap',
+        'building safety act 2022',
+        'accountable person',
+        'responsible person',
+        '18 metres',
+        '18m',
+        'seven storeys',
+        '7 storeys'
+    ]
+
+    # Check building documents
+    for doc in building_data.get('building_documents', []):
+        # Check document category
+        category = (doc.get('category') or '').lower()
+        if 'building safety' in category or 'bsc' in category:
+            return True
+
+        # Check file name
+        file_name = (doc.get('file_name') or '').lower()
+        for keyword in hrb_keywords:
+            if keyword in file_name:
+                return True
+
+        # Check document metadata if available
+        metadata = doc.get('metadata', {})
+        if isinstance(metadata, dict):
+            metadata_text = str(metadata).lower()
+            for keyword in hrb_keywords:
+                if keyword in metadata_text:
+                    return True
+
+    # Check building metadata if available
+    building_info = building_data.get('building', {})
+    if isinstance(building_info, dict):
+        # Check building type
+        building_type = (building_info.get('building_type') or '').lower()
+        if 'high rise' in building_type or 'hrb' in building_type:
+            return True
+
+        # Check building notes/description
+        notes = (building_info.get('operational_notes') or '').lower()
+        for keyword in hrb_keywords:
+            if keyword in notes:
+                return True
+
+    # Check compliance assets for HRB-specific items
+    for asset in building_data.get('compliance_assets', []):
+        asset_name = (asset.get('asset_name') or '').lower()
+        asset_type = (asset.get('asset_type') or '').lower()
+
+        # Look for HRB-specific assets
+        if any(keyword in asset_name or keyword in asset_type for keyword in hrb_keywords):
+            return True
+
+    return False
+
+
 def detect_building_assets(
     building_data: Dict
 ) -> BuildingAssets:
@@ -318,8 +401,9 @@ def detect_building_assets(
     # Assume pre-2000 unless we have data
     pre2000_common = True
 
-    # Detect if HRB (could check building height, but default to False)
-    is_hrb = False
+    # Detect if HRB (High-Rise Building) based on documents
+    # Look for Building Safety Case, BSC, or HRB-specific documents
+    is_hrb = _detect_hrb_status(building_data)
 
     return BuildingAssets(
         em_lighting=em_lighting,
