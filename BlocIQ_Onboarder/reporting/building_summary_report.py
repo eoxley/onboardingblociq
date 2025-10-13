@@ -241,52 +241,116 @@ def generate_building_summary(output_folder: str) -> str:
 
 
 def _extract_report_data(output_dir: Path):
-    """Extract apportionments and lease references from source files"""
+    """Extract apportionments and lease references from mapped_data.json and SQL"""
     import pandas as pd
 
-    # Find apportionment Excel file
-    property_folder = output_dir.parent / output_dir.name.replace('BlocIQ_Output', '')
-    apportionment_files = list(output_dir.glob('*apportionment*.xlsx')) + list(output_dir.glob('*apportionment*.xls'))
-
-    # Also check parent/source directory
-    if property_folder.exists():
-        apportionment_files += list(property_folder.glob('**/*apportionment*.xlsx'))
-        apportionment_files += list(property_folder.glob('**/*apportionment*.xls'))
-
     apportionments = []
-    if apportionment_files:
-        try:
-            df = pd.read_excel(apportionment_files[0])
 
-            # Find unit description column
-            unit_col = None
-            for col in df.columns:
-                if 'unit' in col.lower() or 'flat' in col.lower() or 'description' in col.lower():
-                    unit_col = col
-                    break
+    # First try: Extract from mapped_data.json (most reliable)
+    try:
+        mapped_data_path = output_dir / 'mapped_data.json'
+        if mapped_data_path.exists():
+            with open(mapped_data_path, 'r') as f:
+                mapped_data = json.load(f)
 
-            # Find percentage/rate column
-            pct_col = None
-            for col in df.columns:
-                col_lower = str(col).lower()
-                if 'percent' in col_lower or '%' in col_lower or 'apport' in col_lower or 'rate' in col_lower:
-                    pct_col = col
-                    break
+            # Build unit lookup map (unit_id -> unit_name)
+            unit_map = {}
+            if 'units' in mapped_data:
+                for unit in mapped_data['units']:
+                    unit_id = unit.get('id')
+                    unit_name = unit.get('name') or unit.get('unit_number')
+                    if unit_id and unit_name:
+                        unit_map[unit_id] = unit_name
 
-            if unit_col and pct_col:
-                for _, row in df.iterrows():
-                    unit_desc = str(row[unit_col])
-                    percentage = row[pct_col]
+            # Get apportionments from mapped data
+            if 'apportionments' in mapped_data and mapped_data['apportionments']:
+                for app in mapped_data['apportionments']:
+                    # Try direct unit_name first
+                    unit_name = app.get('unit_name')
 
-                    # Extract flat number
-                    flat_match = re.search(r'(Flat \d+)', unit_desc, re.IGNORECASE)
-                    if flat_match and pd.notna(percentage):
+                    # Otherwise lookup via unit_id
+                    if not unit_name and 'unit_id' in app:
+                        unit_name = unit_map.get(app['unit_id'])
+
+                    percentage = app.get('percentage')
+
+                    if unit_name and percentage is not None:
                         apportionments.append({
-                            'unit': flat_match.group(1),
+                            'unit': unit_name,
                             'percentage': float(percentage)
                         })
+
+                if apportionments:
+                    print(f"    ✓ Extracted {len(apportionments)} apportionments from mapped_data.json")
+    except Exception as e:
+        print(f"      Could not extract from mapped_data.json: {e}")
+
+    # Fallback: Extract from SQL if mapped_data didn't work
+    if not apportionments:
+        try:
+            sql_path = output_dir / 'migration.sql'
+            if sql_path.exists():
+                with open(sql_path, 'r') as f:
+                    sql_content = f.read()
+
+                # Parse INSERT INTO apportionments statements
+                apportionment_pattern = r"INSERT INTO apportionments[^;]+VALUES[^;]+'([^']+)'[^,]+,[^,]+,[^,]+,\s*([\d.]+)"
+                matches = re.findall(apportionment_pattern, sql_content, re.IGNORECASE)
+
+                for unit_name, percentage in matches:
+                    apportionments.append({
+                        'unit': unit_name,
+                        'percentage': float(percentage)
+                    })
+
+                if apportionments:
+                    print(f"    ✓ Extracted {len(apportionments)} apportionments from SQL")
         except Exception as e:
-            print(f"      Could not extract apportionments: {e}")
+            print(f"      Could not extract from SQL: {e}")
+
+    # Last resort: Try Excel files
+    if not apportionments:
+        property_folder = output_dir.parent / output_dir.name.replace('BlocIQ_Output', '')
+        apportionment_files = list(output_dir.glob('*apportionment*.xlsx')) + list(output_dir.glob('*apportionment*.xls'))
+
+        if property_folder.exists():
+            apportionment_files += list(property_folder.glob('**/*apportionment*.xlsx'))
+            apportionment_files += list(property_folder.glob('**/*apportionment*.xls'))
+
+        if apportionment_files:
+            try:
+                df = pd.read_excel(apportionment_files[0])
+
+                # Find unit description column
+                unit_col = None
+                for col in df.columns:
+                    if 'unit' in col.lower() or 'flat' in col.lower() or 'description' in col.lower():
+                        unit_col = col
+                        break
+
+                # Find percentage/rate column
+                pct_col = None
+                for col in df.columns:
+                    col_lower = str(col).lower()
+                    if 'percent' in col_lower or '%' in col_lower or 'apport' in col_lower or 'rate' in col_lower:
+                        pct_col = col
+                        break
+
+                if unit_col and pct_col:
+                    for _, row in df.iterrows():
+                        unit_desc = str(row[unit_col])
+                        percentage = row[pct_col]
+
+                        # Extract flat number
+                        flat_match = re.search(r'(Flat \d+)', unit_desc, re.IGNORECASE)
+                        if flat_match and pd.notna(percentage):
+                            apportionments.append({
+                                'unit': flat_match.group(1),
+                                'percentage': float(percentage)
+                            })
+                    print(f"    ✓ Extracted {len(apportionments)} apportionments from Excel")
+            except Exception as e:
+                print(f"      Could not extract apportionments from Excel: {e}")
 
     # Extract lease references from filenames
     lease_references = []

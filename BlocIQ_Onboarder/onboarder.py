@@ -2072,7 +2072,8 @@ class BlocIQOnboarder:
         Returns:
             True if building is detected as HRB
         """
-        hrb_keywords = [
+        # Strong indicators (filename only - high confidence)
+        strong_hrb_keywords = [
             'building safety case',
             'bsc',
             'high rise building',
@@ -2082,41 +2083,34 @@ class BlocIQOnboarder:
             'gateway three',
             'principal accountable person',
             'pap',
+            'bsr registration',
+            'building safety regulator'
+        ]
+
+        # Moderate indicators (need context)
+        moderate_hrb_keywords = [
             'building safety act 2022',
             'building safety act',
-            'bsa 2022',
-            'accountable person',
-            '18 metres',
-            '18m',
-            'seven storeys',
-            '7 storeys',
-            'bsr registration'
+            'bsa 2022'
         ]
 
         # Check all categorized files for HRB indicators
         for category, files in self.categorized_files.items():
             for file_data in files:
-                # Check file name
+                # Check file name for STRONG indicators only
                 file_name = file_data.get('file_name', '').lower()
-                for keyword in hrb_keywords:
+                for keyword in strong_hrb_keywords:
                     if keyword in file_name:
                         print(f"  🏢 HRB detected: Found '{keyword}' in {file_name}")
                         return True
 
-                # Check category
+                # Check category (building_safety, bsc, gateway are strong indicators)
                 if category in ['building_safety', 'bsc', 'gateway']:
                     print(f"  🏢 HRB detected: Building safety document category found")
                     return True
 
-                # Check OCR text if available
-                full_text = file_data.get('full_text', '')
-                if full_text:
-                    text_lower = full_text.lower()
-                    for keyword in hrb_keywords:
-                        if keyword in text_lower:
-                            print(f"  🏢 HRB detected: Found '{keyword}' in document text")
-                            return True
-
+        # No HRB detected
+        print(f"  ℹ️  No HRB indicators found - setting is_hrb = FALSE")
         return False
 
     def _find_file_by_category(self, category: str, keywords: List[str] = None) -> Dict:
