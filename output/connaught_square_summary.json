@@ -1,0 +1,31 @@
+{
+  "building": {
+    "name": "219 Connaught Square",
+    "address": "219 Connaught Square, London",
+    "postcode": "W2 1HH",
+    "units": 6
+  },
+  "folders_analyzed": 10,
+  "documents_detected": {
+    "apportionment": true,
+    "fire_doors": true,
+    "insurance": true,
+    "contracts": true,
+    "major_works": true,
+    "finance": true,
+    "drawings": true
+  },
+  "sql_generation": {
+    "tables": [
+      "buildings",
+      "building_data_snapshots"
+    ],
+    "statements": 2,
+    "fields_mapped": 6,
+    "fields_unmapped": 25
+  },
+  "output_files": {
+    "extracted_data": "/Users/ellie/onboardingblociq/output/connaught_square_extracted.json",
+    "generated_sql": "/Users/ellie/onboardingblociq/output/connaught_square_generated.sql"
+  }
+}
