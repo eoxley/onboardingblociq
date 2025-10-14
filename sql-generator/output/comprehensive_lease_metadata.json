@@ -1,0 +1,124 @@
+{
+  "execution_type": "DEED",
+  "lease_date": "1996-03-25",
+  "execution_date": "1996-03-25",
+  "witnesses": [
+    "Sarah Johnson",
+    "Robert Williams"
+  ],
+  "parties": [
+    {
+      "role": "Landlord",
+      "name": "CONNAUGHT ESTATES LTD",
+      "company_number": "12345678"
+    },
+    {
+      "role": "Tenant",
+      "name": "JOHN SMITH",
+      "address": "42 High Street, Oxford OX1 1AB"
+    },
+    {
+      "role": "Superior Landlord",
+      "name": "THE PORTMAN ESTATE DEMISED PREMISES"
+    }
+  ],
+  "lease_term_years": 125,
+  "lease_term_start": "1996-03-25",
+  "lease_term_end": "2121-02-23",
+  "title_number": "NGL123456",
+  "demised_premises": "Flat 4, 50 Kensington Gardens Square, London W2 4BG",
+  "demised_parts": [
+    "the balcony and parking space number 4"
+  ],
+  "plan_reference": "o",
+  "ground_rent_amount": 250.0,
+  "ground_rent_frequency": "Payable Annually",
+  "ground_rent_review_basis": "Doubles",
+  "service_charge_percentage": 12.45,
+  "service_charge_basis": "Percentage",
+  "service_charge_exclusions": "insurance and reserve fund contributions",
+  "insurance_contribution": null,
+  "repair_obligations": [
+    {
+      "responsible_party": "Tenant",
+      "component": "Decorations",
+      "obligation": "Redecorate every 5 years",
+      "frequency_years": 5
+    }
+  ],
+  "rights_and_easements": [
+    {
+      "right_type": "Access",
+      "description": "Right of way over the entrance hall and staircase Right of support from adjoining premises Use of the bin storage area and communal garden RIGHTS RESERVED TO LANDLORD: Right to enter for inspection and repair on 24 hours' notice FORFEITURE: If the rent is unpaid for 14 days after becoming due, the Landlord may re-enter",
+      "granted_to": "Tenant"
+    },
+    {
+      "right_type": "Support",
+      "description": "Right of support and shelter",
+      "granted_to": "Tenant"
+    },
+    {
+      "right_type": "Use of Facility",
+      "facility": "Bin",
+      "description": "Use of the bin",
+      "granted_to": "Tenant"
+    }
+  ],
+  "restrictions": [
+    {
+      "restriction_type": "Pets",
+      "clause_text": "Not to keep any pets or animals without the prior written consent of the Landlord.",
+      "allows_with_consent": false,
+      "absolute_prohibition": true
+    },
+    {
+      "restriction_type": "Flooring",
+      "clause_text": "Not to lay any timber, wooden or laminate flooring without the prior written consent of the Landlord, such consent not to be unreasonably withheld.",
+      "allows_with_consent": true,
+      "absolute_prohibition": false
+    },
+    {
+      "restriction_type": "Subletting",
+      "clause_text": "Not to underlet the whole or any part save that the Tenant may underlet the whole with the Landlord's consent.",
+      "allows_with_consent": true,
+      "absolute_prohibition": false
+    },
+    {
+      "restriction_type": "Business Use",
+      "clause_text": "Not to carry on any trade, business or profession from the Demised Premises.",
+      "allows_with_consent": false,
+      "absolute_prohibition": true
+    },
+    {
+      "restriction_type": "Nuisance",
+      "clause_text": "Not to cause any nuisance, noise or annoyance to neighbouring occupiers.",
+      "allows_with_consent": false,
+      "absolute_prohibition": true
+    },
+    {
+      "restriction_type": "Signs/Advertising",
+      "clause_text": "Not to display any signs, advertisements or boards visible from outside.",
+      "allows_with_consent": false,
+      "absolute_prohibition": true
+    }
+  ],
+  "insurance_reinstatement_basis": "Full reinstatement value",
+  "insurance_types_covered": [
+    "Fire",
+    "Storm",
+    "Impact",
+    "Flood",
+    "Subsidence"
+  ],
+  "interest_rate_on_arrears": "4%",
+  "linked_documents": [
+    {
+      "document_type": "Deed of Variation",
+      "date": "2010-06-15"
+    }
+  ],
+  "source_files": [
+    "Lease_Flat_4_Enhanced.pdf"
+  ],
+  "confidence": 0.8500000000000001
+}
