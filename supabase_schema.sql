@@ -11,6 +11,81 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
+-- MULTI-TENANCY (Agencies & Users)
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- Agencies (Property Management Companies)
+-- ----------------------------------------------------------------------------
+CREATE TABLE agencies (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    
+    -- Agency Details
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    address TEXT,
+    website VARCHAR(255),
+    logo_url TEXT,
+    
+    -- Status
+    is_active BOOLEAN DEFAULT true,
+    subscription_tier VARCHAR(50), -- 'free', 'starter', 'professional', 'enterprise'
+    
+    -- Metadata
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_agencies_active ON agencies(is_active);
+
+-- ----------------------------------------------------------------------------
+-- Users (Staff - Managers, Property Managers, etc.)
+-- ----------------------------------------------------------------------------
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    agency_id UUID REFERENCES agencies(id) ON DELETE CASCADE,
+    
+    -- User Details
+    email VARCHAR(255) NOT NULL UNIQUE,
+    full_name VARCHAR(255),
+    role VARCHAR(50), -- 'admin', 'manager', 'property_manager', 'viewer'
+    
+    -- Authentication (managed by Supabase Auth)
+    auth_user_id UUID, -- Link to auth.users
+    
+    -- Status
+    is_active BOOLEAN DEFAULT true,
+    last_login TIMESTAMPTZ,
+    
+    -- Metadata
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_agency ON users(agency_id);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_auth ON users(auth_user_id);
+
+-- ----------------------------------------------------------------------------
+-- User Buildings (Assignment of property managers to buildings)
+-- ----------------------------------------------------------------------------
+CREATE TABLE user_buildings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    building_id UUID, -- Reference to buildings(id) - added after buildings table created
+    
+    -- Assignment Details
+    assigned_date DATE DEFAULT CURRENT_DATE,
+    role VARCHAR(50), -- 'primary', 'backup', 'viewer'
+    
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_buildings_user ON user_buildings(user_id);
+CREATE INDEX idx_user_buildings_building ON user_buildings(building_id);
+
+-- ============================================================================
 -- CORE ENTITIES
 -- ============================================================================
 
@@ -19,6 +94,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ----------------------------------------------------------------------------
 CREATE TABLE buildings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    agency_id UUID REFERENCES agencies(id) ON DELETE SET NULL,
 
     -- Basic Information
     building_name VARCHAR(255) NOT NULL,
@@ -36,6 +112,7 @@ CREATE TABLE buildings (
     building_height_meters NUMERIC(10,2),
 
     -- Construction
+    construction_type VARCHAR(100), -- 'Period conversion', 'New build', 'Modern development'
     construction_era VARCHAR(50),
     year_built INTEGER,
 
@@ -535,6 +612,128 @@ CREATE INDEX idx_maintenance_schedules_next_due ON maintenance_schedules(next_du
 CREATE INDEX idx_maintenance_schedules_status ON maintenance_schedules(status);
 
 -- ----------------------------------------------------------------------------
+-- Contractors (Standalone contractor directory)
+-- ----------------------------------------------------------------------------
+CREATE TABLE contractors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    
+    -- Contractor Details
+    company_name VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    address TEXT,
+    website VARCHAR(255),
+    
+    -- Specialization
+    services_offered TEXT[], -- Array of services: 'Lift Maintenance', 'Cleaning', etc.
+    certifications TEXT[],
+    
+    -- Status
+    is_active BOOLEAN DEFAULT true,
+    rating NUMERIC(2,1), -- 1.0 to 5.0
+    notes TEXT,
+    
+    -- Metadata
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_contractors_active ON contractors(is_active);
+CREATE INDEX idx_contractors_name ON contractors(company_name);
+
+-- ----------------------------------------------------------------------------
+-- Leases (Lease documents and key data)
+-- ----------------------------------------------------------------------------
+CREATE TABLE leases (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    building_id UUID REFERENCES buildings(id) ON DELETE CASCADE,
+    unit_id UUID REFERENCES units(id) ON DELETE CASCADE,
+    leaseholder_id UUID REFERENCES leaseholders(id) ON DELETE SET NULL,
+    
+    -- Lease Details
+    title_number VARCHAR(50), -- Land Registry title number
+    lease_type VARCHAR(50), -- 'Long lease', 'Short lease', 'Commercial'
+    
+    -- Dates
+    lease_start_date DATE,
+    lease_end_date DATE,
+    lease_term_years INTEGER,
+    
+    -- Document Reference
+    document_id UUID REFERENCES documents(id),
+    source_document VARCHAR(500),
+    document_location TEXT,
+    
+    -- Document Metadata
+    page_count INTEGER,
+    file_size_mb NUMERIC(10,2),
+    extraction_timestamp TIMESTAMPTZ,
+    extracted_successfully BOOLEAN DEFAULT false,
+    
+    -- Ground Rent (if applicable)
+    ground_rent_annual NUMERIC(10,2),
+    ground_rent_review_period INTEGER,
+    
+    -- Metadata
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_leases_building ON leases(building_id);
+CREATE INDEX idx_leases_unit ON leases(unit_id);
+CREATE INDEX idx_leases_leaseholder ON leases(leaseholder_id);
+CREATE INDEX idx_leases_title ON leases(title_number);
+
+-- ----------------------------------------------------------------------------
+-- Major Works Projects
+-- ----------------------------------------------------------------------------
+CREATE TABLE major_works_projects (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    building_id UUID REFERENCES buildings(id) ON DELETE CASCADE,
+    
+    -- Project Details
+    project_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    project_type VARCHAR(100), -- 'Roof replacement', 'External decoration', 'Lift upgrade'
+    
+    -- Dates
+    start_date DATE,
+    completion_date DATE,
+    planned_start DATE,
+    planned_completion DATE,
+    
+    -- Financials
+    estimated_cost NUMERIC(15,2),
+    actual_cost NUMERIC(15,2),
+    
+    -- Section 20 Consultation
+    s20_consultation_required BOOLEAN DEFAULT false,
+    s20_consultation_completed BOOLEAN DEFAULT false,
+    s20_documents_count INTEGER DEFAULT 0,
+    
+    -- Status
+    status VARCHAR(50), -- 'planned', 'in_progress', 'completed', 'cancelled'
+    priority VARCHAR(20), -- 'critical', 'high', 'medium', 'low'
+    
+    -- Documents
+    folder_path TEXT,
+    total_documents INTEGER DEFAULT 0,
+    
+    -- Contractor
+    contractor_id UUID REFERENCES contractors(id),
+    contractor_name VARCHAR(255),
+    
+    -- Metadata
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_major_works_building ON major_works_projects(building_id);
+CREATE INDEX idx_major_works_status ON major_works_projects(status);
+CREATE INDEX idx_major_works_contractor ON major_works_projects(contractor_id);
+
+-- ----------------------------------------------------------------------------
 -- Leaseholder Accounts
 -- ----------------------------------------------------------------------------
 CREATE TABLE leaseholder_accounts (
@@ -869,35 +1068,84 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ============================================================================
--- ROW LEVEL SECURITY (RLS) - Optional, for multi-tenancy
+-- FOREIGN KEY CONSTRAINTS (Add after all tables created)
 -- ============================================================================
 
--- Enable RLS on key tables (uncomment when ready)
--- ALTER TABLE buildings ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE units ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE leaseholders ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE compliance_assets ENABLE ROW LEVEL SECURITY;
--- ALTER TABLE maintenance_contracts ENABLE ROW LEVEL SECURITY;
+-- Add foreign key for user_buildings -> buildings
+ALTER TABLE user_buildings 
+    ADD CONSTRAINT fk_user_buildings_building 
+    FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE;
 
--- Example policy (adjust based on your auth setup)
--- CREATE POLICY "Users can view their own buildings" ON buildings
---     FOR SELECT USING (auth.uid() = user_id);
+-- ============================================================================
+-- ROW LEVEL SECURITY (RLS) - Multi-Tenant Access Control
+-- ============================================================================
+
+-- Enable RLS on key tables
+ALTER TABLE buildings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE units ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leaseholders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE compliance_assets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE maintenance_contracts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE budgets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE major_works_projects ENABLE ROW LEVEL SECURITY;
+
+-- Policies for Managers (see all buildings in their agency)
+CREATE POLICY "Managers see all agency buildings" ON buildings
+    FOR SELECT USING (
+        agency_id IN (
+            SELECT agency_id FROM users 
+            WHERE auth_user_id = auth.uid() AND role = 'manager'
+        )
+    );
+
+-- Policies for Property Managers (see only assigned buildings)
+CREATE POLICY "Property managers see assigned buildings" ON buildings
+    FOR SELECT USING (
+        id IN (
+            SELECT building_id FROM user_buildings ub
+            JOIN users u ON ub.user_id = u.id
+            WHERE u.auth_user_id = auth.uid()
+        )
+    );
 
 -- ============================================================================
 -- COMMENTS FOR DOCUMENTATION
 -- ============================================================================
 
+-- Multi-Tenancy
+COMMENT ON TABLE agencies IS 'Property management companies - top level multi-tenant entity.';
+COMMENT ON TABLE users IS 'Staff members (managers, property managers) with role-based access.';
+COMMENT ON TABLE user_buildings IS 'Assignment of property managers to specific buildings.';
+
+-- Core Entities
 COMMENT ON TABLE buildings IS 'Core building/property entity. Parent for all other data.';
+COMMENT ON TABLE building_blocks IS 'Individual blocks within multi-block developments.';
 COMMENT ON TABLE units IS 'Individual units within buildings (flats, apartments, commercial units).';
 COMMENT ON TABLE leaseholders IS 'Leaseholder/tenant information linked to units.';
-COMMENT ON TABLE compliance_assets IS 'Compliance inspections, certificates, and regulatory requirements.';
+
+-- Compliance & Contracts
 COMMENT ON TABLE compliance_asset_types IS 'Reference table of 50+ UK compliance asset types.';
-COMMENT ON TABLE maintenance_contracts IS 'Maintenance contracts with contractors.';
+COMMENT ON TABLE compliance_assets IS 'Compliance inspections, certificates, and regulatory requirements.';
 COMMENT ON TABLE contract_types IS 'Reference table of maintenance contract types.';
+COMMENT ON TABLE maintenance_contracts IS 'Maintenance contracts with contractors.';
+COMMENT ON TABLE maintenance_schedules IS 'Scheduled maintenance activities linked to contracts.';
+COMMENT ON TABLE contractors IS 'Standalone contractor directory with ratings and certifications.';
+
+-- Financial
 COMMENT ON TABLE budgets IS 'Annual service charge budgets.';
-COMMENT ON TABLE budget_line_items IS 'Individual line items within budgets.';
+COMMENT ON TABLE budget_line_items IS 'Individual line items within budgets (52 items for Connaught).';
+COMMENT ON TABLE leaseholder_accounts IS 'Leaseholder account balances and transactions.';
+COMMENT ON TABLE insurance_policies IS 'Insurance policies for buildings.';
+
+-- Legal & Major Works
+COMMENT ON TABLE leases IS 'Lease documents and key lease data.';
+COMMENT ON TABLE major_works_projects IS 'Major works projects including Section 20 consultations.';
+
+-- System
 COMMENT ON TABLE documents IS 'Document registry linking files to buildings, units, etc.';
 COMMENT ON TABLE extraction_runs IS 'Metadata about each extraction run for audit purposes.';
+COMMENT ON TABLE audit_log IS 'Audit trail of system changes and user actions.';
 
 -- ============================================================================
 -- END OF SCHEMA

@@ -115,6 +115,24 @@ class SQLWriter:
             if insurance_sql:
                 sql_statements.append(insurance_sql)
         
+        # 8a. Leases
+        if data.get('leases'):
+            leases_sql = self._generate_leases_insert(data)
+            if leases_sql:
+                sql_statements.append(leases_sql)
+        
+        # 8b. Contractors
+        if data.get('contractors'):
+            contractors_sql = self._generate_contractors_insert(data)
+            if contractors_sql:
+                sql_statements.append(contractors_sql)
+        
+        # 8c. Major Works
+        if data.get('major_works'):
+            major_works_sql = self._generate_major_works_insert(data)
+            if major_works_sql:
+                sql_statements.append(major_works_sql)
+        
         # 9. Documents Registry
         documents_sql = self._generate_documents_insert(data, None)
         if documents_sql:
@@ -358,6 +376,116 @@ VALUES (
     '{status}',
     '{self._sql_escape(contract.get('contractor_name', 'Unknown'))}',
     'Scheduled {frequency} maintenance for {self._sql_escape(contract_type)}'
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_leases_insert(self, data: Dict) -> str:
+        """Generate leases INSERT statements"""
+        leases = data.get('leases', [])
+        if not leases:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Leases ({len(leases)} lease documents)
+-- ============================================================================"""]
+        
+        for lease in leases:
+            lease_id = str(uuid.uuid4())
+            
+            sql_parts.append(f"""
+INSERT INTO leases (
+    id, building_id, title_number, lease_type,
+    source_document, document_location, page_count,
+    file_size_mb, extraction_timestamp, extracted_successfully
+)
+VALUES (
+    '{lease_id}',
+    '{self.building_id}',
+    '{self._sql_escape(lease.get('title_number', ''))}',
+    '{self._sql_escape(lease.get('document_type', 'Lease'))}',
+    '{self._sql_escape(lease.get('source_document', ''))}',
+    '{self._sql_escape(lease.get('document_location', ''))}',
+    {lease.get('page_count') or 'NULL'},
+    {lease.get('file_size_mb') or 'NULL'},
+    {self._sql_nullable(lease.get('extraction_timestamp'))},
+    {self._sql_bool(lease.get('extracted_successfully', True))}
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_contractors_insert(self, data: Dict) -> str:
+        """Generate contractors INSERT statements"""
+        contractors = data.get('contractors', [])
+        if not contractors:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Contractors ({len(contractors)} contractors)
+-- ============================================================================"""]
+        
+        for contractor in contractors:
+            contractor_id = str(uuid.uuid4())
+            
+            # Extract service type from folder path
+            folder_path = contractor.get('folder_path', '')
+            service_type = contractor.get('service_type', 'General Maintenance')
+            
+            sql_parts.append(f"""
+INSERT INTO contractors (
+    id, company_name, services_offered, is_active, notes
+)
+VALUES (
+    '{contractor_id}',
+    '{self._sql_escape(contractor.get('contractor_name', 'Unknown'))}',
+    ARRAY['{self._sql_escape(service_type)}'],
+    TRUE,
+    'Folder: {self._sql_escape(folder_path)}, Documents: {contractor.get('contract_documents_count', 0)}'
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_major_works_insert(self, data: Dict) -> str:
+        """Generate major works projects INSERT statements"""
+        major_works = data.get('major_works', [])
+        if not major_works:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Major Works Projects ({len(major_works)} projects detected)
+-- ============================================================================"""]
+        
+        for project in major_works:
+            project_id = str(uuid.uuid4())
+            
+            # Extract from major_works structure
+            detected = project.get('major_works_detected', False)
+            if not detected:
+                continue
+            
+            total_docs = project.get('total_documents', 0)
+            s20_docs = project.get('s20_consultation_documents', 0)
+            folder_path = project.get('folder_path', '')
+            
+            sql_parts.append(f"""
+INSERT INTO major_works_projects (
+    id, building_id, project_name, description,
+    status, s20_consultation_required, s20_documents_count,
+    folder_path, total_documents
+)
+VALUES (
+    '{project_id}',
+    '{self.building_id}',
+    'Major Works Project',
+    'Detected from documents folder',
+    'planned',
+    {self._sql_bool(s20_docs > 0)},
+    {s20_docs},
+    '{self._sql_escape(folder_path)}',
+    {total_docs}
 );""")
         
         return "\n".join(sql_parts)
