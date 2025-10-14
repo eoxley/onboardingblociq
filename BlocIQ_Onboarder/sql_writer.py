@@ -177,33 +177,37 @@ class SQLWriter:
         return data
     
     def _generate_insurance_insert(self, data: Dict) -> str:
-        """Generate insurance policies INSERT statements"""
+        """Generate insurance policies INSERT statements (SCHEMA ALIGNED)"""
         policies = data.get('insurance_policies', [])
         if not policies:
             return ""
         
         sql_parts = ["""
 -- ============================================================================
--- Insurance Policies
+-- Insurance Policies (Supabase: insurance_policies table)
 -- ============================================================================"""]
         
         for policy in policies:
             policy_id = str(uuid.uuid4())
             
+            # Map extracted fields to schema fields
+            policy_type = policy.get('policy_type') or policy.get('insurance_type', 'General')
+            insurer = policy.get('insurer') or policy.get('insurer_name', '')
+            annual_premium = policy.get('annual_premium') or policy.get('estimated_premium') or policy.get('premium_amount')
+            
             sql_parts.append(f"""
-INSERT INTO building_insurance (
-    id, building_id, insurance_type, insurer_name,
-    renewal_date, premium_amount, policy_number, notes
+INSERT INTO insurance_policies (
+    id, building_id, policy_type, insurer,
+    renewal_date, annual_premium, policy_number
 )
 VALUES (
     '{policy_id}',
     '{self.building_id}',
-    '{self._sql_escape(policy.get('policy_type', 'General'))}',
-    '{self._sql_escape(policy.get('insurer', ''))}',
+    '{self._sql_escape(policy_type)}',
+    '{self._sql_escape(insurer)}',
     {self._sql_date(policy.get('renewal_date'))},
-    {policy.get('estimated_premium') or 'NULL'},
-    '{self._sql_escape(policy.get('policy_number', ''))}',
-    'Source: {self._sql_escape(policy.get('source', ''))}'
+    {annual_premium or 'NULL'},
+    '{self._sql_escape(policy.get('policy_number', ''))}'
 );""")
         
         return "\n".join(sql_parts)
