@@ -500,6 +500,41 @@ CREATE INDEX idx_budget_lines_budget ON budget_line_items(budget_id);
 CREATE INDEX idx_budget_lines_category ON budget_line_items(category);
 
 -- ----------------------------------------------------------------------------
+-- Maintenance Schedules (for tracking service due dates)
+-- ----------------------------------------------------------------------------
+CREATE TABLE maintenance_schedules (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    building_id UUID REFERENCES buildings(id) ON DELETE CASCADE,
+    contract_id UUID REFERENCES maintenance_contracts(id) ON DELETE CASCADE,
+    
+    -- Schedule Details
+    service_type VARCHAR(255), -- "Lift LOLER", "Fire Alarm Service", etc.
+    frequency VARCHAR(50), -- "annual", "quarterly", "monthly", "biannual"
+    frequency_months INTEGER, -- 12, 6, 3, 1
+    
+    -- Due Dates
+    last_service_date DATE,
+    next_due_date DATE,
+    
+    -- Status
+    status VARCHAR(50), -- 'active', 'overdue', 'upcoming', 'cancelled'
+    priority VARCHAR(20), -- 'critical', 'high', 'medium', 'low'
+    
+    -- Details
+    description TEXT,
+    estimated_duration VARCHAR(100),
+    responsible_contractor VARCHAR(255),
+    
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_maintenance_schedules_building ON maintenance_schedules(building_id);
+CREATE INDEX idx_maintenance_schedules_contract ON maintenance_schedules(contract_id);
+CREATE INDEX idx_maintenance_schedules_next_due ON maintenance_schedules(next_due_date);
+CREATE INDEX idx_maintenance_schedules_status ON maintenance_schedules(status);
+
+-- ----------------------------------------------------------------------------
 -- Leaseholder Accounts
 -- ----------------------------------------------------------------------------
 CREATE TABLE leaseholder_accounts (

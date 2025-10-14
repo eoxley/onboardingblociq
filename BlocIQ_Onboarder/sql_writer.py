@@ -99,10 +99,15 @@ class SQLWriter:
         if contracts_sql:
             sql_statements.append(contracts_sql)
         
-        # 7. Budgets
-        budgets_sql = self._generate_budgets_insert(data)
-        if budgets_sql:
-            sql_statements.append(budgets_sql)
+        # 7. Budgets + Budget Line Items
+        budget_result = self._generate_budgets_with_line_items(data)
+        if budget_result:
+            sql_statements.append(budget_result)
+        
+        # 7b. Maintenance Schedules (inferred from contracts)
+        schedules_sql = self._generate_maintenance_schedules(data)
+        if schedules_sql:
+            sql_statements.append(schedules_sql)
         
         # 8. Insurance (if available)
         if data.get('insurance_policies'):
@@ -208,6 +213,151 @@ VALUES (
     {self._sql_date(policy.get('renewal_date'))},
     {annual_premium or 'NULL'},
     '{self._sql_escape(policy.get('policy_number', ''))}'
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_budgets_with_line_items(self, data: Dict) -> str:
+        """Generate budgets INSERT with line items (COMPLETE BUDGET DATA)"""
+        budgets = data.get('budgets', [])
+        if not budgets or len(budgets) == 0:
+            return ""
+        
+        budget = budgets[0]  # Take first budget
+        budget_id = str(uuid.uuid4())
+        
+        sql_parts = []
+        
+        # 1. Main Budget Record
+        financial_year = budget.get('financial_year', '2025/2026')
+        year = int(financial_year.split('/')[0]) if '/' in financial_year else datetime.now().year
+        
+        # Calculate total from line items
+        line_items = budget.get('line_items', [])
+        total_budget = sum(item.get('budget_2025_26', 0) for item in line_items if item.get('category') != 'Total')
+        
+        sql_parts.append(f"""
+-- ============================================================================
+-- Budget (with {len(line_items)} line items)
+-- ============================================================================
+INSERT INTO budgets (
+    id, building_id, budget_year, total_budget, 
+    status, source_document
+)
+VALUES (
+    '{budget_id}',
+    '{self.building_id}',
+    {year},
+    {total_budget},
+    '{self._sql_escape(budget.get('status', 'draft'))}',
+    '{self._sql_escape(budget.get('source_document', ''))}'
+);""")
+        
+        # 2. Budget Line Items
+        if line_items:
+            sql_parts.append(f"""
+-- Budget Line Items ({len(line_items)} items)""")
+            
+            for item in line_items:
+                # Skip the "Total" row
+                if item.get('category') == 'Total':
+                    continue
+                
+                item_id = str(uuid.uuid4())
+                category = item.get('category', 'Unknown')
+                section = item.get('section', '')
+                budgeted_amount = item.get('budget_2025_26', 0)
+                actual_amount = item.get('actual_2024_25', 0)
+                variance = item.get('variance_from_actual', 0)
+                variance_pct = item.get('variance_percentage')
+                
+                sql_parts.append(f"""
+INSERT INTO budget_line_items (
+    id, budget_id, category, subcategory, 
+    budgeted_amount, actual_amount, variance, variance_percentage
+)
+VALUES (
+    '{item_id}',
+    '{budget_id}',
+    '{self._sql_escape(category)}',
+    '{self._sql_escape(section)}',
+    {budgeted_amount},
+    {actual_amount or 0},
+    {variance or 0},
+    {variance_pct or 'NULL'}
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_maintenance_schedules(self, data: Dict) -> str:
+        """Generate maintenance schedules from contracts (INFERRED SCHEDULES)"""
+        contracts = data.get('maintenance_contracts', [])
+        if not contracts:
+            return ""
+        
+        # Map contract types to service frequencies
+        FREQUENCY_MAP = {
+            'Lift Maintenance': ('annual', 12),
+            'Fire Alarm': ('biannual', 6),
+            'Emergency Lighting': ('annual', 12),
+            'EICR': ('five_yearly', 60),
+            'Legionella': ('annual', 12),
+            'Water Hygiene': ('quarterly', 3),
+            'Gas Safety': ('annual', 12),
+            'Boiler Maintenance': ('annual', 12),
+            'PAT Testing': ('biannual', 6),
+            'Pest Control': ('quarterly', 3),
+            'Cleaning': ('weekly', 0.25),
+            'Gardening': ('monthly', 1),
+            'CCTV': ('annual', 12),
+            'Door Entry': ('biannual', 6)
+        }
+        
+        # Track created schedules by contract_id
+        self.schedule_ids = {}
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Maintenance Schedules (inferred from {len(contracts)} contracts)
+-- ============================================================================"""]
+        
+        for contract in contracts:
+            contract_type = contract.get('contract_type', 'General Maintenance')
+            contract_id = self.contract_ids.get(contract.get('contractor_name', ''))
+            
+            if not contract_id:
+                continue  # Skip if contract wasn't generated
+            
+            # Get frequency for this contract type
+            frequency_info = FREQUENCY_MAP.get(contract_type, ('annual', 12))
+            frequency, frequency_months = frequency_info
+            
+            schedule_id = str(uuid.uuid4())
+            self.schedule_ids[contract.get('contractor_name', '')] = schedule_id
+            
+            # Determine priority based on contract type
+            priority = 'critical' if contract_type in ['Fire Alarm', 'Lift Maintenance', 'Gas Safety', 'EICR'] else 'high' if contract_type in ['Legionella', 'Water Hygiene', 'Emergency Lighting'] else 'medium'
+            
+            # Status: active if contract is active, otherwise cancelled
+            status = 'active' if contract.get('contract_status', '').lower() == 'active' else 'upcoming'
+            
+            sql_parts.append(f"""
+INSERT INTO maintenance_schedules (
+    id, building_id, contract_id, service_type,
+    frequency, frequency_months, priority, status,
+    responsible_contractor, description
+)
+VALUES (
+    '{schedule_id}',
+    '{self.building_id}',
+    '{contract_id}',
+    '{self._sql_escape(contract_type)}',
+    '{frequency}',
+    {frequency_months},
+    '{priority}',
+    '{status}',
+    '{self._sql_escape(contract.get('contractor_name', 'Unknown'))}',
+    'Scheduled {frequency} maintenance for {self._sql_escape(contract_type)}'
 );""")
         
         return "\n".join(sql_parts)
@@ -587,6 +737,10 @@ VALUES (
         for contract in contracts:
             contract_id = str(uuid.uuid4())
             contract_type = contract.get('contract_type', 'General Maintenance')
+            contractor_name = contract.get('contractor_name', 'Unknown')
+            
+            # Track contract_id for schedules
+            self.contract_ids[contractor_name] = contract_id
 
             sql_parts.append(f"""
 -- {contract_type}
