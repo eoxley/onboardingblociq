@@ -48,61 +48,165 @@ class SQLWriter:
         Generate SQL migration script (BlocIQ Onboarder Interface)
         
         Args:
-            mapped_data: Dictionary containing mapped data for all tables
+            mapped_data: Dictionary containing mapped data for all tables from the onboarder
             
         Returns:
             SQL migration script as string
         """
-        # Extract building data from mapped_data
-        building_data = mapped_data.get('building', {})
+        # This method needs to convert the onboarder's mapped_data format
+        # to the format that generate_sql_file() expects
         
-        # Generate IDs
-        self.building_id = building_data.get('id') or str(uuid.uuid4())
-        self.extraction_run_id = str(uuid.uuid4())
+        # Convert mapped_data to the format expected by generate_sql_file()
+        data = self._convert_mapped_data_to_extraction_format(mapped_data)
         
+        # Use the full generate_sql_file() method with in-memory output
         sql_statements = []
         
+        self.building_id = data.get('id') or str(uuid.uuid4())
+        self.extraction_run_id = str(uuid.uuid4())
+        
         # Header
-        sql_statements.append(self._generate_header(building_data, None))
+        sql_statements.append(self._generate_header(data, None))
         
-        # Building
-        if building_data:
-            building_sql = self._generate_building_insert(building_data, None)
-            if building_sql:
-                sql_statements.append(building_sql)
+        # 1. Building
+        building_sql = self._generate_building_insert(data, None)
+        if building_sql:
+            sql_statements.append(building_sql)
         
-        # Units
-        units = mapped_data.get('units', [])
-        if units:
-            units_sql = self._generate_units_insert({'units': units})
-            if units_sql:
-                sql_statements.append(units_sql)
+        # 2. Building Blocks (if multi-block)
+        if data.get('num_blocks', 0) > 1:
+            blocks_sql = self._generate_blocks_insert(data)
+            if blocks_sql:
+                sql_statements.append(blocks_sql)
         
-        # Leaseholders
-        leaseholders = mapped_data.get('leaseholders', [])
-        if leaseholders:
-            lh_sql = self._generate_leaseholders_insert({'leaseholders': leaseholders})
-            if lh_sql:
-                sql_statements.append(lh_sql)
+        # 3. Units
+        units_sql = self._generate_units_insert(data)
+        if units_sql:
+            sql_statements.append(units_sql)
         
-        # Compliance Assets
-        compliance = mapped_data.get('compliance_assets', [])
-        if compliance:
-            comp_sql = self._generate_compliance_insert({'compliance_assets_all': compliance})
-            if comp_sql:
-                sql_statements.append(comp_sql)
+        # 4. Leaseholders
+        leaseholders_sql = self._generate_leaseholders_insert(data)
+        if leaseholders_sql:
+            sql_statements.append(leaseholders_sql)
         
-        # Budgets
-        budgets = mapped_data.get('budgets', [])
-        if budgets and len(budgets) > 0:
-            budget_sql = self._generate_budgets_insert({'summary': {'service_charge_budget': budgets[0].get('total_amount')}})
-            if budget_sql:
-                sql_statements.append(budget_sql)
+        # 5. Compliance Assets
+        compliance_sql = self._generate_compliance_insert(data)
+        if compliance_sql:
+            sql_statements.append(compliance_sql)
+        
+        # 6. Maintenance Contracts
+        contracts_sql = self._generate_contracts_insert(data)
+        if contracts_sql:
+            sql_statements.append(contracts_sql)
+        
+        # 7. Budgets
+        budgets_sql = self._generate_budgets_insert(data)
+        if budgets_sql:
+            sql_statements.append(budgets_sql)
+        
+        # 8. Insurance (if available)
+        if data.get('insurance_policies'):
+            insurance_sql = self._generate_insurance_insert(data)
+            if insurance_sql:
+                sql_statements.append(insurance_sql)
+        
+        # 9. Documents Registry
+        documents_sql = self._generate_documents_insert(data, None)
+        if documents_sql:
+            sql_statements.append(documents_sql)
+        
+        # 10. Extraction Run Metadata
+        stats = {
+            'units': len(data.get('units', [])),
+            'leaseholders': len(data.get('leaseholders', [])),
+            'compliance_assets': len(data.get('compliance_assets_all', [])),
+            'contracts': len(data.get('maintenance_contracts', []))
+        }
+        extraction_sql = self._generate_extraction_run(data, stats, None)
+        if extraction_sql:
+            sql_statements.append(extraction_sql)
         
         # Footer
-        sql_statements.append("\n-- Migration complete\nCOMMIT;\n")
+        sql_statements.append("COMMIT;")
         
         return "\n\n".join(sql_statements)
+    
+    def _convert_mapped_data_to_extraction_format(self, mapped_data: Dict) -> Dict:
+        """Convert onboarder's mapped_data format to extraction format"""
+        # The onboarder uses different field names than the extraction scripts
+        # This method bridges the gap
+        
+        building = mapped_data.get('building', {})
+        
+        # Start with building data
+        data = {
+            'building_name': building.get('name', 'Unknown Building'),
+            'building_address': building.get('address', ''),
+            'postcode': building.get('postcode', ''),
+            'city': building.get('city', 'London'),
+            'id': building.get('id'),
+            
+            # Add all building fields
+            **building,
+            
+            # Core entity lists
+            'units': mapped_data.get('units', []),
+            'leaseholders': mapped_data.get('leaseholders', []),
+            'compliance_assets_all': mapped_data.get('compliance_assets', []),
+            'maintenance_contracts': mapped_data.get('maintenance_contracts', []),
+            
+            # Financial data
+            'insurance_policies': mapped_data.get('insurance_policies', []),
+            
+            # Summary
+            'summary': mapped_data.get('summary', {}),
+            
+            # Metadata
+            'extraction_version': '6.0',
+            'data_quality': 'production',
+            'confidence_score': 0.99
+        }
+        
+        # Handle budget data - convert from onboarder format
+        if 'annual_service_charge_budget' in building or 'budgets' in mapped_data:
+            budget_amount = building.get('annual_service_charge_budget') or \
+                          (mapped_data.get('budgets', [{}])[0].get('total_amount') if mapped_data.get('budgets') else None)
+            if budget_amount:
+                data['summary']['service_charge_budget'] = budget_amount
+        
+        return data
+    
+    def _generate_insurance_insert(self, data: Dict) -> str:
+        """Generate insurance policies INSERT statements"""
+        policies = data.get('insurance_policies', [])
+        if not policies:
+            return ""
+        
+        sql_parts = ["""
+-- ============================================================================
+-- Insurance Policies
+-- ============================================================================"""]
+        
+        for policy in policies:
+            policy_id = str(uuid.uuid4())
+            
+            sql_parts.append(f"""
+INSERT INTO building_insurance (
+    id, building_id, insurance_type, insurer_name,
+    renewal_date, premium_amount, policy_number, notes
+)
+VALUES (
+    '{policy_id}',
+    '{self.building_id}',
+    '{self._sql_escape(policy.get('policy_type', 'General'))}',
+    '{self._sql_escape(policy.get('insurer', ''))}',
+    {self._sql_date(policy.get('renewal_date'))},
+    {policy.get('estimated_premium') or 'NULL'},
+    '{self._sql_escape(policy.get('policy_number', ''))}',
+    'Source: {self._sql_escape(policy.get('source', ''))}'
+);""")
+        
+        return "\n".join(sql_parts)
 
     def generate_sql_file(self, data: Dict, output_file: str, source_folder: str = None) -> Dict:
         """
