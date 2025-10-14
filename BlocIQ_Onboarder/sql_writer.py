@@ -1,1937 +1,734 @@
 """
-BlocIQ Onboarder - SQL Writer
-Generates Supabase-ready SQL migration scripts with exact schema compliance
+BlocIQ SQL Writer - Enhanced V2
+================================
+Generates INSERT statements for the comprehensive Supabase schema.
+Handles buildings, units, leaseholders, compliance, contracts, and documents.
+
+Features:
+- UUIDs for all primary keys
+- Clean SQL generation
+- References Supabase schema
+- Document registry with storage bucket paths
+- Extraction run metadata
+
+Integrated with BlocIQ Onboarder
+Author: BlocIQ Team
+Date: 2025-10-14
 """
 
-from typing import Dict, List, Any
 import json
-from schema_mapper import SupabaseSchemaMapper
-from schema_validator import SchemaValidator
+import uuid
+from typing import Dict, List, Optional, Any
+from pathlib import Path
+from datetime import datetime
 
 
 class SQLWriter:
-    """Generates SQL INSERT statements for Supabase with exact schema compliance"""
+    """Generate SQL for Supabase comprehensive schema (Compatible with BlocIQ Onboarder)"""
 
     def __init__(self):
-        self.sql_statements = []
-        self.schema_mapper = SupabaseSchemaMapper()
-        self.schema_validator = SchemaValidator()
+        self.building_id = None
+        self.extraction_run_id = None
+        self.storage_bucket = "building-documents"  # Supabase storage bucket name
         self.agency_id = '11111111-1111-1111-1111-111111111111'  # BlocIQ agency ID
+
+        # Track UUIDs for foreign keys
+        self.unit_ids = {}  # unit_number -> UUID
+        self.leaseholder_ids = {}  # leaseholder key -> UUID
+        self.compliance_asset_ids = {}  # asset key -> UUID
+        self.contract_ids = {}  # contract key -> UUID
+        self.asset_type_ids = {}  # Pre-loaded from reference table
+        self.contract_type_ids = {}  # Pre-loaded from reference table
+        
+        # For compatibility with onboarder
+        self.sql_statements = []
 
     def generate_migration(self, mapped_data: Dict) -> str:
         """
-        Generate complete SQL migration script
-
+        Generate SQL migration script (BlocIQ Onboarder Interface)
+        
         Args:
             mapped_data: Dictionary containing mapped data for all tables
-
+            
         Returns:
             SQL migration script as string
         """
-        import uuid
-
-        self.sql_statements = []
-        # Use fixed agency ID for BlocIQ
-        # self.agency_id is set in __init__
-
-        # Header (includes agency placeholder)
-        self._add_header()
-
-        # Generate INSERTs in dependency order
-        if 'building' in mapped_data:
-            self._generate_building_insert(mapped_data['building'])
-
-        # Generate schedules (must be after building, before budgets/units/assets)
-        if 'schedules' in mapped_data:
-            self._generate_schedules_inserts(mapped_data['schedules'])
-
-        if 'units' in mapped_data:
-            self._generate_units_inserts(mapped_data['units'])
-
-        if 'leaseholders' in mapped_data:
-            self._generate_leaseholders_inserts(mapped_data['leaseholders'])
-
-        # BlocIQ V2: Compliance assets (must be before building_compliance_assets)
-        if 'compliance_assets' in mapped_data:
-            self._generate_compliance_assets_inserts(mapped_data['compliance_assets'])
-
-        # BlocIQ V2: Major works projects (must be before notices)
-        if 'major_works_projects' in mapped_data:
-            self._generate_major_works_inserts(mapped_data['major_works_projects'])
-
-        # BlocIQ V2: Budgets (must be before documents)
-        if 'budgets' in mapped_data:
-            self._generate_budgets_inserts(mapped_data['budgets'])
-
-        # BlocIQ V2: Building documents (includes all original files with category)
-        if 'building_documents' in mapped_data:
-            self._generate_documents_inserts(mapped_data['building_documents'])
-
-        # BlocIQ V2: Building compliance assets (links building to compliance + document)
-        if 'building_compliance_assets' in mapped_data:
-            self._generate_building_compliance_assets_inserts(mapped_data['building_compliance_assets'])
-
-        # BlocIQ V2: Major works notices (links project to document)
-        if 'major_works_notices' in mapped_data:
-            self._generate_major_works_notices_inserts(mapped_data['major_works_notices'])
-
-        # BlocIQ V2: Apportionments (links units to budgets)
-        if 'apportionments' in mapped_data:
-            self._generate_apportionments_inserts(mapped_data['apportionments'])
-
-        # BlocIQ V2: Uncategorised documents (for manual review)
-        if 'uncategorised_docs' in mapped_data:
-            self._generate_uncategorised_docs_inserts(mapped_data['uncategorised_docs'])
-
-        # Compliance inspections (legacy)
-        if 'compliance_inspections' in mapped_data:
-            self._generate_compliance_inspections_inserts(mapped_data['compliance_inspections'])
-
-        # Property form structured data tables
-        if 'building_contractors' in mapped_data:
-            self._generate_building_contractors_inserts(mapped_data['building_contractors'])
-
-        if 'building_utilities' in mapped_data:
-            self._generate_building_utilities_inserts(mapped_data['building_utilities'])
-
-        if 'building_insurance' in mapped_data:
-            self._generate_building_insurance_inserts(mapped_data['building_insurance'])
-
-        if 'building_legal' in mapped_data:
-            self._generate_building_legal_inserts(mapped_data['building_legal'])
-
-        if 'building_statutory_reports' in mapped_data:
-            self._generate_building_statutory_reports_inserts(mapped_data['building_statutory_reports'])
-
-        if 'building_keys_access' in mapped_data:
-            self._generate_building_keys_access_inserts(mapped_data['building_keys_access'])
-
-        if 'building_warranties' in mapped_data:
-            self._generate_building_warranties_inserts(mapped_data['building_warranties'])
-
-        if 'company_secretary' in mapped_data and mapped_data['company_secretary']:
-            self._generate_company_secretary_insert(mapped_data['company_secretary'])
-
-        if 'building_staff' in mapped_data:
-            self._generate_building_staff_inserts(mapped_data['building_staff'])
-
-        if 'building_title_deeds' in mapped_data:
-            self._generate_building_title_deeds_inserts(mapped_data['building_title_deeds'])
-
-        # New tables: contractors, contractor_contracts, building_contractors, assets, maintenance_schedules
-        if 'contractors' in mapped_data:
-            self._generate_contractors_inserts(mapped_data['contractors'])
-
-        if 'contractor_contracts' in mapped_data:
-            self._generate_contractor_contracts_inserts(mapped_data['contractor_contracts'])
-
-        if 'building_contractor_links' in mapped_data:
-            self._generate_building_contractor_links_inserts(mapped_data['building_contractor_links'])
-
-        if 'assets' in mapped_data:
-            self._generate_assets_inserts(mapped_data['assets'])
-
-        if 'maintenance_schedules' in mapped_data:
-            self._generate_maintenance_schedules_inserts(mapped_data['maintenance_schedules'])
-
-        # Financial & Compliance Intelligence
-        if 'fire_door_inspections' in mapped_data:
-            self._generate_fire_door_inspections_inserts(mapped_data['fire_door_inspections'])
-
-        # Timeline Events (error logging and audit trail)
-        if 'timeline_events' in mapped_data:
-            self._generate_timeline_events_inserts(mapped_data['timeline_events'])
-
-        # Leases
-        if 'leases' in mapped_data:
-            self._generate_leases_inserts(mapped_data['leases'])
-
-        # Comprehensive Lease Extraction (28 Index Points)
-        if 'document_texts' in mapped_data:
-            self._generate_document_texts_inserts(mapped_data['document_texts'])
-
-        if 'lease_parties' in mapped_data:
-            self._generate_lease_parties_inserts(mapped_data['lease_parties'])
-
-        if 'lease_demise' in mapped_data:
-            self._generate_lease_demise_inserts(mapped_data['lease_demise'])
-
-        if 'lease_financial_terms' in mapped_data:
-            self._generate_lease_financial_terms_inserts(mapped_data['lease_financial_terms'])
-
-        if 'lease_insurance_terms' in mapped_data:
-            self._generate_lease_insurance_terms_inserts(mapped_data['lease_insurance_terms'])
-
-        if 'lease_covenants' in mapped_data:
-            self._generate_lease_covenants_inserts(mapped_data['lease_covenants'])
-
-        if 'lease_restrictions' in mapped_data:
-            self._generate_lease_restrictions_inserts(mapped_data['lease_restrictions'])
-
-        if 'lease_rights' in mapped_data:
-            self._generate_lease_rights_inserts(mapped_data['lease_rights'])
-
-        if 'lease_enforcement' in mapped_data:
-            self._generate_lease_enforcement_inserts(mapped_data['lease_enforcement'])
-
-        if 'lease_clauses' in mapped_data:
-            print(f"  📋 Generating lease_clauses SQL for {len(mapped_data['lease_clauses'])} clauses")
-            self._generate_lease_clauses_inserts(mapped_data['lease_clauses'])
-
-        if 'building_safety_reports' in mapped_data:
-            self._generate_building_safety_reports_inserts(mapped_data['building_safety_reports'])
-
-        # Add health check views for PDF report generation
-        self._add_health_check_views()
-
+        # Extract building data from mapped_data
+        building_data = mapped_data.get('building', {})
+        
+        # Generate IDs
+        self.building_id = building_data.get('id') or str(uuid.uuid4())
+        self.extraction_run_id = str(uuid.uuid4())
+        
+        sql_statements = []
+        
+        # Header
+        sql_statements.append(self._generate_header(building_data, None))
+        
+        # Building
+        if building_data:
+            building_sql = self._generate_building_insert(building_data, None)
+            if building_sql:
+                sql_statements.append(building_sql)
+        
+        # Units
+        units = mapped_data.get('units', [])
+        if units:
+            units_sql = self._generate_units_insert({'units': units})
+            if units_sql:
+                sql_statements.append(units_sql)
+        
+        # Leaseholders
+        leaseholders = mapped_data.get('leaseholders', [])
+        if leaseholders:
+            lh_sql = self._generate_leaseholders_insert({'leaseholders': leaseholders})
+            if lh_sql:
+                sql_statements.append(lh_sql)
+        
+        # Compliance Assets
+        compliance = mapped_data.get('compliance_assets', [])
+        if compliance:
+            comp_sql = self._generate_compliance_insert({'compliance_assets_all': compliance})
+            if comp_sql:
+                sql_statements.append(comp_sql)
+        
+        # Budgets
+        budgets = mapped_data.get('budgets', [])
+        if budgets and len(budgets) > 0:
+            budget_sql = self._generate_budgets_insert({'summary': {'service_charge_budget': budgets[0].get('total_amount')}})
+            if budget_sql:
+                sql_statements.append(budget_sql)
+        
         # Footer
-        self._add_footer()
-
-        return '\n'.join(self.sql_statements)
-
-    def _add_header(self):
-        """Add migration header with agency placeholder block and schema migrations"""
-        self.sql_statements.extend([
-            "-- ============================================================",
-            "-- PATCHED: BlocIQ Onboarder - Auto-generated Migration (Schema-Corrected)",
-            f"-- Generated at: {self._now()}",
-            "-- ============================================================",
-            "",
-            "-- =====================================",
-            "-- REQUIRED: Replace AGENCY_ID_PLACEHOLDER with your agency UUID",
-            "-- =====================================",
-            "",
-            "-- =====================================",
-            "-- EXTENSION: Ensure UUID generation",
-            "-- =====================================",
-            "CREATE EXTENSION IF NOT EXISTS pgcrypto;",
-            "",
-            "-- =====================================",
-            "-- CORE TABLE CREATION",
-            "-- =====================================",
-            "",
-            "-- Buildings table",
-            "CREATE TABLE IF NOT EXISTS buildings (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  agency_id uuid NOT NULL,",
-            "  name text NOT NULL,",
-            "  address text,",
-            "  postcode text,",
-            "  city text,",
-            "  country text DEFAULT 'UK',",
-            "  created_at timestamptz DEFAULT now(),",
-            "  updated_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_buildings_agency ON buildings(agency_id);",
-            "",
-            "-- Units table",
-            "CREATE TABLE IF NOT EXISTS units (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  unit_number text NOT NULL,",
-            "  floor_number integer,",
-            "  unit_type text,",
-            "  bedrooms integer,",
-            "  square_footage numeric,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_units_building ON units(building_id);",
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_units_building_number ON units(building_id, unit_number);",
-            "",
-            "-- Leaseholders table",
-            "CREATE TABLE IF NOT EXISTS leaseholders (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  unit_id uuid REFERENCES units(id) ON DELETE SET NULL,",
-            "  unit_number text,",
-            "  first_name text,",
-            "  last_name text,",
-            "  name text,",
-            "  email text,",
-            "  phone text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_leaseholders_building ON leaseholders(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_leaseholders_unit ON leaseholders(unit_id);",
-            "",
-            "-- Schedules table",
-            "CREATE TABLE IF NOT EXISTS schedules (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  name text NOT NULL,",
-            "  description text,",
-            "  schedule_type text,",
-            "  frequency text,",
-            "  last_completed_date date,",
-            "  next_due_date date,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_schedules_building ON schedules(building_id);",
-            "",
-            "-- Compliance Assets table",
-            "CREATE TABLE IF NOT EXISTS compliance_assets (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  asset_name text NOT NULL,",
-            "  asset_type text NOT NULL,",
-            "  compliance_category text,",
-            "  last_inspection_date date,",
-            "  next_due_date date,",
-            "  compliance_status text DEFAULT 'unknown',",
-            "  location text,",
-            "  responsible_party text,",
-            "  notes text,",
-            "  is_active boolean DEFAULT true,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_compliance_assets_building ON compliance_assets(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_compliance_assets_status ON compliance_assets(compliance_status);",
-            "CREATE INDEX IF NOT EXISTS idx_compliance_assets_next_due ON compliance_assets(next_due_date);",
-            "",
-            "-- Building Documents table",
-            "CREATE TABLE IF NOT EXISTS building_documents (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  category text NOT NULL,",
-            "  file_name text NOT NULL,",
-            "  storage_path text NOT NULL,",
-            "  file_size bigint,",
-            "  mime_type text,",
-            "  document_date date,",
-            "  notes text,",
-            "  confidence_score numeric DEFAULT 1.0,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_documents_building ON building_documents(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_building_documents_category ON building_documents(category);",
-            "",
-            "-- Major Works Projects table",
-            "CREATE TABLE IF NOT EXISTS major_works_projects (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  project_name text NOT NULL,",
-            "  description text,",
-            "  start_date date,",
-            "  completion_date date,",
-            "  total_cost numeric,",
-            "  status text DEFAULT 'planned',",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_major_works_projects_building ON major_works_projects(building_id);",
-            "",
-            "-- Apportionments table",
-            "CREATE TABLE IF NOT EXISTS apportionments (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  unit_id uuid REFERENCES units(id) ON DELETE CASCADE,",
-            "  budget_id uuid,",
-            "  apportionment_percentage numeric(5,2),",
-            "  apportionment_amount numeric,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_apportionments_building ON apportionments(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_apportionments_unit ON apportionments(unit_id);",
-            "CREATE INDEX IF NOT EXISTS idx_apportionments_budget ON apportionments(budget_id);",
-            "",
-            "-- Contractors table",
-            "CREATE TABLE IF NOT EXISTS contractors (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  name text NOT NULL,",
-            "  email text,",
-            "  phone text,",
-            "  address text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "-- Building Contractors table",
-            "CREATE TABLE IF NOT EXISTS building_contractors (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  contractor_type text,",
-            "  company_name text,",
-            "  contact_person text,",
-            "  phone text,",
-            "  email text,",
-            "  contract_start date,",
-            "  contract_end date,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  retender_status text DEFAULT 'not_scheduled',",
-            "  retender_due_date date,",
-            "  next_review_date date,",
-            "  renewal_notice_period interval DEFAULT interval '90 days',",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_contractors_building ON building_contractors(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_due ON building_contractors(retender_due_date);",
-            "CREATE INDEX IF NOT EXISTS idx_building_contractors_retender_status ON building_contractors(retender_status);",
-            "",
-            "-- Assets table",
-            "CREATE TABLE IF NOT EXISTS assets (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  asset_type text NOT NULL,",
-            "  asset_name text NOT NULL,",
-            "  location_description text,",
-            "  compliance_category text,",
-            "  source_documents text[],",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_assets_building ON assets(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_assets_type ON assets(asset_type);",
-            "",
-            "-- Building Keys & Access table",
-            "CREATE TABLE IF NOT EXISTS building_keys_access (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  access_type text,",
-            "  category text,",
-            "  label text,",
-            "  code text,",
-            "  location text,",
-            "  description text,",
-            "  visibility text DEFAULT 'team',",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_keys_access_building ON building_keys_access(building_id);",
-            "",
-            "-- Building Utilities table",
-            "CREATE TABLE IF NOT EXISTS building_utilities (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  utility_type text NOT NULL,",
-            "  provider_name text,",
-            "  account_number text,",
-            "  contact_phone text,",
-            "  contact_email text,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_utilities_building ON building_utilities(building_id);",
-            "",
-            "-- Building Legal table",
-            "CREATE TABLE IF NOT EXISTS building_legal (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  legal_type text,",
-            "  description text,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_legal_building ON building_legal(building_id);",
-            "",
-            "-- Building Statutory Reports table",
-            "CREATE TABLE IF NOT EXISTS building_statutory_reports (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  report_type text NOT NULL,",
-            "  report_date date,",
-            "  expiry_date date,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_statutory_reports_building ON building_statutory_reports(building_id);",
-            "",
-            "-- Building Warranties table",
-            "CREATE TABLE IF NOT EXISTS building_warranties (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  warranty_type text,",
-            "  provider_name text,",
-            "  start_date date,",
-            "  expiry_date date,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_warranties_building ON building_warranties(building_id);",
-            "",
-            "-- Company Secretary table",
-            "CREATE TABLE IF NOT EXISTS company_secretary (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  company_name text,",
-            "  secretary_name text,",
-            "  contact_email text,",
-            "  contact_phone text,",
-            "  address text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_company_secretary_building ON company_secretary(building_id);",
-            "",
-            "-- Building Title Deeds table",
-            "CREATE TABLE IF NOT EXISTS building_title_deeds (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  title_number text,",
-            "  tenure_type text,",
-            "  property_description text,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_title_deeds_building ON building_title_deeds(building_id);",
-            "",
-            "-- =====================================",
-            "-- =====================================",
-            "-- FINANCIAL & COMPLIANCE INTELLIGENCE TABLES",
-            "-- =====================================",
-            "",
-            "-- Fire Door Inspections",
-            "CREATE TABLE IF NOT EXISTS fire_door_inspections (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid REFERENCES buildings(id),",
-            "  unit_id uuid REFERENCES units(id),",
-            "  location text,",
-            "  inspection_date date,",
-            "  status text CHECK (status IN ('compliant','non-compliant','overdue','unknown')),",
-            "  notes text,",
-            "  document_path text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_building ON fire_door_inspections(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_fire_door_inspections_status ON fire_door_inspections(status);",
-            "",
-            "-- Budgets (leave existing and rely on ALTERs above)",
-            "CREATE TABLE IF NOT EXISTS budgets (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid REFERENCES buildings(id),",
-            "  document_id uuid,",
-            "  period text NOT NULL,",
-            "  start_date date,",
-            "  end_date date,",
-            "  year_start date,",
-            "  year_end date,",
-            "  total_amount numeric,",
-            "  demand_date_1 date,",
-            "  demand_date_2 date,",
-            "  year_end_date date,",
-            "  budget_type text,",
-            "  agency_id uuid,",
-            "  schedule_id uuid,",
-            "  year integer,",
-            "  name text,",
-            "  confidence_score numeric DEFAULT 1.00,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "-- Safe now to index year_start",
-            "CREATE INDEX IF NOT EXISTS idx_budgets_building ON budgets(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_budgets_year ON budgets(year_start);",
-            "",
-            "-- Building Insurance",
-            "CREATE TABLE IF NOT EXISTS building_insurance (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id),",
-            "  insurance_type text NOT NULL,",
-            "  broker_name text,",
-            "  insurer_name text,",
-            "  policy_number text,",
-            "  renewal_date date,",
-            "  coverage_amount numeric,",
-            "  premium_amount numeric,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_insurance_building ON building_insurance(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_building_insurance_expiry ON building_insurance(expiry_date);",
-            "",
-            "-- Building Staff",
-            "CREATE TABLE IF NOT EXISTS building_staff (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid NOT NULL REFERENCES buildings(id),",
-            "  staff_type text,",
-            "  description text,",
-            "  employee_name text,",
-            "  position text,",
-            "  start_date date,",
-            "  end_date date,",
-            "  document_id uuid,",
-            "  notes text,",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_building_staff_building ON building_staff(building_id);",
-            "",
-            "-- Timeline Events (for error logging and audit trail)",
-            "CREATE TABLE IF NOT EXISTS timeline_events (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid REFERENCES buildings(id),",
-            "  event_type text NOT NULL,",
-            "  event_date timestamptz DEFAULT now(),",
-            "  description text,",
-            "  metadata jsonb,",
-            "  severity text CHECK (severity IN ('info','warning','error')) DEFAULT 'info',",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_timeline_events_building ON timeline_events(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_timeline_events_type ON timeline_events(event_type);",
-            "CREATE INDEX IF NOT EXISTS idx_timeline_events_date ON timeline_events(event_date);",
-            "",
-            "-- Leases",
-            "CREATE TABLE IF NOT EXISTS leases (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  building_id uuid REFERENCES buildings(id),",
-            "  unit_id uuid REFERENCES units(id),",
-            "  leaseholder_id uuid REFERENCES leaseholders(id),",
-            "  document_id uuid,",
-            "  lease_type text,",
-            "  start_date date,",
-            "  end_date date,",
-            "  expiry_date date,",
-            "  confidence_score numeric(3,2),",
-            "  created_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_leases_building ON leases(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);",
-            "CREATE INDEX IF NOT EXISTS idx_leases_expiry ON leases(expiry_date);",
-            "",
-            "-- Lease Clauses (for traceability)",
-            "CREATE TABLE IF NOT EXISTS lease_clauses (",
-            "  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),",
-            "  lease_id uuid NOT NULL REFERENCES leases(id) ON DELETE CASCADE,",
-            "  building_id uuid NOT NULL REFERENCES buildings(id) ON DELETE CASCADE,",
-            "  clause_number text,",
-            "  clause_category text,",
-            "  clause_text text,",
-            "  clause_summary text,",
-            "  created_at timestamptz DEFAULT now(),",
-            "  updated_at timestamptz DEFAULT now()",
-            ");",
-            "",
-            "CREATE INDEX IF NOT EXISTS idx_lease_clauses_lease ON lease_clauses(lease_id);",
-            "CREATE INDEX IF NOT EXISTS idx_lease_clauses_building ON lease_clauses(building_id);",
-            "CREATE INDEX IF NOT EXISTS idx_lease_clauses_category ON lease_clauses(clause_category);",
-            "",
-            "-- =====================================",
-            "-- CONTRACTOR_CONTRACTS: Ensure service_category allows 'unspecified'",
-            "-- =====================================",
-            "DO $$",
-            "BEGIN",
-            "  -- Drop existing CHECK constraint if present",
-            "  IF EXISTS (",
-            "    SELECT 1 FROM pg_constraint",
-            "    WHERE conname = 'contractor_contracts_service_category_check'",
-            "  ) THEN",
-            "    ALTER TABLE contractor_contracts DROP CONSTRAINT contractor_contracts_service_category_check;",
-            "  END IF;",
-            "",
-            "  -- Add CHECK constraint allowing 'unspecified' sentinel",
-            "  ALTER TABLE contractor_contracts",
-            "    ADD CONSTRAINT contractor_contracts_service_category_check",
-            "    CHECK (service_category IN ('lifts','security','fire_alarm','cleaning','maintenance','insurance','legal','utilities','grounds','waste','other','unspecified'));",
-            "EXCEPTION WHEN undefined_table THEN",
-            "  -- Table doesn't exist yet, will be created with constraint later",
-            "  NULL;",
-            "END $$;",
-            "",
-            "-- =====================================",
-            "-- DATA MIGRATION: Insert building data",
-            "-- =====================================",
-            "",
-            "-- Using BlocIQ agency ID: 11111111-1111-1111-1111-111111111111",
-            "-- Agency already exists in Supabase, no INSERT needed",
-            "",
-            "BEGIN;",
-            ""
-        ])
-
-    def _add_health_check_views(self):
-        """Add database views for health check report generation"""
-        views_sql = """
--- ============================================================
--- BlocIQ Health Check Database Views
--- Creates computed views for health score calculation
--- ============================================================
-
--- =====================================
--- VIEW: v_compliance_rollup
--- Aggregates compliance asset status by building
--- =====================================
-CREATE OR REPLACE VIEW v_compliance_rollup AS
-SELECT
-    building_id,
-    COUNT(*) as total_assets,
-    COUNT(*) FILTER (WHERE compliance_status = 'compliant') as ok_count,
-    COUNT(*) FILTER (WHERE compliance_status = 'overdue') as overdue_count,
-    COUNT(*) FILTER (WHERE compliance_status = 'unknown' OR compliance_status IS NULL) as unknown_count,
-    ROUND(
-        (COUNT(*) FILTER (WHERE compliance_status = 'compliant')::numeric / NULLIF(COUNT(*), 0)) * 100,
-        1
-    ) as ok_pct
-FROM compliance_assets
-WHERE is_active = TRUE
-GROUP BY building_id;
-
--- =====================================
--- VIEW: v_lease_coverage
--- Calculates lease coverage by building
--- =====================================
-CREATE OR REPLACE VIEW v_lease_coverage AS
-SELECT
-    u.building_id,
-    COUNT(DISTINCT u.id) as total_units,
-    COUNT(DISTINCT l.unit_id) as leased_units,
-    ROUND(
-        (COUNT(DISTINCT l.unit_id)::numeric / NULLIF(COUNT(DISTINCT u.id), 0)) * 100,
-        1
-    ) as lease_pct
-FROM units u
-LEFT JOIN leases l ON u.id = l.unit_id
-GROUP BY u.building_id;
-
--- =====================================
--- VIEW: v_building_health_score
--- Calculates overall health score with weighted components
--- Compliance: 40% | Insurance: 20% | Budget: 20% | Lease: 10% | Contractor: 10%
--- =====================================
-CREATE OR REPLACE VIEW v_building_health_score AS
-WITH compliance_scores AS (
-    SELECT
-        building_id,
-        (CASE
-            WHEN total_assets = 0 THEN 0
-            WHEN ok_pct >= 90 THEN 100
-            WHEN ok_pct >= 75 THEN 80
-            WHEN ok_pct >= 50 THEN 60
-            WHEN ok_pct >= 25 THEN 40
-            ELSE 20
-        END)::numeric as compliance_score
-    FROM v_compliance_rollup
-),
-insurance_scores AS (
-    SELECT
-        building_id,
-        (CASE
-            WHEN COUNT(*) = 0 THEN 0
-            WHEN COUNT(*) FILTER (WHERE expiry_date > CURRENT_DATE) = COUNT(*) THEN 100
-            WHEN COUNT(*) FILTER (WHERE expiry_date > CURRENT_DATE) >= COUNT(*) * 0.5 THEN 50
-            ELSE 25
-        END)::numeric as insurance_score
-    FROM building_insurance
-    GROUP BY building_id
-),
-budget_scores AS (
-    SELECT
-        building_id,
-        (CASE
-            WHEN COUNT(*) = 0 THEN 0
-            WHEN COUNT(*) FILTER (WHERE year_start IS NOT NULL AND year_end IS NOT NULL) = COUNT(*) THEN 100
-            WHEN COUNT(*) FILTER (WHERE year_start IS NOT NULL OR year_end IS NOT NULL) >= COUNT(*) * 0.5 THEN 60
-            ELSE 30
-        END)::numeric as budget_score
-    FROM budgets
-    GROUP BY building_id
-),
-lease_scores AS (
-    SELECT
-        building_id,
-        (CASE
-            WHEN lease_pct >= 90 THEN 100
-            WHEN lease_pct >= 75 THEN 80
-            WHEN lease_pct >= 50 THEN 60
-            WHEN lease_pct >= 25 THEN 40
-            ELSE 20
-        END)::numeric as lease_score
-    FROM v_lease_coverage
-),
-contractor_scores AS (
-    SELECT
-        building_id,
-        (CASE
-            WHEN COUNT(*) = 0 THEN 0
-            WHEN COUNT(*) FILTER (WHERE retender_status = 'not_scheduled' OR retender_status IS NULL) = COUNT(*) THEN 100
-            WHEN COUNT(*) FILTER (WHERE retender_status = 'due') >= COUNT(*) * 0.5 THEN 50
-            ELSE 75
-        END)::numeric as contractor_score
-    FROM building_contractors
-    GROUP BY building_id
-)
-SELECT
-    b.id as building_id,
-    b.name as building_name,
-    COALESCE(cs.compliance_score, 0)::numeric as compliance_score,
-    COALESCE(ins.insurance_score, 0)::numeric as insurance_score,
-    COALESCE(bud.budget_score, 0)::numeric as budget_score,
-    COALESCE(ls.lease_score, 0)::numeric as lease_score,
-    COALESCE(cont.contractor_score, 0)::numeric as contractor_score,
-    -- Weighted overall score
-    ROUND(
-        (COALESCE(cs.compliance_score, 0) * 0.40) +
-        (COALESCE(ins.insurance_score, 0) * 0.20) +
-        (COALESCE(bud.budget_score, 0) * 0.20) +
-        (COALESCE(ls.lease_score, 0) * 0.10) +
-        (COALESCE(cont.contractor_score, 0) * 0.10),
-        1
-    ) as health_score,
-    -- Rating based on overall score
-    CASE
-        WHEN ROUND(
-            (COALESCE(cs.compliance_score, 0) * 0.40) +
-            (COALESCE(ins.insurance_score, 0) * 0.20) +
-            (COALESCE(bud.budget_score, 0) * 0.20) +
-            (COALESCE(ls.lease_score, 0) * 0.10) +
-            (COALESCE(cont.contractor_score, 0) * 0.10),
-            1
-        ) >= 90 THEN 'Excellent'
-        WHEN ROUND(
-            (COALESCE(cs.compliance_score, 0) * 0.40) +
-            (COALESCE(ins.insurance_score, 0) * 0.20) +
-            (COALESCE(bud.budget_score, 0) * 0.20) +
-            (COALESCE(ls.lease_score, 0) * 0.10) +
-            (COALESCE(cont.contractor_score, 0) * 0.10),
-            1
-        ) >= 75 THEN 'Good'
-        WHEN ROUND(
-            (COALESCE(cs.compliance_score, 0) * 0.40) +
-            (COALESCE(ins.insurance_score, 0) * 0.20) +
-            (COALESCE(bud.budget_score, 0) * 0.20) +
-            (COALESCE(ls.lease_score, 0) * 0.10) +
-            (COALESCE(cont.contractor_score, 0) * 0.10),
-            1
-        ) >= 50 THEN 'Fair'
-        WHEN ROUND(
-            (COALESCE(cs.compliance_score, 0) * 0.40) +
-            (COALESCE(ins.insurance_score, 0) * 0.20) +
-            (COALESCE(bud.budget_score, 0) * 0.20) +
-            (COALESCE(ls.lease_score, 0) * 0.10) +
-            (COALESCE(cont.contractor_score, 0) * 0.10),
-            1
-        ) >= 25 THEN 'Poor'
-        ELSE 'Critical'
-    END as rating
-FROM buildings b
-LEFT JOIN compliance_scores cs ON b.id = cs.building_id
-LEFT JOIN insurance_scores ins ON b.id = ins.building_id
-LEFT JOIN budget_scores bud ON b.id = bud.building_id
-LEFT JOIN lease_scores ls ON b.id = ls.building_id
-LEFT JOIN contractor_scores cont ON b.id = cont.building_id;
-
--- =====================================
--- Indexes for Performance (with defensive column checks)
--- =====================================
-DO $$
-BEGIN
-    -- Index on compliance_assets (compliance_status, is_active)
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='compliance_assets' AND column_name='compliance_status')
-       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='compliance_assets' AND column_name='is_active') THEN
-        CREATE INDEX IF NOT EXISTS idx_compliance_assets_status_building ON compliance_assets(building_id, compliance_status) WHERE is_active = TRUE;
-    END IF;
-
-    -- Index on leases (unit_id)
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='leases' AND column_name='unit_id') THEN
-        CREATE INDEX IF NOT EXISTS idx_leases_unit ON leases(unit_id);
-    END IF;
-
-    -- Index on building_insurance (expiry_date)
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='building_insurance' AND column_name='expiry_date') THEN
-        CREATE INDEX IF NOT EXISTS idx_insurance_expiry ON building_insurance(building_id, expiry_date);
-    END IF;
-
-    -- Index on budgets (year_start, year_end)
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='budgets' AND column_name='year_start')
-       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='budgets' AND column_name='year_end') THEN
-        CREATE INDEX IF NOT EXISTS idx_budgets_dates ON budgets(building_id, year_start, year_end);
-    END IF;
-
-    -- Index on building_contractors (retender_status)
-    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='building_contractors' AND column_name='retender_status') THEN
-        CREATE INDEX IF NOT EXISTS idx_contractors_retender ON building_contractors(building_id, retender_status);
-    END IF;
-END $$;
-"""
-        self.sql_statements.append(views_sql)
-
-    def _add_footer(self):
-        """Add migration footer"""
-        self.sql_statements.extend([
-            "",
-            "-- Migration complete",
-            "COMMIT;",
-            "",
-            "-- Rollback command (if needed):",
-            "-- ROLLBACK;"
-        ])
-
-    def _generate_building_insert(self, building: Dict):
-        """Generate INSERT for buildings table with agency_id"""
-        # Add agency_id to building data
-        building_with_agency = building.copy()
-        building_with_agency['agency_id'] = self.agency_id
-
-        self.sql_statements.append("-- Insert building")
-        self.sql_statements.append(
-            self._create_insert_statement('buildings', building_with_agency, use_upsert=False)
-        )
-        self.sql_statements.append("")
-
-    def _generate_schedules_inserts(self, schedules: List[Dict]):
-        """Generate INSERTs for schedules table"""
-        if not schedules:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(schedules)} schedule(s)")
-
-        for schedule in schedules:
-            self.sql_statements.append(
-                self._create_insert_statement('schedules', schedule, use_upsert=False)
-            )
-
-        # Log created schedules
-        schedule_names = [s.get('name', 'Unknown') for s in schedules]
-        self.sql_statements.append(f"-- Created schedules: {', '.join(schedule_names)}")
-        self.sql_statements.append("")
-
-    def _generate_units_inserts(self, units: List[Dict]):
-        """Generate bulk INSERT for units table"""
-        if not units:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(units)} units")
-
-        # Use bulk multi-row VALUES syntax for efficiency
-        if len(units) <= 10:  # Use bulk insert for reasonable sizes
-            values_rows = []
-            for unit in units:
-                validated = self.schema_mapper.validate_data('units', unit)
-                id_val = self._format_value(validated.get('id'))
-                building_id_val = self._format_value(validated.get('building_id'))
-                unit_number_val = self._format_value(validated.get('unit_number'))
-                values_rows.append(f"({id_val}, {building_id_val}, {unit_number_val})")
-
-            bulk_insert = "INSERT INTO units (id, building_id, unit_number) VALUES\n" + ",\n".join(values_rows)
-            bulk_insert += "\nON CONFLICT (id) DO NOTHING;"
-            self.sql_statements.append(bulk_insert)
-        else:
-            # Fall back to individual inserts for very large sets
-            for unit in units:
-                self.sql_statements.append(
-                    self._create_insert_statement('units', unit, use_upsert=False)
-                )
-
-        self.sql_statements.append("")
-
-    def _generate_leaseholders_inserts(self, leaseholders: List[Dict]):
-        """Generate bulk INSERT for leaseholders table"""
-        if not leaseholders:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(leaseholders)} leaseholders (schema has building_id and unit_number)")
-
-        # Use bulk multi-row VALUES syntax
-        if len(leaseholders) <= 20:  # Reasonable bulk size
-            values_rows = []
-            for lh in leaseholders:
-                validated = self.schema_mapper.validate_data('leaseholders', lh)
-                id_val = self._format_value(validated.get('id'))
-                building_id_val = self._format_value(validated.get('building_id'))
-                unit_id_val = self._format_value(validated.get('unit_id'))
-                unit_number_val = self._format_value(validated.get('unit_number'))
-                name_val = self._format_value(validated.get('name') or validated.get('first_name', '') + ' ' + validated.get('last_name', ''))
-                values_rows.append(f"({id_val}, {building_id_val}, {unit_id_val}, {unit_number_val}, {name_val})")
-
-            bulk_insert = "INSERT INTO leaseholders (id, building_id, unit_id, unit_number, name) VALUES\n" + ",\n".join(values_rows)
-            bulk_insert += "\nON CONFLICT (id) DO NOTHING;"
-            self.sql_statements.append(bulk_insert)
-        else:
-            for leaseholder in leaseholders:
-                self.sql_statements.append(
-                    self._create_insert_statement('leaseholders', leaseholder, use_upsert=False)
-                )
-
-        self.sql_statements.append("")
-
-    def _generate_documents_inserts(self, documents: List[Dict]):
-        """Generate INSERTs for building_documents table"""
-        if not documents:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(documents)} document records")
-
-        for doc in documents:
-            self.sql_statements.append(
-                self._create_insert_statement('building_documents', doc, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_compliance_assets_inserts(self, assets: List[Dict]):
-        """Generate INSERTs for compliance_assets table"""
-        if not assets:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(assets)} compliance assets")
-
-        # DEBUG: Check first asset
-        if assets:
-            print(f"\n🔍 DEBUG: First compliance_asset before SQL generation:")
-            print(f"  Keys: {list(assets[0].keys())}")
-            print(f"  building_id present: {'building_id' in assets[0]}")
-            print(f"  building_id value: {assets[0].get('building_id')}")
-            print()
-
-        for asset in assets:
-            self.sql_statements.append(
-                self._create_insert_statement('compliance_assets', asset, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_compliance_inspections_inserts(self, inspections: List[Dict]):
-        """Generate INSERTs for compliance_inspections table"""
-        if not inspections:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(inspections)} compliance inspections")
-
-        for inspection in inspections:
-            self.sql_statements.append(
-                self._create_insert_statement('compliance_inspections', inspection, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_major_works_inserts(self, projects: List[Dict]):
-        """Generate INSERTs for major_works_projects table"""
-        if not projects:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(projects)} major works projects")
-
-        for project in projects:
-            self.sql_statements.append(
-                self._create_insert_statement('major_works_projects', project, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_budgets_inserts(self, budgets: List[Dict]):
-        """Generate INSERTs for budgets table"""
-        if not budgets:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(budgets)} budgets")
-
-        for budget in budgets:
-            # Create a copy to avoid mutating original data
-            budget_data = budget.copy()
-
-            # CRITICAL: Ensure period field exists (NOT NULL constraint)
-            if 'period' not in budget_data or not budget_data['period']:
-                # Try to infer period from year fields or dates
-                if budget_data.get('year'):
-                    budget_data['period'] = str(budget_data['year'])
-                elif budget_data.get('year_start'):
-                    # Extract year from date string
-                    year_str = str(budget_data['year_start'])[:4]
-                    budget_data['period'] = year_str
-                else:
-                    budget_data['period'] = 'Unknown'
-
-            self.sql_statements.append(
-                self._create_insert_statement('budgets', budget_data, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_apportionments_inserts(self, apportionments: List[Dict]):
-        """Generate INSERTs for apportionments table - deduplicated by unit"""
-        if not apportionments:
-            return
-
-        # Deduplicate: Keep only one apportionment per unit_id
-        # Prioritize records with unit_id, and prefer higher percentages (more specific)
-        unit_apportionments = {}
-        for app in apportionments:
-            unit_id = app.get('unit_id')
-            if unit_id:
-                # If we haven't seen this unit, or this one has a higher percentage, use it
-                if unit_id not in unit_apportionments:
-                    unit_apportionments[unit_id] = app
-                else:
-                    # Keep the one with more complete data (has percentage)
-                    current_pct = unit_apportionments[unit_id].get('percentage', 0)
-                    new_pct = app.get('percentage', 0)
-                    if new_pct and new_pct > 0 and (not current_pct or new_pct != current_pct):
-                        # Prefer records from apportionment-specific files
-                        if 'apportionment' in str(app.get('source_document', '')).lower():
-                            unit_apportionments[unit_id] = app
-
-        deduplicated = list(unit_apportionments.values())
-
-        print(f"  📊 Deduplicating apportionments: {len(apportionments)} → {len(deduplicated)} (one per unit)")
-
-        self.sql_statements.append(f"-- Insert {len(deduplicated)} apportionments (deduplicated by unit)")
-
-        for apportionment in deduplicated:
-            self.sql_statements.append(
-                self._create_insert_statement('apportionments', apportionment, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_compliance_assets_inserts(self, assets: List[Dict]):
-        """Generate INSERTs for building_compliance_assets table"""
-        if not assets:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(assets)} building compliance asset links")
-
-        for asset in assets:
-            self.sql_statements.append(
-                self._create_insert_statement('building_compliance_assets', asset, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_major_works_notices_inserts(self, notices: List[Dict]):
-        """Generate INSERTs for major_works_notices table"""
-        if not notices:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(notices)} major works notices")
-
-        for notice in notices:
-            self.sql_statements.append(
-                self._create_insert_statement('major_works_notices', notice, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_uncategorised_docs_inserts(self, docs: List[Dict]):
-        """Generate INSERTs for uncategorised_docs table - BlocIQ V2"""
-        if not docs:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(docs)} uncategorised documents for manual review")
-
-        for doc in docs:
-            self.sql_statements.append(
-                self._create_insert_statement('uncategorised_docs', doc, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_contractors_inserts(self, contractors: List[Dict]):
-        """Generate INSERTs for building_contractors table"""
-        if not contractors:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(contractors)} building contractors")
-
-        for contractor in contractors:
-            self.sql_statements.append(
-                self._create_insert_statement('building_contractors', contractor, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_utilities_inserts(self, utilities: List[Dict]):
-        """Generate INSERTs for building_utilities table"""
-        if not utilities:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(utilities)} building utilities")
-
-        for utility in utilities:
-            self.sql_statements.append(
-                self._create_insert_statement('building_utilities', utility, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_insurance_inserts(self, insurance_records: List[Dict]):
-        """Generate INSERTs for building_insurance table"""
-        if not insurance_records:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(insurance_records)} insurance records")
-
-        for record in insurance_records:
-            # Ensure insurance_type field exists (required NOT NULL constraint)
-            if 'insurance_type' not in record or not record['insurance_type']:
-                record['insurance_type'] = 'general'
-
-            self.sql_statements.append(
-                self._create_insert_statement('building_insurance', record, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_legal_inserts(self, legal_records: List[Dict]):
-        """Generate INSERTs for building_legal table"""
-        if not legal_records:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(legal_records)} legal records")
-
-        for record in legal_records:
-            self.sql_statements.append(
-                self._create_insert_statement('building_legal', record, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_statutory_reports_inserts(self, reports: List[Dict]):
-        """Generate INSERTs for building_statutory_reports table"""
-        if not reports:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(reports)} statutory reports")
-
-        for report in reports:
-            self.sql_statements.append(
-                self._create_insert_statement('building_statutory_reports', report, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_keys_access_inserts(self, access_records: List[Dict]):
-        """Generate INSERTs for building_keys_access table"""
-        if not access_records:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(access_records)} keys/access records")
-
-        for record in access_records:
-            self.sql_statements.append(
-                self._create_insert_statement('building_keys_access', record, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_warranties_inserts(self, warranties: List[Dict]):
-        """Generate INSERTs for building_warranties table"""
-        if not warranties:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(warranties)} warranties")
-
-        for warranty in warranties:
-            self.sql_statements.append(
-                self._create_insert_statement('building_warranties', warranty, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_company_secretary_insert(self, company_secretary: Dict):
-        """Generate INSERT for company_secretary table"""
-        if not company_secretary:
-            return
-
-        self.sql_statements.append("-- Insert company secretary data")
-        self.sql_statements.append(
-            self._create_insert_statement('company_secretary', company_secretary, use_upsert=False)
-        )
-        self.sql_statements.append("")
-
-    def _generate_building_staff_inserts(self, staff_records: List[Dict]):
-        """Generate INSERTs for building_staff table"""
-        if not staff_records:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(staff_records)} staff records")
-
-        for record in staff_records:
-            self.sql_statements.append(
-                self._create_insert_statement('building_staff', record, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _generate_building_title_deeds_inserts(self, title_deeds: List[Dict]):
-        """Generate INSERTs for building_title_deeds table"""
-        if not title_deeds:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(title_deeds)} title deed records")
-
-        for record in title_deeds:
-            self.sql_statements.append(
-                self._create_insert_statement('building_title_deeds', record, use_upsert=False)
-            )
-
-        self.sql_statements.append("")
-
-    def _create_insert_statement(self, table: str, data: Dict, use_upsert: bool = True) -> str:
+        sql_statements.append("\n-- Migration complete\nCOMMIT;\n")
+        
+        return "\n\n".join(sql_statements)
+
+    def generate_sql_file(self, data: Dict, output_file: str, source_folder: str = None) -> Dict:
         """
-        Create an INSERT or UPSERT statement with schema validation
+        Generate complete SQL file from extraction data
 
         Args:
-            table: Table name
-            data: Dictionary of column: value pairs
-            use_upsert: If True, generate UPSERT (INSERT ... ON CONFLICT DO UPDATE)
+            data: Extracted building data (from JSON)
+            output_file: Path to output SQL file
+            source_folder: Original source folder path
 
         Returns:
-            SQL INSERT/UPSERT statement
+            Dict with statistics
         """
-        # First validate with legacy schema mapper (for compatibility)
-        validated_data = self.schema_mapper.validate_data(table, data)
+        print(f"\n🔄 Generating SQL for Supabase schema...")
 
-        # Debug for lease_clauses
-        if table == 'lease_clauses':
-            print(f"  🔍 After schema_mapper: {list(validated_data.keys())}")
+        self.building_id = str(uuid.uuid4())
+        self.extraction_run_id = str(uuid.uuid4())
 
-        # Then apply strict schema validation and transformation
-        validated_data = self.schema_validator.validate_and_transform(table, validated_data)
-
-        # Debug for lease_clauses
-        if table == 'lease_clauses':
-            print(f"  🔍 After schema_validator: {list(validated_data.keys())}")
-
-        # DEBUG: Print for major_works_projects and compliance_assets
-        if table == 'major_works_projects':
-            print(f"DEBUG major_works_projects:")
-            print(f"  Original data keys: {list(data.keys())}")
-            print(f"  Validated data keys: {list(validated_data.keys())}")
-            if 'project_name' in data:
-                print(f"  Mapped project_name -> name: {data.get('project_name')}")
-        if table == 'compliance_assets':
-            print(f"DEBUG compliance_assets:")
-            print(f"  Original data: {data}")
-            print(f"  Validated data: {validated_data}")
-
-        # Define required NOT NULL columns per table
-        required_columns = {
-            'buildings': ['id', 'name'],
-            'units': ['id', 'building_id', 'unit_number'],
-            'leaseholders': ['id', 'building_id', 'first_name', 'last_name'],
-            'leases': ['id', 'building_id'],
-            'building_documents': ['id', 'building_id', 'category', 'file_name', 'storage_path'],
-            'compliance_assets': ['id', 'building_id', 'asset_name', 'asset_type'],
-            'budgets': ['id', 'building_id', 'period'],
-            'building_insurance': ['id', 'building_id', 'insurance_type'],
-            'contractors': ['id', 'name'],
-            'major_works_projects': ['id', 'building_id', 'project_name'],
-            'schedules': ['id', 'building_id', 'name']
+        sql_statements = []
+        stats = {
+            'buildings': 0,
+            'units': 0,
+            'leaseholders': 0,
+            'compliance_assets': 0,
+            'contracts': 0,
+            'budgets': 0,
+            'documents': 0,
         }
 
-        # Filter out None values, but keep required columns even if None (will error early)
-        table_required = required_columns.get(table, [])
-        filtered_data = {
-            k: v for k, v in validated_data.items()
-            if v is not None or k in table_required
+        # Header
+        sql_statements.append(self._generate_header(data, source_folder))
+
+        # 1. Building
+        building_sql = self._generate_building_insert(data, source_folder)
+        if building_sql:
+            sql_statements.append(building_sql)
+            stats['buildings'] = 1
+
+        # 2. Building Blocks (if multi-block)
+        if data.get('num_blocks', 0) > 1:
+            blocks_sql = self._generate_blocks_insert(data)
+            if blocks_sql:
+                sql_statements.append(blocks_sql)
+
+        # 3. Units
+        units_sql = self._generate_units_insert(data)
+        if units_sql:
+            sql_statements.append(units_sql)
+            stats['units'] = len(data.get('units', []))
+
+        # 4. Leaseholders
+        leaseholders_sql = self._generate_leaseholders_insert(data)
+        if leaseholders_sql:
+            sql_statements.append(leaseholders_sql)
+            stats['leaseholders'] = len(data.get('leaseholders', []))
+
+        # 5. Compliance Assets
+        compliance_sql = self._generate_compliance_insert(data)
+        if compliance_sql:
+            sql_statements.append(compliance_sql)
+            stats['compliance_assets'] = len(data.get('compliance_assets_all', []))
+
+        # 6. Maintenance Contracts
+        contracts_sql = self._generate_contracts_insert(data)
+        if contracts_sql:
+            sql_statements.append(contracts_sql)
+            stats['contracts'] = len(data.get('maintenance_contracts', []))
+
+        # 7. Budgets
+        budgets_sql = self._generate_budgets_insert(data)
+        if budgets_sql:
+            sql_statements.append(budgets_sql)
+            stats['budgets'] += 1
+
+        # 8. Documents Registry
+        documents_sql = self._generate_documents_insert(data, source_folder)
+        if documents_sql:
+            sql_statements.append(documents_sql)
+            stats['documents'] = documents_sql.count('INSERT INTO documents')
+
+        # 9. Extraction Run Metadata
+        extraction_sql = self._generate_extraction_run(data, stats, source_folder)
+        if extraction_sql:
+            sql_statements.append(extraction_sql)
+
+        # Write to file
+        full_sql = "\n\n".join(sql_statements)
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(full_sql)
+
+        print(f"\n✅ SQL generated successfully!")
+        print(f"   Output: {output_file}")
+        print(f"   Building ID: {self.building_id}")
+        print(f"\n📊 Statistics:")
+        for key, value in stats.items():
+            if value > 0:
+                print(f"   {key}: {value}")
+
+        return stats
+
+    def _generate_header(self, data: Dict, source_folder: str = None) -> str:
+        """Generate SQL file header"""
+        building_name = data.get('building_name', 'Unknown Building')
+        extraction_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        return f"""-- ============================================================================
+-- BlocIQ Property Data Import - Supabase
+-- ============================================================================
+-- Building: {building_name}
+-- Extraction Date: {extraction_date}
+-- Extraction Version: {data.get('extraction_version', 'Unknown')}
+-- Source Folder: {source_folder or 'N/A'}
+-- Building ID: {self.building_id}
+-- ============================================================================
+--
+-- INSTRUCTIONS:
+-- 1. Run this SQL script in Supabase SQL Editor
+-- 2. Manually upload building documents to Supabase Storage bucket: {self.storage_bucket}
+-- 3. Documents should be uploaded to: {self.storage_bucket}/{{building_id}}/...
+-- 4. The documents table entries below reference where files SHOULD be uploaded
+--
+-- ============================================================================
+
+BEGIN;"""
+
+    def _generate_building_insert(self, data: Dict, source_folder: str = None) -> str:
+        """Generate building INSERT statement"""
+
+        # Extract building data
+        building = {
+            'id': self.building_id,
+            'building_name': self._sql_escape(data.get('building_name', 'Unknown')),
+            'building_address': self._sql_escape(data.get('building_address', '')),
+            'postcode': self._sql_escape(data.get('postcode', '')),
+            'city': self._sql_escape(data.get('city', 'London')),
+            'country': 'United Kingdom',
+
+            # Physical
+            'num_units': data.get('num_units', 0),
+            'num_floors': data.get('num_floors'),
+            'num_blocks': data.get('num_blocks', 1),
+            'building_height_meters': data.get('building_height_meters'),
+
+            # Construction
+            'construction_era': self._sql_escape(data.get('construction_era', '')),
+            'year_built': data.get('year_built'),
+
+            # Systems (from building profile)
+            'has_lifts': self._sql_bool(data.get('has_lifts', False)),
+            'num_lifts': data.get('num_lifts'),
+            'has_communal_heating': self._sql_bool(data.get('has_communal_heating', False)),
+            'heating_type': self._sql_escape(data.get('heating_type', '')),
+            'has_hot_water': self._sql_bool(data.get('has_hot_water', False)),
+            'has_hvac': self._sql_bool(data.get('has_hvac', False)),
+            'has_plant_room': self._sql_bool(data.get('has_plant_room', False)),
+            'has_mechanical_ventilation': self._sql_bool(data.get('has_mechanical_ventilation', False)),
+            'has_water_pumps': self._sql_bool(data.get('has_water_pumps', False)),
+            'has_gas': self._sql_bool(data.get('has_gas', False)),
+            'has_sprinklers': self._sql_bool(data.get('has_sprinklers', False)),
+            'has_lightning_conductor': self._sql_bool(data.get('has_lightning_conductor', False)),
+
+            # Special Facilities
+            'has_gym': self._sql_bool(data.get('has_gym', False)),
+            'has_pool': self._sql_bool(data.get('has_pool', False)),
+            'has_sauna': self._sql_bool(data.get('has_sauna', False)),
+            'has_squash_court': self._sql_bool(data.get('has_squash_court', False)),
+            'has_communal_showers': self._sql_bool(data.get('has_communal_showers', False)),
+            'has_ev_charging': self._sql_bool(data.get('has_ev_charging', False)),
+            'has_balconies': self._sql_bool(data.get('has_balconies', False)),
+
+            # Cladding
+            'has_cladding': self._sql_bool(data.get('has_cladding', False)),
+
+            # BSA
+            'bsa_registration_required': self._sql_bool(data.get('bsa_registration_required', False)),
+            'bsa_status': self._sql_escape(data.get('bsa_status', '')),
+
+            # Metadata
+            'data_quality': self._sql_escape(data.get('data_quality', 'production')),
+            'confidence_score': data.get('confidence_score', 0.98),
+            'source_folder': self._sql_escape(source_folder or ''),
+            'extraction_version': self._sql_escape(data.get('extraction_version', 'v6.0')),
         }
 
-        # CRITICAL: Ensure NOT NULL columns always have values
-        if table == 'budgets':
-            # Budget period is NOT NULL - ensure it's always set
-            if 'period' not in filtered_data or not filtered_data.get('period'):
-                # Try to infer from other fields
-                if filtered_data.get('year'):
-                    filtered_data['period'] = str(filtered_data['year'])
-                elif filtered_data.get('year_start'):
-                    year_str = str(filtered_data['year_start'])[:4]
-                    filtered_data['period'] = year_str
+        # Build INSERT statement
+        fields = []
+        values = []
+
+        for field, value in building.items():
+            if value is not None and value != '':
+                fields.append(field)
+                if isinstance(value, (int, float)) or value in ['TRUE', 'FALSE']:
+                    values.append(str(value))
                 else:
-                    filtered_data['period'] = 'Unknown'
+                    values.append(f"'{value}'")
 
-        if table == 'schedules':
-            # Schedule name is NOT NULL - ensure it's always set
-            if 'name' not in filtered_data or not filtered_data.get('name'):
-                # Try to infer from description or other fields
-                if filtered_data.get('description'):
-                    # Use first 50 chars of description as name
-                    desc = filtered_data['description']
-                    filtered_data['name'] = desc[:50] if len(desc) > 50 else desc
-                else:
-                    filtered_data['name'] = 'Unnamed Schedule'
+        sql = f"""
+-- ============================================================================
+-- Building Insert
+-- ============================================================================
+INSERT INTO buildings (
+    {', '.join(fields)}
+)
+VALUES (
+    {', '.join(values)}
+);"""
 
-        if table == 'compliance_assets':
-            print(f"  Filtered data: {filtered_data}")
-            print()
+        return sql
 
-        if not filtered_data:
-            if table == 'lease_clauses':
-                print(f"  ⚠️  DEBUG lease_clauses: validated_data had {len(validated_data)} fields, all filtered out")
-                print(f"      Original fields: {list(data.keys())}")
-                print(f"      After validation: {list(validated_data.keys())}")
-            return f"-- Skipped empty insert for {table}"
+    def _generate_blocks_insert(self, data: Dict) -> str:
+        """Generate building blocks INSERT for multi-block developments"""
+        blocks = data.get('blocks', [])
+        if not blocks or not isinstance(blocks, list):
+            return ""
 
-        columns = ', '.join(filtered_data.keys())
-        values = ', '.join(self._format_value(v) for v in filtered_data.values())
+        sql_parts = ["""
+-- ============================================================================
+-- Building Blocks
+-- ============================================================================"""]
 
-        # Basic INSERT statement
-        insert_sql = f"INSERT INTO {table} ({columns}) VALUES ({values})"
+        for block in blocks:
+            block_id = str(uuid.uuid4())
 
-        # Add UPSERT clause if requested and we have a unique constraint
-        if use_upsert and table == 'building_documents':
-            # For documents, use id for idempotency (content_hash not yet in schema)
-            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'created_at']]
-            if update_cols:
-                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
-                insert_sql += f"\nON CONFLICT (id) DO UPDATE SET {updates}"
-            else:
-                insert_sql += "\nON CONFLICT (id) DO NOTHING"
+            sql_parts.append(f"""
+INSERT INTO building_blocks (
+    id, building_id, block_identifier, num_units
+)
+VALUES (
+    '{block_id}', '{self.building_id}', '{block}', NULL
+);""")
 
-        elif use_upsert and table == 'buildings':
-            # For buildings, update on ID conflict (re-running onboarding)
-            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'created_at', 'agency_id']]
-            if update_cols:
-                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
-                insert_sql += f"\nON CONFLICT (id) DO UPDATE SET {updates}"
-            else:
-                insert_sql += "\nON CONFLICT (id) DO NOTHING"
+        return "\n".join(sql_parts)
 
-        elif use_upsert and table == 'units':
-            # For units, update on building_id + unit_number
-            # Requires: CREATE UNIQUE INDEX ON units(building_id, unit_number);
-            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'building_id', 'unit_number', 'created_at']]
-            if update_cols:
-                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols)
-                insert_sql += f"\nON CONFLICT (building_id, unit_number) DO UPDATE SET {updates}"
-            else:
-                insert_sql += "\nON CONFLICT (building_id, unit_number) DO NOTHING"
+    def _generate_units_insert(self, data: Dict) -> str:
+        """Generate units INSERT statements"""
+        units = data.get('units', [])
+        if not units:
+            return ""
 
-        elif use_upsert and table == 'compliance_assets':
-            # For compliance assets, update on building_id + compliance_asset_id
-            update_cols = [k for k in filtered_data.keys() if k not in ['id', 'building_id', 'created_at']]
-            if update_cols:
-                # Update next_due_date to earliest date
-                updates = ', '.join(f"{col} = EXCLUDED.{col}" for col in update_cols if col != 'next_due_date')
-                if 'next_due_date' in update_cols:
-                    updates += ", next_due_date = LEAST(COALESCE(compliance_assets.next_due_date, '9999-12-31'), COALESCE(EXCLUDED.next_due_date, '9999-12-31'))"
-                insert_sql += f"\nON CONFLICT (id) DO UPDATE SET {updates}"
-            else:
-                insert_sql += "\nON CONFLICT (id) DO NOTHING"
+        sql_parts = ["""
+-- ============================================================================
+-- Units
+-- ============================================================================"""]
 
-        insert_sql += ";"
-        return insert_sql
+        for unit in units:
+            unit_id = str(uuid.uuid4())
+            unit_number = unit.get('unit_number', 'Unknown')
+            self.unit_ids[unit_number] = unit_id
 
-    def _generate_contractors_inserts(self, contractors: List[Dict]):
-        """Generate INSERT statements for contractors table (use 'name' field)"""
-        if not contractors:
-            return
+            sql_parts.append(f"""
+INSERT INTO units (
+    id, building_id, unit_number, unit_reference, unit_type,
+    apportionment_percentage, apportionment_method,
+    source_document, data_quality
+)
+VALUES (
+    '{unit_id}',
+    '{self.building_id}',
+    '{self._sql_escape(unit_number)}',
+    '{self._sql_escape(unit.get('unit_reference', ''))}',
+    '{self._sql_escape(unit.get('unit_type', 'Flat'))}',
+    {unit.get('apportionment_percentage', 0)},
+    '{self._sql_escape(unit.get('apportionment_method', ''))}',
+    '{self._sql_escape(unit.get('source_document', ''))}',
+    '{self._sql_escape(unit.get('data_quality', 'high'))}'
+);""")
 
-        self.sql_statements.append(f"-- ===========================")
-        self.sql_statements.append(f"-- CONTRACTORS")
-        self.sql_statements.append(f"-- ===========================")
-        self.sql_statements.append("")
+        return "\n".join(sql_parts)
 
-        for contractor in contractors:
-            validated = self.schema_mapper.validate_data('contractors', contractor)
+    def _generate_leaseholders_insert(self, data: Dict) -> str:
+        """Generate leaseholders INSERT statements"""
+        leaseholders = data.get('leaseholders', [])
+        if not leaseholders:
+            return ""
 
-            # Build INSERT with only non-NULL values
-            columns = []
-            values = []
+        sql_parts = ["""
+-- ============================================================================
+-- Leaseholders
+-- ============================================================================"""]
 
-            if validated.get('id'):
-                columns.append('id')
-                values.append(self._format_value(validated['id']))
+        for lh in leaseholders:
+            lh_id = str(uuid.uuid4())
+            unit_number = lh.get('unit_number', '')
+            unit_id = self.unit_ids.get(unit_number)
 
-            # IMPORTANT: Use 'name' instead of 'company_name' (NOT NULL constraint)
-            if validated.get('name'):
-                columns.append('name')
-                values.append(self._format_value(validated['name']))
-            elif validated.get('company_name'):
-                columns.append('name')
-                values.append(self._format_value(validated['company_name']))
+            if not unit_id:
+                continue  # Skip if unit not found
 
-            if validated.get('email'):
-                columns.append('email')
-                values.append(self._format_value(validated['email']))
+            self.leaseholder_ids[f"{unit_number}_{lh.get('leaseholder_name', '')}"] = lh_id
 
-            if validated.get('phone'):
-                columns.append('phone')
-                values.append(self._format_value(validated['phone']))
+            sql_parts.append(f"""
+INSERT INTO leaseholders (
+    id, unit_id, leaseholder_name, correspondence_address,
+    telephone, email, status, current_balance,
+    data_source, data_quality
+)
+VALUES (
+    '{lh_id}',
+    '{unit_id}',
+    '{self._sql_escape(lh.get('leaseholder_name', 'Unknown'))}',
+    '{self._sql_escape(lh.get('correspondence_address', ''))}',
+    '{self._sql_escape(lh.get('telephone', ''))}',
+    '{self._sql_escape(lh.get('email', ''))}',
+    '{self._sql_escape(lh.get('status', 'Current'))}',
+    {lh.get('balance', 0)},
+    '{self._sql_escape(lh.get('data_source', ''))}',
+    '{self._sql_escape(lh.get('data_quality', 'high'))}'
+);""")
 
-            if validated.get('address'):
-                columns.append('address')
-                values.append(self._format_value(validated['address']))
+        return "\n".join(sql_parts)
 
-            if columns and 'name' in columns:  # Only insert if we have name
-                cols_str = ', '.join(columns)
-                vals_str = ', '.join(values)
-                self.sql_statements.append(f"INSERT INTO contractors ({cols_str}) VALUES")
-                self.sql_statements.append(f"({vals_str})")
-                self.sql_statements.append(f"ON CONFLICT (id) DO NOTHING;")
-                self.sql_statements.append("")
+    def _generate_compliance_insert(self, data: Dict) -> str:
+        """Generate compliance assets INSERT statements"""
+        assets = data.get('compliance_assets_all', [])
+        if not assets:
+            return ""
 
-        self.sql_statements.append("")
+        sql_parts = ["""
+-- ============================================================================
+-- Compliance Assets
+-- ============================================================================
+-- Note: asset_type_id references compliance_asset_types table
+-- Map asset_type to correct UUID from compliance_asset_types table
+"""]
 
-    def _generate_contractor_contracts_inserts(self, contracts: List[Dict]):
-        """
-        Generate INSERT statements for contractor_contracts table
-        Uses SELECT subqueries to lookup contractor_id by name
-        Handles NULL service_category by using 'unspecified' default
-        """
+        for asset in assets:
+            asset_id = str(uuid.uuid4())
+            asset_type = asset.get('asset_type', 'Unknown')
+
+            # Create lookup comment
+            sql_parts.append(f"""
+-- {asset_type}
+INSERT INTO compliance_assets (
+    id, building_id,
+    asset_type_id, -- TODO: Replace with actual UUID from compliance_asset_types WHERE asset_type_code = '{self._get_asset_type_code(asset_type)}'
+    inspection_date, expiry_date, next_due_date,
+    status, days_overdue,
+    is_inferred, inference_reason, last_known_inspection, evidence_found,
+    source_document, data_quality
+)
+VALUES (
+    '{asset_id}',
+    '{self.building_id}',
+    (SELECT id FROM compliance_asset_types WHERE asset_type_code = '{self._get_asset_type_code(asset_type)}' LIMIT 1),
+    {self._sql_date(asset.get('inspection_date'))},
+    {self._sql_date(asset.get('expiry_date'))},
+    {self._sql_date(asset.get('next_due_date'))},
+    '{self._sql_escape(asset.get('status', 'unknown'))}',
+    {asset.get('days_overdue') or 'NULL'},
+    {self._sql_bool(asset.get('is_inferred', False))},
+    '{self._sql_escape(asset.get('inference_reason', ''))}',
+    {self._sql_date(asset.get('last_known_inspection'))},
+    {self._sql_bool(asset.get('evidence_found', False))},
+    '{self._sql_escape(asset.get('source_document', ''))}',
+    '{self._sql_escape(asset.get('data_quality', 'medium'))}'
+);""")
+
+        return "\n".join(sql_parts)
+
+    def _generate_contracts_insert(self, data: Dict) -> str:
+        """Generate maintenance contracts INSERT statements"""
+        contracts = data.get('maintenance_contracts', [])
         if not contracts:
-            return
+            return ""
 
-        self.sql_statements.append(f"-- ===========================")
-        self.sql_statements.append(f"-- CONTRACTS -> CONTRACTOR_CONTRACTS")
-        self.sql_statements.append(f"-- ===========================")
-        self.sql_statements.append(f"-- Map:")
-        self.sql_statements.append(f"--   contractor_name -> contractor_id (lookup by contractors.name)")
-        self.sql_statements.append(f"--   service_type -> service_category")
-        self.sql_statements.append(f"--   frequency -> payment_frequency")
-        self.sql_statements.append(f"--   contract_status -> is_active (active -> TRUE; expired/others -> FALSE)")
-        self.sql_statements.append(f"--   NULL service_category -> 'unspecified'")
-        self.sql_statements.append("")
+        sql_parts = ["""
+-- ============================================================================
+-- Maintenance Contracts
+-- ============================================================================
+-- Note: contract_type_id references contract_types table
+"""]
 
         for contract in contracts:
-            # Don't validate contractor_contracts (not in schema yet) - preserve all fields
-            # validated = self.schema_mapper.validate_data('contractor_contracts', contract)
-
-            # Skip if no contractor_name (can't lookup contractor_id)
-            contractor_name = contract.get('contractor_name')
-            if not contractor_name:
-                self.sql_statements.append(f"-- Skipped contract {contract.get('id', 'unknown')} - no contractor_name")
-                continue
-
-            # Extract fields
-            contract_id = contract.get('id')
-            building_id = contract.get('building_id')
-            service_category = contract.get('service_category') or contract.get('service_type') or 'unspecified'
-            payment_frequency = contract.get('payment_frequency') or contract.get('frequency')
-            start_date = contract.get('start_date') or contract.get('contract_start')
-            end_date = contract.get('end_date') or contract.get('contract_end')
-
-            # CRITICAL: start_date and end_date are NOT NULL in contractor_contracts schema
-            # Use current date as default if not provided
-            if not start_date:
-                start_date = 'CURRENT_DATE'  # Use PostgreSQL function for default
-
-            # CRITICAL: end_date is also NOT NULL - default to 1 year from start_date
-            if not end_date:
-                if start_date == 'CURRENT_DATE':
-                    end_date = "CURRENT_DATE + INTERVAL '1 year'"
-                else:
-                    # If we have a specific start_date, add 1 year to it
-                    end_date = f"DATE '{start_date}' + INTERVAL '1 year'"
-
-            # Map contract_status to is_active
-            contract_status = contract.get('contract_status', 'active').lower()
-            is_active = 'TRUE' if contract_status == 'active' else 'FALSE'
-
-            # Build INSERT with SELECT subquery
-            insert_parts = []
-            insert_parts.append("INSERT INTO contractor_contracts (")
-
-            # ALWAYS include start_date and end_date (NOT NULL constraints)
-            columns = ['id', 'building_id', 'contractor_id', 'service_category', 'start_date', 'end_date']
-            if payment_frequency:
-                columns.append('payment_frequency')
-            columns.append('is_active')
-
-            insert_parts.append(f"  {', '.join(columns)}")
-            insert_parts.append(")")
-            insert_parts.append("SELECT")
-
-            # Build SELECT values
-            select_values = [
-                f"  {self._format_value(contract_id)}",
-                f"  {self._format_value(building_id)}",
-                f"  c.id",
-                f"  {self._format_value(service_category)}",
-                f"  {start_date if start_date in ['CURRENT_DATE', 'NULL'] else self._format_value(start_date)}",  # Don't quote PostgreSQL functions
-                f"  {end_date if 'CURRENT_DATE' in str(end_date) or 'INTERVAL' in str(end_date) else self._format_value(end_date)}"  # Don't quote date expressions
-            ]
-            if payment_frequency:
-                select_values.append(f"  {self._format_value(payment_frequency)}")
-            select_values.append(f"  {is_active}")
-
-            insert_parts.append(",\n".join(select_values))
-            insert_parts.append(f"FROM contractors c WHERE c.name = {self._format_value(contractor_name)}")
-
-            # Add ON CONFLICT for idempotency (use id as primary key)
-            insert_parts.append("ON CONFLICT (id) DO NOTHING;")
-
-            self.sql_statements.append("\n".join(insert_parts))
-            self.sql_statements.append("")
-
-        self.sql_statements.append("")
-
-    def _generate_building_contractor_links_inserts(self, links: List[Dict]):
-        """
-        Generate INSERT statements for building_contractors table
-        Maps to schema: id, building_id, contractor_type, company_name, contact_person,
-        phone, email, contract_start, contract_end, document_id, notes, created_at,
-        retender_status, retender_due_date, next_review_date, renewal_notice_period
-        """
-        if not links:
-            return
-
-        self.sql_statements.append(f"-- ===========================")
-        self.sql_statements.append(f"-- BUILDING_CONTRACTORS")
-        self.sql_statements.append(f"-- ===========================")
-        self.sql_statements.append("")
-
-        for link in links:
-            # Preserve all fields without validation
-            # validated = self.schema_mapper.validate_data('building_contractors', link)
-
-            # Build INSERT with non-NULL values
-            columns = []
-            values = []
-
-            if link.get('id'):
-                columns.append('id')
-                values.append(self._format_value(link['id']))
-
-            if link.get('building_id'):
-                columns.append('building_id')
-                values.append(self._format_value(link['building_id']))
-
-            # contractor_type defaults to 'service_provider'
-            contractor_type = link.get('contractor_type', 'service_provider')
-            columns.append('contractor_type')
-            values.append(self._format_value(contractor_type))
-
-            # company_name is required for building_contractors
-            company_name = link.get('company_name') or link.get('name')
-            if company_name:
-                columns.append('company_name')
-                values.append(self._format_value(company_name))
-
-            if link.get('email'):
-                columns.append('email')
-                values.append(self._format_value(link['email']))
-
-            if link.get('phone'):
-                columns.append('phone')
-                values.append(self._format_value(link['phone']))
-
-            if link.get('notes'):
-                columns.append('notes')
-                values.append(self._format_value(link['notes']))
-
-            if columns:
-                cols_str = ', '.join(columns)
-                vals_str = ', '.join(values)
-                self.sql_statements.append(f"INSERT INTO building_contractors ({cols_str})")
-                self.sql_statements.append(f"VALUES ({vals_str})")
-                self.sql_statements.append(f"ON CONFLICT (id) DO NOTHING;")
-                self.sql_statements.append("")
-
-        self.sql_statements.append("")
-
-    def _generate_assets_inserts(self, assets: List[Dict]):
-        """Generate INSERT statements for assets table"""
-        if not assets:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(assets)} assets")
-        for asset in assets:
-            self.sql_statements.append(
-                self._create_insert_statement('assets', asset, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_maintenance_schedules_inserts(self, schedules: List[Dict]):
-        """Generate INSERT statements for schedules table (maintenance_schedules mapped to schedules)"""
-        if not schedules:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(schedules)} maintenance schedules (into schedules table)")
-        for schedule in schedules:
-            # Map maintenance_schedules to schedules table
-            self.sql_statements.append(
-                self._create_insert_statement('schedules', schedule, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_fire_door_inspections_inserts(self, inspections: List[Dict]):
-        """Generate INSERT statements for fire_door_inspections table"""
-        if not inspections:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(inspections)} fire door inspections")
-        for inspection in inspections:
-            self.sql_statements.append(
-                self._create_insert_statement('fire_door_inspections', inspection, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_timeline_events_inserts(self, events: List[Dict]):
-        """Generate INSERT statements for timeline_events table (error logging)"""
-        if not events:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(events)} timeline events (import logs)")
-        for event in events:
-            self.sql_statements.append(
-                self._create_insert_statement('timeline_events', event, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_leases_inserts(self, leases: List[Dict]):
-        """Generate INSERT statements for leases table"""
-        if not leases:
-            print("  ⚠️  No leases to generate SQL for")
-            return
-
-        print(f"  📜 Generating SQL for {len(leases)} leases")
-        self.sql_statements.append(f"-- Insert {len(leases)} lease records")
-        for lease in leases:
-            # Filter out fields not in the leases table schema
-            # Only include: id, building_id, unit_id, leaseholder_id, document_id, lease_type, start_date, end_date, expiry_date, confidence_score
-            allowed_fields = {'id', 'building_id', 'unit_id', 'leaseholder_id', 'document_id', 'lease_type', 'start_date', 'end_date', 'expiry_date', 'confidence_score'}
-            lease_data = {k: v for k, v in lease.items() if k in allowed_fields}
-
-            # Only generate INSERT if we have required fields
-            if lease_data:
-                self.sql_statements.append(
-                    self._create_insert_statement('leases', lease_data, use_upsert=False)
-                )
-        self.sql_statements.append("")
-
-    def _format_value(self, value: Any) -> str:
-        """Format a value for SQL with proper type handling"""
-        if value is None:
-            return 'NULL'
-
-        if isinstance(value, bool):
-            return 'TRUE' if value else 'FALSE'
-
-        if isinstance(value, (int, float)):
-            return str(value)
-
-        if isinstance(value, str):
-            # Handle UUID strings - don't quote them
-            if self._is_uuid_string(value):
-                return f"'{value}'"
-
-            # Handle timestamps - ensure proper format
-            if self._is_timestamp_string(value):
-                return f"'{value}'"
-
-            # Escape single quotes for regular strings
-            escaped = value.replace("'", "''")
-            return f"'{escaped}'"
-
-        # Handle lists (PostgreSQL arrays)
-        if isinstance(value, list):
-            # Format as PostgreSQL array
-            formatted_items = [self._format_value(item) for item in value]
-            return f"ARRAY[{', '.join(formatted_items)}]"
-
-        # JSON for complex types
-        return f"'{json.dumps(value)}'"
-    
-    def _is_uuid_string(self, value: str) -> bool:
-        """Check if string is a valid UUID format"""
-        import re
-        uuid_pattern = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-        return bool(re.match(uuid_pattern, value, re.IGNORECASE))
-    
-    def _is_timestamp_string(self, value: str) -> bool:
-        """Check if string is a timestamp format"""
-        import re
-        timestamp_pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}'
-        return bool(re.match(timestamp_pattern, value))
-
-    def _now(self) -> str:
-        """Get current timestamp"""
-        from datetime import datetime
-        return datetime.now().isoformat()
-
-    # =========================================
-    # COMPREHENSIVE LEASE EXTRACTION METHODS (28 Index Points)
-    # =========================================
-
-    def _generate_document_texts_inserts(self, documents: List[Dict]):
-        """Generate INSERT statements for document_texts table (OCR storage)"""
-        if not documents:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(documents)} document_texts records (OCR storage)")
-        for doc in documents:
-            self.sql_statements.append(
-                self._create_insert_statement('document_texts', doc, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_parties_inserts(self, parties: List[Dict]):
-        """Generate INSERT statements for lease_parties table"""
-        if not parties:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(parties)} lease_parties records")
-        for party in parties:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_parties', party, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_demise_inserts(self, demise_records: List[Dict]):
-        """Generate INSERT statements for lease_demise table"""
-        if not demise_records:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(demise_records)} lease_demise records")
-        for demise in demise_records:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_demise', demise, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_financial_terms_inserts(self, financial_terms: List[Dict]):
-        """Generate INSERT statements for lease_financial_terms table"""
-        if not financial_terms:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(financial_terms)} lease_financial_terms records")
-        for terms in financial_terms:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_financial_terms', terms, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_insurance_terms_inserts(self, insurance_terms: List[Dict]):
-        """Generate INSERT statements for lease_insurance_terms table"""
-        if not insurance_terms:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(insurance_terms)} lease_insurance_terms records")
-        for terms in insurance_terms:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_insurance_terms', terms, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_covenants_inserts(self, covenants: List[Dict]):
-        """Generate INSERT statements for lease_covenants table"""
-        if not covenants:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(covenants)} lease_covenants records")
-        for covenant in covenants:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_covenants', covenant, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_restrictions_inserts(self, restrictions: List[Dict]):
-        """Generate INSERT statements for lease_restrictions table"""
-        if not restrictions:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(restrictions)} lease_restrictions records")
-        for restriction in restrictions:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_restrictions', restriction, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_rights_inserts(self, rights: List[Dict]):
-        """Generate INSERT statements for lease_rights table"""
-        if not rights:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(rights)} lease_rights records")
-        for right in rights:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_rights', right, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_enforcement_inserts(self, enforcement: List[Dict]):
-        """Generate INSERT statements for lease_enforcement table"""
-        if not enforcement:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(enforcement)} lease_enforcement records")
-        for record in enforcement:
-            self.sql_statements.append(
-                self._create_insert_statement('lease_enforcement', record, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-    def _generate_lease_clauses_inserts(self, clauses: List[Dict]):
-        """Generate INSERT statements for lease_clauses table"""
-        if not clauses:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(clauses)} lease_clauses records (Clause References for Traceability)")
-        for i, clause in enumerate(clauses):
-            insert_stmt = self._create_insert_statement('lease_clauses', clause, use_upsert=False)
-            if insert_stmt:
-                self.sql_statements.append(insert_stmt)
-            else:
-                print(f"  ⚠️  Clause {i+1} produced empty INSERT statement")
-        self.sql_statements.append("")
-
-    def _generate_building_safety_reports_inserts(self, reports: List[Dict]):
-        """Generate INSERT statements for building_safety_reports table"""
-        if not reports:
-            return
-
-        self.sql_statements.append(f"-- Insert {len(reports)} building_safety_reports records")
-        for report in reports:
-            self.sql_statements.append(
-                self._create_insert_statement('building_safety_reports', report, use_upsert=False)
-            )
-        self.sql_statements.append("")
-
-
-def generate_document_log_csv(documents: List[Dict]) -> str:
-    """
-    Generate CSV log of all documents
-
-    Args:
-        documents: List of document metadata dictionaries
-
-    Returns:
-        CSV string
-    """
-    if not documents:
-        return "file_name,category,confidence,file_size,file_path,notes\n"
-
-    # CSV header
-    csv_lines = ["file_name,category,confidence,file_size,file_path,notes"]
-
-    # CSV rows
-    for doc in documents:
-        row = [
-            _csv_escape(doc.get('file_name', '')),
-            _csv_escape(doc.get('category', '')),
-            str(doc.get('confidence', 0.0)),
-            str(doc.get('file_size', 0)),
-            _csv_escape(doc.get('file_path', '')),
-            _csv_escape(doc.get('notes', ''))
+            contract_id = str(uuid.uuid4())
+            contract_type = contract.get('contract_type', 'General Maintenance')
+
+            sql_parts.append(f"""
+-- {contract_type}
+INSERT INTO maintenance_contracts (
+    id, building_id,
+    contract_type_id, -- TODO: Replace with actual UUID from contract_types
+    contractor_name, contractor_company,
+    contract_start_date, contract_end_date, contract_auto_renew,
+    contract_value_annual, maintenance_frequency, contract_status,
+    detection_confidence, is_new_type, requires_review,
+    source_folder, data_quality
+)
+VALUES (
+    '{contract_id}',
+    '{self.building_id}',
+    (SELECT id FROM contract_types WHERE contract_type_code = '{self._get_contract_type_code(contract_type)}' LIMIT 1),
+    '{self._sql_escape(contract.get('contractor_name', 'Unknown'))}',
+    '{self._sql_escape(contract.get('contractor_company', ''))}',
+    {self._sql_date(contract.get('contract_start_date'))},
+    {self._sql_date(contract.get('contract_end_date'))},
+    {self._sql_bool(contract.get('contract_auto_renew', False))},
+    {contract.get('contract_cost_pa') or 'NULL'},
+    '{self._sql_escape(contract.get('maintenance_frequency', ''))}',
+    '{self._sql_escape(contract.get('contract_status', 'Unknown'))}',
+    {contract.get('detection_confidence', 0)},
+    {self._sql_bool(contract.get('is_new_type', False))},
+    {self._sql_bool(contract.get('requires_review', False))},
+    '{self._sql_escape(contract.get('contract_source_path', ''))}',
+    '{self._sql_escape(contract.get('data_quality', 'medium'))}'
+);""")
+
+        return "\n".join(sql_parts)
+
+    def _generate_budgets_insert(self, data: Dict) -> str:
+        """Generate budgets INSERT statement"""
+        # Extract budget from data
+        summary = data.get('summary', {})
+        budget_total = summary.get('service_charge_budget') or summary.get('total_budget')
+
+        if not budget_total:
+            return ""
+
+        budget_id = str(uuid.uuid4())
+        current_year = datetime.now().year
+
+        sql = f"""
+-- ============================================================================
+-- Budget
+-- ============================================================================
+INSERT INTO budgets (
+    id, building_id, budget_year, total_budget, status
+)
+VALUES (
+    '{budget_id}',
+    '{self.building_id}',
+    {current_year},
+    {budget_total},
+    'Approved'
+);"""
+
+        return sql
+
+    def _generate_documents_insert(self, data: Dict, source_folder: str = None) -> str:
+        """Generate documents registry INSERT statements (metadata only, no uploads)"""
+        if not source_folder:
+            return ""
+
+        sql_parts = [f"""
+-- ============================================================================
+-- Documents Registry
+-- ============================================================================
+-- Documents reference where files SHOULD be uploaded in Supabase Storage
+-- Bucket: {self.storage_bucket}
+-- Path structure: {self.storage_bucket}/{self.building_id}/...
+--
+-- MANUAL UPLOAD REQUIRED:
+-- 1. Upload all files from: {source_folder}
+-- 2. To Supabase Storage bucket: {self.storage_bucket}
+-- 3. Preserve folder structure under building_id
+-- ============================================================================
+"""]
+
+        # Example document entries for key folders
+        folder_types = [
+            ('1. CLIENT INFORMATION', 'Client Information'),
+            ('4. HEALTH & SAFETY', 'Health & Safety'),
+            ('7. CONTRACTS', 'Contracts'),
         ]
-        csv_lines.append(','.join(row))
 
-    return '\n'.join(csv_lines)
+        for folder_name, doc_category in folder_types:
+            doc_id = str(uuid.uuid4())
+            storage_path = f"{self.building_id}/{folder_name}"
+
+            sql_parts.append(f"""
+-- {doc_category} Folder
+INSERT INTO documents (
+    id, building_id, document_name, document_type, document_category,
+    storage_bucket, storage_path
+)
+VALUES (
+    '{doc_id}',
+    '{self.building_id}',
+    '{folder_name}',
+    'Folder',
+    '{doc_category}',
+    '{self.storage_bucket}',
+    '{storage_path}'
+);""")
+
+        sql_parts.append("""
+-- Additional documents to be added after manual upload
+-- You can query uploaded files and insert document records programmatically
+""")
+
+        return "\n".join(sql_parts)
+
+    def _generate_extraction_run(self, data: Dict, stats: Dict, source_folder: str = None) -> str:
+        """Generate extraction run metadata"""
+
+        sql = f"""
+-- ============================================================================
+-- Extraction Run Metadata
+-- ============================================================================
+INSERT INTO extraction_runs (
+    id, building_id, extraction_date, extraction_version,
+    units_extracted, leaseholders_extracted,
+    compliance_assets_extracted, contracts_extracted,
+    data_quality, confidence_score,
+    new_types_discovered, low_confidence_detections,
+    source_folder, extraction_status
+)
+VALUES (
+    '{self.extraction_run_id}',
+    '{self.building_id}',
+    NOW(),
+    '{self._sql_escape(data.get('extraction_version', 'v6.0'))}',
+    {stats.get('units', 0)},
+    {stats.get('leaseholders', 0)},
+    {stats.get('compliance_assets', 0)},
+    {stats.get('contracts', 0)},
+    '{self._sql_escape(data.get('data_quality', 'production'))}',
+    {data.get('confidence_score', 0.98)},
+    {data.get('summary', {}).get('new_contract_types_discovered', 0)},
+    {data.get('contract_summary', {}).get('low_confidence_detections', 0)},
+    '{self._sql_escape(source_folder or '')}',
+    'Success'
+);"""
+
+        return sql
+
+    # ========================================================================
+    # Helper Methods
+    # ========================================================================
+
+    def _sql_escape(self, value: Any) -> str:
+        """Escape SQL string values"""
+        if value is None:
+            return ''
+        value = str(value).replace("'", "''")  # Escape single quotes
+        return value
+
+    def _sql_bool(self, value: bool) -> str:
+        """Convert Python bool to SQL boolean"""
+        return 'TRUE' if value else 'FALSE'
+
+    def _sql_date(self, date_value: Any) -> str:
+        """Format date for SQL"""
+        if not date_value or date_value in ['', 'None', None]:
+            return 'NULL'
+        # Assume date is already in YYYY-MM-DD format
+        return f"'{date_value}'"
+
+    def _get_asset_type_code(self, asset_type: str) -> str:
+        """Map asset type name to database code"""
+        mapping = {
+            'FRA': 'FRA',
+            'Fire Risk Assessment': 'FRA',
+            'EICR': 'EICR',
+            'Electrical Certificate': 'EICR',
+            'Legionella': 'LEGIONELLA',
+            'Water Hygiene': 'LEGIONELLA',
+            'Asbestos': 'ASBESTOS',
+            'Fire Door': 'FIRE_DOOR',
+            'Fire Alarm': 'FIRE_ALARM',
+            'Emergency Lighting': 'EMERGENCY_LIGHTING',
+            'Lift': 'LIFT_LOLER',
+            'LOLER': 'LIFT_LOLER',
+            'Gas Safety': 'GAS_SAFETY',
+            'PAT Testing': 'PAT',
+            'Lightning Protection': 'LIGHTNING',
+            'Sprinkler System': 'SPRINKLER',
+            'AOV': 'AOV',
+            'Dry Riser': 'DRY_RISER',
+        }
+        return mapping.get(asset_type, 'UNKNOWN')
+
+    def _get_contract_type_code(self, contract_type: str) -> str:
+        """Map contract type name to database code"""
+        mapping = {
+            'Lift Maintenance': 'LIFT_MAINTENANCE',
+            'Fire Alarm': 'FIRE_ALARM',
+            'Cleaning': 'CLEANING',
+            'Gardening': 'GARDENING',
+            'Pest Control': 'PEST_CONTROL',
+            'Water Hygiene': 'WATER_HYGIENE',
+            'CCTV': 'CCTV',
+            'Door Entry': 'DOOR_ENTRY',
+            'Swimming Pool': 'POOL',
+            'Gym': 'GYM',
+            'EV Charging': 'EV_CHARGING',
+        }
+        return mapping.get(contract_type, 'GENERAL_MAINTENANCE')
 
 
-# =========================================
-# Helper function for CSV escaping (outside of class)
-# =========================================
-def _csv_escape(value: str) -> str:
-    """Escape value for CSV"""
-    if not value:
-        return ''
+# ============================================================================
+# CLI Interface
+# ============================================================================
 
-    # Quote if contains comma, quote, or newline
-    if ',' in value or '"' in value or '\n' in value:
-        return f'"{value.replace(chr(34), chr(34)+chr(34))}"'
+def main():
+    """CLI entry point"""
+    import argparse
 
-    return value
-    return value
+    parser = argparse.ArgumentParser(description='Generate Supabase SQL from BlocIQ extraction data')
+    parser.add_argument('json_file', help='Input JSON file from extraction')
+    parser.add_argument('-o', '--output', help='Output SQL file', default=None)
+    parser.add_argument('--source-folder', help='Original source folder path', default=None)
+
+    args = parser.parse_args()
+
+    # Load JSON data
+    with open(args.json_file, 'r') as f:
+        data = json.load(f)
+
+    # Determine output file
+    if args.output:
+        output_file = args.output
+    else:
+        output_file = args.json_file.replace('.json', '_supabase.sql')
+
+    # Generate SQL
+    generator = SQLGeneratorV2()
+    stats = generator.generate_sql_file(data, output_file, args.source_folder)
+
+    print(f"\n✅ Complete!")
+    print(f"\n📝 Next Steps:")
+    print(f"   1. Review SQL file: {output_file}")
+    print(f"   2. Run SQL in Supabase SQL Editor")
+    print(f"   3. Manually upload documents to Supabase Storage bucket: {generator.storage_bucket}")
+    print(f"   4. Upload to path: {generator.storage_bucket}/{generator.building_id}/")
+
+
+if __name__ == '__main__':
+    main()
