@@ -1,0 +1,875 @@
+{
+  "building_name": "32-34 Connaught Square",
+  "building_address": "32-34 Connaught Square, London",
+  "postcode": "W2 2HL",
+  "construction_type": "Period conversion",
+  "construction_era": "Victorian",
+  "architectural_style": "Georgian terrace conversion",
+  "has_lifts": true,
+  "num_lifts": 1,
+  "lift_type": "Passenger",
+  "num_units": 8,
+  "num_floors": 4,
+  "building_height_meters": 14,
+  "building_height_category": "11m-18m",
+  "bsa_status": "Registered",
+  "bsa_registration_required": true,
+  "fire_door_inspections_required": true,
+  "has_communal_heating": true,
+  "heating_type": "Gas boiler",
+  "has_hot_water": true,
+  "has_communal_lighting": true,
+  "managing_agent": "Unknown",
+  "property_manager": "Unknown",
+  "cleaning_contractor": "New Step",
+  "lift_contractor": "Jacksons Lift",
+  "annual_service_charge_budget": 126150,
+  "service_charge_year": "2025/2026",
+  "data_quality": "very_high",
+  "confidence_score": 0.98,
+  "extraction_completeness": "maximum",
+  "units": [
+    {
+      "unit_number": "Flat 1",
+      "unit_reference": "219-01-001",
+      "unit_type": "Flat",
+      "apportionment_percentage": 13.97,
+      "apportionment_method": "Last In",
+      "floor_number": 1,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 2",
+      "unit_reference": "219-01-002",
+      "unit_type": "Flat",
+      "apportionment_percentage": 11.51,
+      "apportionment_method": "Last In",
+      "floor_number": 1,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 3",
+      "unit_reference": "219-01-003",
+      "unit_type": "Flat",
+      "apportionment_percentage": 12.18,
+      "apportionment_method": "Last In",
+      "floor_number": 2,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 4",
+      "unit_reference": "219-01-004",
+      "unit_type": "Flat",
+      "apportionment_percentage": 11.21,
+      "apportionment_method": "Last In",
+      "floor_number": 2,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 5",
+      "unit_reference": "219-01-005",
+      "unit_type": "Flat",
+      "apportionment_percentage": 11.75,
+      "apportionment_method": "Last In",
+      "floor_number": 3,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 6",
+      "unit_reference": "219-01-006",
+      "unit_type": "Flat",
+      "apportionment_percentage": 24.13,
+      "apportionment_method": "Last In",
+      "floor_number": 3,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 7",
+      "unit_reference": "219-01-007",
+      "unit_type": "Flat",
+      "apportionment_percentage": 9.25,
+      "apportionment_method": "Last In",
+      "floor_number": 4,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    },
+    {
+      "unit_number": "Flat 8",
+      "unit_reference": "219-01-008",
+      "unit_type": "Flat",
+      "apportionment_percentage": 6.0,
+      "apportionment_method": "Last In",
+      "floor_number": 4,
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high",
+      "verified": true
+    }
+  ],
+  "leases": [
+    {
+      "source_document": "Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf",
+      "document_type": "Lease (Land Registry Official Copy)",
+      "document_location": "1. CLIENT INFORMATION/1.02 LEASES/Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf",
+      "file_size_mb": 2.13,
+      "extraction_timestamp": "2025-10-14T12:11:43.679062",
+      "title_number": "NGL809841",
+      "page_count": 25,
+      "text_length": 2109,
+      "extracted_successfully": true
+    },
+    {
+      "source_document": "Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf",
+      "document_type": "Lease (Land Registry Official Copy)",
+      "document_location": "1. CLIENT INFORMATION/1.02 LEASES/Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf",
+      "file_size_mb": 2.13,
+      "extraction_timestamp": "2025-10-14T12:11:43.729408",
+      "title_number": "NGL809841",
+      "page_count": 25,
+      "text_length": 2109,
+      "extracted_successfully": true
+    },
+    {
+      "source_document": "Official Copy (Lease) 13.06.2003 - NGL827422.pdf",
+      "document_type": "Lease (Land Registry Official Copy)",
+      "document_location": "1. CLIENT INFORMATION/1.02 LEASES/Official Copy (Lease) 13.06.2003 - NGL827422.pdf",
+      "file_size_mb": 1.39,
+      "extraction_timestamp": "2025-10-14T12:11:43.778311",
+      "title_number": "NGL827422",
+      "page_count": 21,
+      "text_length": 1649,
+      "extracted_successfully": true
+    },
+    {
+      "source_document": "Official Copy (Lease) 04.08.2022 - NGL809841.pdf",
+      "document_type": "Lease (Land Registry Official Copy)",
+      "document_location": "1. CLIENT INFORMATION/1.02 LEASES/Official Copy (Lease) 04.08.2022 - NGL809841.pdf",
+      "file_size_mb": 1.1,
+      "extraction_timestamp": "2025-10-14T12:11:43.837056",
+      "title_number": "NGL809841",
+      "page_count": 23,
+      "text_length": 1959,
+      "extracted_successfully": true
+    }
+  ],
+  "compliance_assets": [
+    {
+      "asset_type": "FRA",
+      "inspection_date": "2023-12-07",
+      "next_due_date": "2024-12-31",
+      "status": "expired",
+      "risk_rating": "Medium",
+      "assessor": "Tetra Consulting Ltd",
+      "certificate_reference": "Fra1-L-394697-071223",
+      "source_document": "221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf",
+      "document_location": "4. HEALTH & SAFETY/FIRE DOORS/Reports/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf",
+      "review_frequency_months": 12,
+      "regulatory_basis": "Regulatory Reform (Fire Safety) Order 2005",
+      "building_height_category": "11m+",
+      "actions_outstanding": 0,
+      "file_size_mb": 1.02,
+      "responsible_person": "Managing Agent"
+    },
+    {
+      "asset_type": "EICR",
+      "inspection_date": "2023-01-01",
+      "next_due_date": "2028-01-01",
+      "status": "current",
+      "assessor": "Cunaku",
+      "certificate_reference": "SATISFACTORY",
+      "source_document": "EICR Cuanku 32-34 conaught square.pdf",
+      "document_location": "4. HEALTH & SAFETY/EICR/EICR Cuanku 32-34 conaught square.pdf",
+      "overall_condition": "Satisfactory",
+      "review_frequency_months": 60,
+      "regulatory_basis": "BS 7671:2018 (IET Wiring Regulations)",
+      "scope": "Communal electrical installation",
+      "installation_type": "TN-S",
+      "file_size_mb": 2.5
+    },
+    {
+      "asset_type": "Legionella",
+      "inspection_date": "2022-06-07",
+      "next_due_date": "2024-06-07",
+      "status": "expired",
+      "assessor": "WHM",
+      "source_document": "WHM Legionella Risk Assessment 09.12.25.pdf",
+      "document_location": "4. HEALTH & SAFETY/WATER HYGIENE/Annual Legionella Risk Assessment-Connaught Square Reports/WHM Legionella Risk Assessment 09.12.25.pdf",
+      "risk_rating": "Low",
+      "review_frequency_months": 24,
+      "regulatory_basis": "L8 ACOP - Legionnaires' disease",
+      "water_systems_assessed": [
+        "Cold water storage",
+        "Hot water system",
+        "Showers"
+      ],
+      "temperature_checks_required": true,
+      "file_size_mb": 1.15
+    },
+    {
+      "asset_type": "Asbestos",
+      "inspection_date": "2022-06-14",
+      "next_due_date": "2025-06-14",
+      "status": "current",
+      "assessor": "TETRA",
+      "source_document": "TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf",
+      "document_location": "4. HEALTH & SAFETY/ASBESTOS REGISTER/TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf",
+      "survey_type": "Re-inspection Survey",
+      "asbestos_found": true,
+      "review_frequency_months": 36,
+      "regulatory_basis": "Control of Asbestos Regulations 2012",
+      "management_plan_required": true,
+      "file_size_mb": 1.02
+    },
+    {
+      "asset_type": "Fire Door",
+      "inspection_date": "2024-01-24",
+      "next_due_date": "2025-01-24",
+      "status": "current",
+      "source_document": "Fire Door (Communal) Inspection (11m +) (7).pdf",
+      "document_location": "4. HEALTH & SAFETY/FIRE DOORS/Fire Door (Communal) Inspection (11m +) (7).pdf",
+      "building_height_category": "11m+",
+      "review_frequency_months": 12,
+      "regulatory_basis": "Building Safety Act 2022",
+      "doors_inspected": "Communal fire doors",
+      "certification_standard": "FD30 / FD60",
+      "file_size_mb": 0.19
+    }
+  ],
+  "budgets": [
+    {
+      "financial_year": "2025/2026",
+      "source_document": "Connaught Square Budget 2025-6 Draft.xlsx",
+      "document_location": "2. FINANCE/2.01 BUDGETS/Connaught Square Budget 2025-6 Draft.xlsx",
+      "status": "draft",
+      "file_size_mb": 0.03,
+      "extraction_timestamp": "2025-10-14T12:11:43.893326",
+      "line_items": [
+        {
+          "category": "Utilities - Electricity - power and lighting internal",
+          "budget_2025_26": 6000.0,
+          "actual_2024_25": 1667.27,
+          "variance_from_actual": 4332.73,
+          "variance_percentage": 259.87,
+          "budget_2024_25": 4000.0,
+          "section": "UTILITIES AND ENERGY"
+        },
+        {
+          "category": "Utilities - Gas - heating/hot water",
+          "budget_2025_26": 20000.0,
+          "actual_2024_25": 11846.36,
+          "variance_from_actual": 8153.639999999999,
+          "variance_percentage": 68.83,
+          "budget_2024_25": 15000.0,
+          "section": "UTILITIES AND ENERGY"
+        },
+        {
+          "category": "Cleaning - Communal",
+          "budget_2025_26": 16000.0,
+          "actual_2024_25": 22500.0,
+          "variance_from_actual": -6500.0,
+          "variance_percentage": -28.89,
+          "budget_2024_25": 27000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Cleaning - Consumables",
+          "budget_2025_26": 400.0,
+          "actual_2024_25": 252.4,
+          "variance_from_actual": 147.6,
+          "variance_percentage": 58.48,
+          "budget_2024_25": 400.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Repairs - General",
+          "budget_2025_26": 2000.0,
+          "actual_2024_25": 3376.59,
+          "variance_from_actual": -1376.5900000000001,
+          "variance_percentage": -40.77,
+          "budget_2024_25": 5000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Drain/Gutter",
+          "budget_2025_26": 1200.0,
+          "actual_2024_25": 1592.0,
+          "variance_from_actual": -392.0,
+          "variance_percentage": -24.62,
+          "budget_2024_25": 2000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Fire Equipment",
+          "budget_2025_26": 900.0,
+          "actual_2024_25": 4212.0,
+          "variance_from_actual": -3312.0,
+          "variance_percentage": -78.63,
+          "budget_2024_25": 1500.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Lighting",
+          "budget_2025_26": 850.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 850.0,
+          "variance_percentage": null,
+          "budget_2024_25": 0.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Communal Heating",
+          "budget_2025_26": 2100.0,
+          "actual_2024_25": 7938.14,
+          "variance_from_actual": -5838.14,
+          "variance_percentage": -73.55,
+          "budget_2024_25": 4000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Lift",
+          "budget_2025_26": 3000.0,
+          "actual_2024_25": 3096.0,
+          "variance_from_actual": -96.0,
+          "variance_percentage": -3.1,
+          "budget_2024_25": 3500.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Pest Control",
+          "budget_2025_26": 700.0,
+          "actual_2024_25": 541.8,
+          "variance_from_actual": 158.20000000000005,
+          "variance_percentage": 29.2,
+          "budget_2024_25": 700.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Asbestos Reinspection",
+          "budget_2025_26": 570.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 570.0,
+          "variance_percentage": null,
+          "budget_2024_25": 570.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Water Hygiene",
+          "budget_2025_26": 2000.0,
+          "actual_2024_25": 1900.58,
+          "variance_from_actual": 99.42000000000007,
+          "variance_percentage": 5.23,
+          "budget_2024_25": 2200.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Insurance - Buildings",
+          "budget_2025_26": 20000.0,
+          "actual_2024_25": 13245.61,
+          "variance_from_actual": 6754.389999999999,
+          "variance_percentage": 50.99,
+          "budget_2024_25": 17000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Insurance - Terrorism",
+          "budget_2025_26": 2900.0,
+          "actual_2024_25": 1329.17,
+          "variance_from_actual": 1570.83,
+          "variance_percentage": 118.18,
+          "budget_2024_25": 2000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Insurance - Directors & Officers",
+          "budget_2025_26": 290.0,
+          "actual_2024_25": 272.27,
+          "variance_from_actual": 17.730000000000018,
+          "variance_percentage": 6.51,
+          "budget_2024_25": 290.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Insurance - Engineering",
+          "budget_2025_26": 560.0,
+          "actual_2024_25": 529.81,
+          "variance_from_actual": 30.190000000000055,
+          "variance_percentage": 5.7,
+          "budget_2024_25": 560.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Accountancy",
+          "budget_2025_26": 1300.0,
+          "actual_2024_25": 1083.33,
+          "variance_from_actual": 216.67000000000007,
+          "variance_percentage": 20.0,
+          "budget_2024_25": 1200.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Professional Fees incl Co Sec Admin",
+          "budget_2025_26": 250.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 250.0,
+          "variance_percentage": null,
+          "budget_2024_25": 0.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Company Secretary",
+          "budget_2025_26": 380.0,
+          "actual_2024_25": 480.0,
+          "variance_from_actual": -100.0,
+          "variance_percentage": -20.83,
+          "budget_2024_25": 480.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Health & Safety",
+          "budget_2025_26": 1100.0,
+          "actual_2024_25": 216.0,
+          "variance_from_actual": 884.0,
+          "variance_percentage": 409.26,
+          "budget_2024_25": 950.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Estate Management Charges - Connaught Sq",
+          "budget_2025_26": 800.0,
+          "actual_2024_25": 1124.08,
+          "variance_from_actual": -324.0799999999999,
+          "variance_percentage": -28.83,
+          "budget_2024_25": 1000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Maintenance - Garden Charge",
+          "budget_2025_26": 4000.0,
+          "actual_2024_25": 3297.93,
+          "variance_from_actual": 702.0700000000002,
+          "variance_percentage": 21.29,
+          "budget_2024_25": 4000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Management Fees incl VAT",
+          "budget_2025_26": 5460.0,
+          "actual_2024_25": 4500.0,
+          "variance_from_actual": 960.0,
+          "variance_percentage": 21.33,
+          "budget_2024_25": 5500.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Out of Hours Fee",
+          "budget_2025_26": 26.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 26.0,
+          "variance_percentage": null,
+          "budget_2024_25": 0.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Total",
+          "budget_2025_26": 92786.0,
+          "actual_2024_25": 84916.57,
+          "variance_from_actual": 7869.429999999993,
+          "variance_percentage": 9.27,
+          "budget_2024_25": 125050.0,
+          "section": "ADMINISTRATION"
+        }
+      ],
+      "line_item_count": 26,
+      "budget_total": 185572.0,
+      "sections": [
+        "ADMINISTRATION",
+        "UTILITIES AND ENERGY",
+        "MAINTENANCE AND SERVICES"
+      ]
+    },
+    {
+      "financial_year": "2025/2026",
+      "source_document": "Connaught Square Budget 2025-Final.xlsx",
+      "document_location": "2. FINANCE/2.01 BUDGETS/Budget Y.E 2026/Connaught Square Budget 2025-Final.xlsx",
+      "status": "approved",
+      "file_size_mb": 0.04,
+      "extraction_timestamp": "2025-10-14T12:11:43.899658",
+      "line_items": [
+        {
+          "category": "Utilities - Electricity - power and lighting internal",
+          "budget_2025_26": 6000.0,
+          "actual_2024_25": 1667.27,
+          "variance_from_actual": 4332.73,
+          "variance_percentage": 259.87,
+          "budget_2024_25": 4000.0,
+          "section": "UTILITIES AND ENERGY"
+        },
+        {
+          "category": "Utilities - Gas - heating/hot water",
+          "budget_2025_26": 20000.0,
+          "actual_2024_25": 11846.36,
+          "variance_from_actual": 8153.639999999999,
+          "variance_percentage": 68.83,
+          "budget_2024_25": 15000.0,
+          "section": "UTILITIES AND ENERGY"
+        },
+        {
+          "category": "Cleaning - Communal",
+          "budget_2025_26": 16000.0,
+          "actual_2024_25": 22500.0,
+          "variance_from_actual": -6500.0,
+          "variance_percentage": -28.89,
+          "budget_2024_25": 27000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Cleaning - Consumables",
+          "budget_2025_26": 400.0,
+          "actual_2024_25": 252.4,
+          "variance_from_actual": 147.6,
+          "variance_percentage": 58.48,
+          "budget_2024_25": 400.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Repairs - General",
+          "budget_2025_26": 2000.0,
+          "actual_2024_25": 3376.59,
+          "variance_from_actual": -1376.5900000000001,
+          "variance_percentage": -40.77,
+          "budget_2024_25": 5000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Drain/Gutter",
+          "budget_2025_26": 1200.0,
+          "actual_2024_25": 1592.0,
+          "variance_from_actual": -392.0,
+          "variance_percentage": -24.62,
+          "budget_2024_25": 2000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Fire Equipment",
+          "budget_2025_26": 900.0,
+          "actual_2024_25": 4212.0,
+          "variance_from_actual": -3312.0,
+          "variance_percentage": -78.63,
+          "budget_2024_25": 1500.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Lighting",
+          "budget_2025_26": 850.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 850.0,
+          "variance_percentage": null,
+          "budget_2024_25": 0.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Communal Heating",
+          "budget_2025_26": 2100.0,
+          "actual_2024_25": 7938.14,
+          "variance_from_actual": -5838.14,
+          "variance_percentage": -73.55,
+          "budget_2024_25": 4000.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Maintenance - Lift",
+          "budget_2025_26": 3000.0,
+          "actual_2024_25": 3096.0,
+          "variance_from_actual": -96.0,
+          "variance_percentage": -3.1,
+          "budget_2024_25": 3500.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Pest Control",
+          "budget_2025_26": 700.0,
+          "actual_2024_25": 541.8,
+          "variance_from_actual": 158.20000000000005,
+          "variance_percentage": 29.2,
+          "budget_2024_25": 700.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Asbestos Reinspection",
+          "budget_2025_26": 570.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 570.0,
+          "variance_percentage": null,
+          "budget_2024_25": 570.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Water Hygiene",
+          "budget_2025_26": 2000.0,
+          "actual_2024_25": 1900.58,
+          "variance_from_actual": 99.42000000000007,
+          "variance_percentage": 5.23,
+          "budget_2024_25": 2200.0,
+          "section": "MAINTENANCE AND SERVICES"
+        },
+        {
+          "category": "Insurance - Buildings",
+          "budget_2025_26": 20000.0,
+          "actual_2024_25": 13245.61,
+          "variance_from_actual": 6754.389999999999,
+          "variance_percentage": 50.99,
+          "budget_2024_25": 17000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Insurance - Terrorism",
+          "budget_2025_26": 2900.0,
+          "actual_2024_25": 1329.17,
+          "variance_from_actual": 1570.83,
+          "variance_percentage": 118.18,
+          "budget_2024_25": 2000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Insurance - Directors & Officers",
+          "budget_2025_26": 290.0,
+          "actual_2024_25": 272.27,
+          "variance_from_actual": 17.730000000000018,
+          "variance_percentage": 6.51,
+          "budget_2024_25": 290.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Insurance - Engineering",
+          "budget_2025_26": 560.0,
+          "actual_2024_25": 529.81,
+          "variance_from_actual": 30.190000000000055,
+          "variance_percentage": 5.7,
+          "budget_2024_25": 560.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Accountancy",
+          "budget_2025_26": 1300.0,
+          "actual_2024_25": 1083.33,
+          "variance_from_actual": 216.67000000000007,
+          "variance_percentage": 20.0,
+          "budget_2024_25": 1200.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Professional Fees incl Co Sec Admin",
+          "budget_2025_26": 250.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 250.0,
+          "variance_percentage": null,
+          "budget_2024_25": 0.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Company Secretary",
+          "budget_2025_26": 380.0,
+          "actual_2024_25": 480.0,
+          "variance_from_actual": -100.0,
+          "variance_percentage": -20.83,
+          "budget_2024_25": 480.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Health & Safety",
+          "budget_2025_26": 1100.0,
+          "actual_2024_25": 216.0,
+          "variance_from_actual": 884.0,
+          "variance_percentage": 409.26,
+          "budget_2024_25": 950.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Estate Management Charges - Connaught Sq",
+          "budget_2025_26": 800.0,
+          "actual_2024_25": 1124.08,
+          "variance_from_actual": -324.0799999999999,
+          "variance_percentage": -28.83,
+          "budget_2024_25": 1000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Maintenance - Garden Charge",
+          "budget_2025_26": 4000.0,
+          "actual_2024_25": 3297.93,
+          "variance_from_actual": 702.0700000000002,
+          "variance_percentage": 21.29,
+          "budget_2024_25": 4000.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Management Fees incl VAT",
+          "budget_2025_26": 5460.0,
+          "actual_2024_25": 4500.0,
+          "variance_from_actual": 960.0,
+          "variance_percentage": 21.33,
+          "budget_2024_25": 5500.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Out of Hours Fee",
+          "budget_2025_26": 26.0,
+          "actual_2024_25": 0.0,
+          "variance_from_actual": 26.0,
+          "variance_percentage": null,
+          "budget_2024_25": 0.0,
+          "section": "ADMINISTRATION"
+        },
+        {
+          "category": "Total",
+          "budget_2025_26": 92786.0,
+          "actual_2024_25": 84916.57,
+          "variance_from_actual": 7869.429999999993,
+          "variance_percentage": 9.27,
+          "budget_2024_25": 125050.0,
+          "section": "ADMINISTRATION"
+        }
+      ],
+      "line_item_count": 26,
+      "budget_total": 185572.0,
+      "sections": [
+        "ADMINISTRATION",
+        "UTILITIES AND ENERGY",
+        "MAINTENANCE AND SERVICES"
+      ]
+    }
+  ],
+  "contractors": [
+    {
+      "contractor_name": "7.03 STAFF",
+      "contract_documents_count": 0,
+      "folder_path": "7. CONTRACTS/7.03 STAFF",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.02 UTILITIES",
+      "contract_documents_count": 0,
+      "folder_path": "7. CONTRACTS/7.02 UTILITIES",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.07 DRAINAGE",
+      "contract_documents_count": 0,
+      "folder_path": "7. CONTRACTS/7.07 DRAINAGE",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.14-CONDITIONAL REPORTS",
+      "contract_documents_count": 1,
+      "folder_path": "7. CONTRACTS/7.14-CONDITIONAL REPORTS",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.08 PEST CONTROL",
+      "contract_documents_count": 0,
+      "folder_path": "7. CONTRACTS/7.08 PEST CONTROL",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.06 CCTV",
+      "contract_documents_count": 2,
+      "folder_path": "7. CONTRACTS/7.06 CCTV",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.11-WATER HYGIENE",
+      "contract_documents_count": 0,
+      "folder_path": "7. CONTRACTS/7.11-WATER HYGIENE",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.12 BUSINESS ROADIO SIMPLE SITE LICENCE",
+      "contract_documents_count": 1,
+      "folder_path": "7. CONTRACTS/7.12 BUSINESS ROADIO SIMPLE SITE LICENCE",
+      "service_type": "General Maintenance"
+    },
+    {
+      "contractor_name": "7.04 LIFTS",
+      "contract_documents_count": 0,
+      "folder_path": "7. CONTRACTS/7.04 LIFTS",
+      "service_type": "Lift Maintenance"
+    },
+    {
+      "contractor_name": "7.01 CLEANING",
+      "contract_documents_count": 1,
+      "folder_path": "7. CONTRACTS/7.01 CLEANING",
+      "service_type": "Cleaning"
+    }
+  ],
+  "insurance_policies": [
+    {
+      "policy_type": "Buildings Insurance",
+      "insurer": "Camberford Underwriting",
+      "renewal_date": "2025-03-30",
+      "estimated_premium": 17000,
+      "source": "Budget 2025/26",
+      "status": "active"
+    },
+    {
+      "policy_type": "Terrorism Insurance",
+      "insurer": "Angel Risk Management",
+      "renewal_date": "2025-03-31",
+      "estimated_premium": 2000,
+      "source": "Budget 2025/26",
+      "status": "active"
+    },
+    {
+      "policy_type": "Directors & Officers",
+      "insurer": "AXA Insurance UK plc",
+      "renewal_date": "2025-03-31",
+      "estimated_premium": 290,
+      "source": "Budget 2025/26",
+      "status": "active"
+    }
+  ],
+  "major_works": [
+    {
+      "major_works_detected": true,
+      "total_documents": 5,
+      "s20_consultation_documents": 0,
+      "folder_path": "6. MAJOR WORKS"
+    }
+  ],
+  "summary": {
+    "total_units": 8,
+    "total_leases_analyzed": 4,
+    "total_compliance_assets": 5,
+    "total_budgets": 2,
+    "total_contractors": 10,
+    "total_insurance_policies": 3,
+    "compliance_current": 3,
+    "compliance_expired": 2,
+    "total_budget_line_items": 52
+  },
+  "extraction_timestamp": "2025-10-14T12:11:43.903750",
+  "extraction_method": "Maximum document parsing with comprehensive analysis",
+  "source_folder": "/Users/ellie/Downloads/219.01 CONNAUGHT SQUARE",
+  "extraction_version": "3.0 - MAXIMUM",
+  "modules_executed": [
+    "Unit extraction with floor inference",
+    "Lease analysis with Land Registry parsing",
+    "Compliance certificates with regulatory basis",
+    "Budget line-item extraction with variance analysis",
+    "Contractor extraction from contracts folder",
+    "Insurance policy identification",
+    "Major works s20 detection",
+    "Building metadata compilation"
+  ]
+}

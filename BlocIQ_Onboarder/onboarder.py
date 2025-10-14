@@ -1170,16 +1170,40 @@ class BlocIQOnboarder:
         if inspections:
             print(f"  ✅ Found {len(inspections)} inspection records")
 
-        # Log compliance asset types
+        # Log compliance asset types with dates and status
         if assets:
             asset_types = {}
+            status_counts = {'OK': 0, 'Overdue': 0, 'Unknown': 0}
+            assets_with_dates = 0
+            assets_with_next_due = 0
+
             for asset in assets:
                 asset_type = asset.get('name', 'Unknown')  # Changed from asset_name to name
                 asset_types[asset_type] = asset_types.get(asset_type, 0) + 1
 
+                # Count status
+                status = asset.get('status', 'Unknown')
+                if status in status_counts:
+                    status_counts[status] += 1
+
+                # Count date completeness
+                if asset.get('last_inspection'):
+                    assets_with_dates += 1
+                if asset.get('next_due'):
+                    assets_with_next_due += 1
+
             print("\n  📋 Compliance Assets Detected:")
             for asset_type, count in sorted(asset_types.items()):
                 print(f"     - {asset_type}: {count}")
+
+            print(f"\n  📅 Date Coverage:")
+            print(f"     - Assets with inspection dates: {assets_with_dates}/{len(assets)} ({assets_with_dates*100//len(assets)}%)")
+            print(f"     - Assets with next due dates: {assets_with_next_due}/{len(assets)} ({assets_with_next_due*100//len(assets)}%)")
+
+            print(f"\n  ✅ Compliance Status:")
+            print(f"     - OK: {status_counts['OK']}")
+            print(f"     - Overdue: {status_counts['Overdue']}")
+            print(f"     - Unknown: {status_counts['Unknown']}")
 
         self.audit_log.append({
             'timestamp': datetime.now().isoformat(),

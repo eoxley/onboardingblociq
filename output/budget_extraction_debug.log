@@ -1,15 +1,135 @@
-Found 7 budget files
-Processing: connaught apportionment.xlsx, has_data: True
-  Extracted: 8 units from connaught apportionment.xlsx
-Processing: ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf, has_data: False
-  Extracted: 0 units from ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf
-Processing: Connaught Square Budget 2025-6 Draft.xlsx, has_data: True
-  Extracted: 0 units from Connaught Square Budget 2025-6 Draft.xlsx
-Processing: Connaught Square Budget 2025-Final.pdf, has_data: False
-  Extracted: 0 units from Connaught Square Budget 2025-Final.pdf
-Processing: Connaught Square Budget 2025-Final.xlsx, has_data: True
-  Extracted: 0 units from Connaught Square Budget 2025-Final.xlsx
-Processing: ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf, has_data: False
-  Extracted: 0 units from ACCOUNTS - YE 31.03.21 - Service Charge Accounts.pdf
-Processing: Connaught Square YE 24 Accounts.pdf, has_data: False
-  Extracted: 0 units from Connaught Square YE 24 Accounts.pdf
+Found 67 budget files
+Processing: ~$apportionment.xlsx, has_data: True
+  Extracted: 0 units from ~$apportionment.xlsx
+Processing: 25102 Pimlico Place FP- Hourly (002).pdf, has_data: False
+  Extracted: 0 units from 25102 Pimlico Place FP- Hourly (002).pdf
+Processing: Pimlico Place - Phase 1 Building Works Estimate.xlsx, has_data: True
+  Extracted: 1 units from Pimlico Place - Phase 1 Building Works Estimate.xlsx
+Processing: Pimlico Place - Building Works Estimate AI Revision.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place - Building Works Estimate AI Revision.xlsx
+Processing: Pimlico Place Budget YE 22.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE 22.pdf
+Processing: Pimlico Place Draft Budget YE23 FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 FINAL.xlsx
+Processing: Pimlico Place Budget YE24.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE24.pdf
+Processing: Pimlico Place Budget YE 22.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE 22.pdf
+Processing: Pimlico Place Draft Budget YE23 FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 FINAL.xlsx
+Processing: Pimlico Place Draft Budget YE23 FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 FINAL.xlsx
+Processing: Pimlico Place Draft Budget YE23 FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 FINAL.xlsx
+Processing: 28 Guildhouse Street.pdf, has_data: False
+  Extracted: 0 units from 28 Guildhouse Street.pdf
+Processing: 28 Guildhouse Street.pdf, has_data: False
+  Extracted: 0 units from 28 Guildhouse Street.pdf
+Processing: COMPANY PROFILE 2019 updated.pdf, has_data: False
+  Extracted: 0 units from COMPANY PROFILE 2019 updated.pdf
+Processing: Pimlico Aug 20 Qtr.pdf, has_data: False
+  Extracted: 0 units from Pimlico Aug 20 Qtr.pdf
+Processing: May 2020 Budget Variance Report.xlsx, has_data: True
+  Extracted: 0 units from May 2020 Budget Variance Report.xlsx
+Processing: Aug 22 Qtr Report.pdf, has_data: False
+  Extracted: 0 units from Aug 22 Qtr Report.pdf
+Processing: Nov 22.pdf, has_data: False
+  Extracted: 0 units from Nov 22.pdf
+Processing: Feb 22 Qtr Report.pdf, has_data: False
+  Extracted: 0 units from Feb 22 Qtr Report.pdf
+Processing: Feb 23.pdf, has_data: False
+  Extracted: 0 units from Feb 23.pdf
+Processing: Nov 21 Qtr Report.pdf, has_data: False
+  Extracted: 0 units from Nov 21 Qtr Report.pdf
+Processing: Aug 21.pdf, has_data: False
+  Extracted: 0 units from Aug 21.pdf
+Processing: Budget Year End 2021.xlsx, has_data: True
+  Extracted: 0 units from Budget Year End 2021.xlsx
+Processing: Budget Year End 2021.pdf, has_data: False
+  Extracted: 0 units from Budget Year End 2021.pdf
+Processing: Pimlico Place - Cover Letter Demands May 2020.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place - Cover Letter Demands May 2020.pdf
+Processing: GPMCL Budget Pimlico Place 2019-20.pdf, has_data: False
+  Extracted: 0 units from GPMCL Budget Pimlico Place 2019-20.pdf
+Processing: Pimlico Place Budget YE26 Ver1 4.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE26 Ver1 4.xlsx
+Processing: FINAL Budget 2025-2026 (002).xlsx, has_data: True
+  Extracted: 0 units from FINAL Budget 2025-2026 (002).xlsx
+Processing: FINAL Budget 2025-2026 3.xlsx, has_data: True
+  Extracted: 0 units from FINAL Budget 2025-2026 3.xlsx
+Processing: Pimlico Place Budget Letter YE26.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget Letter YE26.pdf
+Processing: Pimlico Place Budget Letter YE26.docx, has_data: False
+  Extracted: 0 units from Pimlico Place Budget Letter YE26.docx
+Processing: Pimlico Place Budget YE26.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE26.xlsx
+Processing: Budget Letter.docx, has_data: False
+  Extracted: 0 units from Budget Letter.docx
+Processing: Copy of 2025-26 PP Budget Preparation 2.xlsx, has_data: True
+  Extracted: 0 units from Copy of 2025-26 PP Budget Preparation 2.xlsx
+Processing: Pimlico Place Budget YE26.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE26.pdf
+Processing: Pimlico Place Budget Cover Letter YE25.docx, has_data: False
+  Extracted: 0 units from Pimlico Place Budget Cover Letter YE25.docx
+Processing: Pimlico Place Budget YE25.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE25.xlsx
+Processing: Pimlico Place Budget Letter YE25.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget Letter YE25.pdf
+Processing: Pimlico Place Budget YE25 Ver4.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE25 Ver4.xlsx
+Processing: Pimlico Place Budget YE25 Ver3.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE25 Ver3.xlsx
+Processing: Pimlico Place Budget YE25 FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE25 FINAL.xlsx
+Processing: Pimlico Place Budget YE25.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE25.pdf
+Processing: Pimlico Place Budget YE25 Ver2.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE25 Ver2.xlsx
+Processing: Pimlico Place budget cover letter YE 2022.docx, has_data: False
+  Extracted: 0 units from Pimlico Place budget cover letter YE 2022.docx
+Processing: Pimlico Place Budget YE 22.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE 22.pdf
+Processing: Pimlico Place Budget YE2022 ACTUAL FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE2022 ACTUAL FINAL.xlsx
+Processing: Century Apartments Budget 2022.xlsx, has_data: True
+  Extracted: 0 units from Century Apartments Budget 2022.xlsx
+Processing: Pimlico Place Budget YE2022 DRAFT.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE2022 DRAFT.xlsx
+Processing: Pimlico Place Budget YE2022 DRAFT 2nd.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE2022 DRAFT 2nd.xlsx
+Processing: Pimlico Place Budget YE2022  FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE2022  FINAL.xlsx
+Processing: Copy of Pimlico Place Budget YE2022 DRAFT AMENDED.xlsx, has_data: True
+  Extracted: 0 units from Copy of Pimlico Place Budget YE2022 DRAFT AMENDED.xlsx
+Processing: Pimlico Place Draft Budget YE23.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23.xlsx
+Processing: Pimlico Place budget cover letter YE 2023.docx, has_data: False
+  Extracted: 0 units from Pimlico Place budget cover letter YE 2023.docx
+Processing: Pimlico Place Draft Budget YE23 FINAL.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 FINAL.xlsx
+Processing: Pimlico Place Draft Budget YE23 Ver2.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 Ver2.xlsx
+Processing: Pimlico Place Draft Budget YE23 Ver3.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE23 Ver3.xlsx
+Processing: Pimlico Place Budget YE24.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Budget YE24.xlsx
+Processing: Pimlico Place Budget Letter YE 24.docx, has_data: False
+  Extracted: 0 units from Pimlico Place Budget Letter YE 24.docx
+Processing: Pimlico Place Budget Letter YE24.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget Letter YE24.pdf
+Processing: Pimlico Place Budget YE24.pdf, has_data: False
+  Extracted: 0 units from Pimlico Place Budget YE24.pdf
+Processing: Pimlico Place Draft Budget YE24.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE24.xlsx
+Processing: Pimlico Place Draft Budget YE24 ver4.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE24 ver4.xlsx
+Processing: Pimlico Place Draft Budget YE24 ver3.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE24 ver3.xlsx
+Processing: Pimlico Place Draft Budget YE24 ver2.xlsx, has_data: True
+  Extracted: 0 units from Pimlico Place Draft Budget YE24 ver2.xlsx
+Processing: Year End Accounts 2019.pdf, has_data: False
+  Extracted: 0 units from Year End Accounts 2019.pdf
+Processing: Meeting Agenda 10052021.pdf, has_data: False
+  Extracted: 0 units from Meeting Agenda 10052021.pdf
+Processing: Meeting Agenda 10052021.docx, has_data: False
+  Extracted: 0 units from Meeting Agenda 10052021.docx

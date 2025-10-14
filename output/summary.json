@@ -1,110 +1,66 @@
 {
-  "timestamp": "2025-10-09T21:55:33.543777",
-  "client_folder": "/Users/ellie/Downloads/219.01 CONNAUGHT SQUARE",
-  "building_name": "Connaught Square",
+  "timestamp": "2025-10-13T18:29:14.844526",
+  "client_folder": "/Users/ellie/Downloads/144.01 PIMLICO PLACE",
+  "building_name": "Pimlico Place",
   "statistics": {
-    "files_parsed": 318,
+    "files_parsed": 1264,
     "buildings": 1,
-    "units": 8,
-    "leaseholders": 8,
-    "documents": 318
+    "units": 83,
+    "leaseholders": 82,
+    "documents": 1264
   },
   "categories": {
-    "units_leaseholders": 52,
-    "budgets": 7,
-    "compliance": 56,
-    "contracts": 48,
-    "major_works": 4,
-    "insurance": 60,
-    "uncategorized": 91
+    "units_leaseholders": 267,
+    "budgets": 67,
+    "compliance": 97,
+    "contracts": 99,
+    "major_works": 29,
+    "apportionments": 4,
+    "insurance": 72,
+    "uncategorized": 629
   },
   "post_processing_summary": {
-    "building_metadata_filled": 0,
-    "addresses_extracted": 0,
+    "building_metadata_filled": 1,
+    "addresses_extracted": 1,
     "major_works_tagged": 0,
     "budget_placeholders_created": 0,
-    "building_intelligence_entries": 260
+    "building_intelligence_entries": 295
   },
   "building_intelligence": {
-    "total_entries": 260,
+    "total_entries": 295,
     "by_category": {
-      "general": 18,
-      "safety": 107,
-      "utilities": 135
+      "general": 96,
+      "safety": 161,
+      "utilities": 38
     }
   },
   "compliance_assets": {
-    "total": 56,
+    "total": 81,
     "by_type": {
-      "general": 20,
-      "fire_safety": 29,
-      "electrical": 4,
-      "water_safety": 3
+      "fire_safety": 14,
+      "general": 51,
+      "electrical": 5,
+      "lift_safety": 11
     },
     "by_status": {
-      "compliant": 3,
-      "overdue": 15,
+      "compliant": 5,
+      "overdue": 12,
       "due_soon": 0,
-      "unknown": 38
+      "unknown": 64
     },
     "details": [
       {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
         "name": "Compliance Asset",
         "type": "general",
-        "status": "overdue",
-        "last_inspection": "2024-01-01",
-        "next_due": "2025-01-01",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": "Communal",
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Electrical Installation Condition Report (EICR)",
-        "type": "electrical",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
         "status": "unknown",
         "last_inspection": null,
         "next_due": null,
@@ -115,89 +71,8 @@
         "name": "Fire Risk Assessment (FRA)",
         "type": "fire_safety",
         "status": "overdue",
-        "last_inspection": "2024-01-02",
-        "next_due": "2025-01-02",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "overdue",
-        "last_inspection": "2024-01-02",
-        "next_due": "2025-01-02",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Legionella Risk Assessment",
-        "type": "water_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Electrical Installation Condition Report (EICR)",
-        "type": "electrical",
-        "status": "compliant",
         "last_inspection": "2023-01-01",
-        "next_due": "2028-01-01",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "overdue",
-        "last_inspection": "2024-01-01",
-        "next_due": "2025-01-01",
+        "next_due": "2024-01-01",
         "location": null,
         "responsible_party": null
       },
@@ -222,9 +97,18 @@
       {
         "name": "Compliance Asset",
         "type": "general",
-        "status": "compliant",
-        "last_inspection": "2025-01-24",
-        "next_due": "2026-01-24",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
         "location": null,
         "responsible_party": null
       },
@@ -247,92 +131,11 @@
         "responsible_party": null
       },
       {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
+        "name": "Compliance Asset",
+        "type": "general",
         "status": "unknown",
         "last_inspection": null,
         "next_due": null,
-        "location": "Communal",
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Risk Assessment (FRA)",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-02",
-        "next_due": "2025-01-02",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
         "location": null,
         "responsible_party": null
       },
@@ -346,65 +149,83 @@
         "responsible_party": null
       },
       {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
-        "location": "Communal",
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
         "location": null,
         "responsible_party": null
       },
       {
         "name": "Compliance Asset",
         "type": "general",
-        "status": "overdue",
-        "last_inspection": "2024-01-02",
-        "next_due": "2025-01-02",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
         "location": null,
         "responsible_party": null
       },
       {
-        "name": "Fire Door Inspection",
-        "type": "fire_safety",
-        "status": "overdue",
-        "last_inspection": "2024-01-24",
-        "next_due": "2025-01-24",
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
         "location": null,
         "responsible_party": null
       },
@@ -430,89 +251,161 @@
         "name": "Fire Risk Assessment (FRA)",
         "type": "fire_safety",
         "status": "overdue",
-        "last_inspection": "2024-01-02",
-        "next_due": "2025-01-02",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "overdue",
-        "last_inspection": "2024-01-02",
-        "next_due": "2025-01-02",
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Fire Risk Assessment (FRA)",
-        "type": "fire_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Legionella Risk Assessment",
-        "type": "water_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Legionella Risk Assessment",
-        "type": "water_safety",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Compliance Asset",
-        "type": "general",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Electrical Installation Condition Report (EICR)",
-        "type": "electrical",
-        "status": "unknown",
-        "last_inspection": null,
-        "next_due": null,
-        "location": null,
-        "responsible_party": null
-      },
-      {
-        "name": "Electrical Installation Condition Report (EICR)",
-        "type": "electrical",
-        "status": "compliant",
         "last_inspection": "2023-01-01",
-        "next_due": "2028-01-01",
+        "next_due": "2024-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "overdue",
+        "last_inspection": "2023-01-01",
+        "next_due": "2024-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "overdue",
+        "last_inspection": "2023-01-01",
+        "next_due": "2024-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Emergency Lighting Testing",
+        "type": "electrical",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Emergency Lighting Testing",
+        "type": "electrical",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Emergency Lighting Testing",
+        "type": "electrical",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Emergency Lighting Testing",
+        "type": "electrical",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Emergency Lighting Testing",
+        "type": "electrical",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "overdue",
+        "last_inspection": "2022-01-01",
+        "next_due": "2023-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "overdue",
+        "last_inspection": "2022-01-01",
+        "next_due": "2023-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "overdue",
+        "last_inspection": "2022-01-01",
+        "next_due": "2023-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "overdue",
+        "last_inspection": "2020-01-01",
+        "next_due": "2021-01-01",
         "location": null,
         "responsible_party": null
       },
@@ -546,6 +439,339 @@
       {
         "name": "Compliance Asset",
         "type": "general",
+        "status": "overdue",
+        "last_inspection": "2022-08-12",
+        "next_due": "2023-08-12",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "overdue",
+        "last_inspection": "2022-08-12",
+        "next_due": "2023-08-12",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "compliant",
+        "last_inspection": "2025-08-13",
+        "next_due": "2026-08-13",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "compliant",
+        "last_inspection": "2025-08-13",
+        "next_due": "2026-08-13",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "compliant",
+        "last_inspection": "2025-04-30",
+        "next_due": "2026-04-30",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "overdue",
+        "last_inspection": "2022-05-24",
+        "next_due": "2023-05-24",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "compliant",
+        "last_inspection": "2025-01-01",
+        "next_due": "2026-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Lift Inspection (LOLER)",
+        "type": "lift_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "overdue",
+        "last_inspection": "2023-01-01",
+        "next_due": "2024-01-01",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "unknown",
+        "last_inspection": null,
+        "next_due": null,
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Compliance Asset",
+        "type": "general",
+        "status": "compliant",
+        "last_inspection": "2025-08-13",
+        "next_due": "2026-08-13",
+        "location": null,
+        "responsible_party": null
+      },
+      {
+        "name": "Fire Risk Assessment (FRA)",
+        "type": "fire_safety",
         "status": "unknown",
         "last_inspection": null,
         "next_due": null,

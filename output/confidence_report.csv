@@ -1,86 +1,186 @@
 category,item,source_file,confidence_score,action,notes
-building,Connaught Square,property_form,95,AUTO,Extracted from property information form
-unit,Flat 1,apportionment_file,70,REVIEW,Missing apportionment
-unit,Flat 2,apportionment_file,70,REVIEW,Missing apportionment
-unit,Flat 3,apportionment_file,70,REVIEW,Missing apportionment
-unit,Flat 4,apportionment_file,70,REVIEW,Missing apportionment
+building,Pimlico Place,property_form,95,AUTO,Extracted from property information form
+unit,A1,apportionment_file,70,REVIEW,Missing apportionment
+unit,A2,apportionment_file,70,REVIEW,Missing apportionment
+unit,A3,apportionment_file,70,REVIEW,Missing apportionment
+unit,A4,apportionment_file,70,REVIEW,Missing apportionment
+unit,A5,apportionment_file,70,REVIEW,Missing apportionment
+unit,A6,apportionment_file,70,REVIEW,Missing apportionment
+unit,A7,apportionment_file,70,REVIEW,Missing apportionment
+unit,A8,apportionment_file,70,REVIEW,Missing apportionment
+unit,A9,apportionment_file,70,REVIEW,Missing apportionment
+unit,A10,apportionment_file,70,REVIEW,Missing apportionment
+unit,A11,apportionment_file,70,REVIEW,Missing apportionment
+unit,A12,apportionment_file,70,REVIEW,Missing apportionment
+unit,A13,apportionment_file,70,REVIEW,Missing apportionment
+unit,A14,apportionment_file,70,REVIEW,Missing apportionment
+unit,A15,apportionment_file,70,REVIEW,Missing apportionment
+unit,A16,apportionment_file,70,REVIEW,Missing apportionment
+unit,A17,apportionment_file,70,REVIEW,Missing apportionment
+unit,A18,apportionment_file,70,REVIEW,Missing apportionment
+unit,A19,apportionment_file,70,REVIEW,Missing apportionment
+unit,A20,apportionment_file,70,REVIEW,Missing apportionment
+unit,A21,apportionment_file,70,REVIEW,Missing apportionment
+unit,B1,apportionment_file,70,REVIEW,Missing apportionment
+unit,B2,apportionment_file,70,REVIEW,Missing apportionment
+unit,B3,apportionment_file,70,REVIEW,Missing apportionment
+unit,B4,apportionment_file,70,REVIEW,Missing apportionment
+unit,B5,apportionment_file,70,REVIEW,Missing apportionment
+unit,B6,apportionment_file,70,REVIEW,Missing apportionment
+unit,B7,apportionment_file,70,REVIEW,Missing apportionment
+unit,B8,apportionment_file,70,REVIEW,Missing apportionment
+unit,B9,apportionment_file,70,REVIEW,Missing apportionment
+unit,C1,apportionment_file,70,REVIEW,Missing apportionment
+unit,C2,apportionment_file,70,REVIEW,Missing apportionment
+unit,D1,apportionment_file,70,REVIEW,Missing apportionment
+unit,D2,apportionment_file,70,REVIEW,Missing apportionment
+unit,D3,apportionment_file,70,REVIEW,Missing apportionment
+unit,D4,apportionment_file,70,REVIEW,Missing apportionment
+unit,D5,apportionment_file,70,REVIEW,Missing apportionment
+unit,D6,apportionment_file,70,REVIEW,Missing apportionment
+unit,D7,apportionment_file,70,REVIEW,Missing apportionment
+unit,D8,apportionment_file,70,REVIEW,Missing apportionment
+unit,D9,apportionment_file,70,REVIEW,Missing apportionment
+unit,D10,apportionment_file,70,REVIEW,Missing apportionment
+unit,D11,apportionment_file,70,REVIEW,Missing apportionment
+unit,E1,apportionment_file,70,REVIEW,Missing apportionment
+unit,E2,apportionment_file,70,REVIEW,Missing apportionment
+unit,E3,apportionment_file,70,REVIEW,Missing apportionment
+unit,E4,apportionment_file,70,REVIEW,Missing apportionment
+unit,E5,apportionment_file,70,REVIEW,Missing apportionment
+unit,E6,apportionment_file,70,REVIEW,Missing apportionment
+unit,E7,apportionment_file,70,REVIEW,Missing apportionment
+unit,E8,apportionment_file,70,REVIEW,Missing apportionment
+unit,E9,apportionment_file,70,REVIEW,Missing apportionment
+unit,E10,apportionment_file,70,REVIEW,Missing apportionment
+unit,E11,apportionment_file,70,REVIEW,Missing apportionment
+unit,E12,apportionment_file,70,REVIEW,Missing apportionment
+unit,E13,apportionment_file,70,REVIEW,Missing apportionment
+unit,E14,apportionment_file,70,REVIEW,Missing apportionment
+unit,E15,apportionment_file,70,REVIEW,Missing apportionment
+unit,E16,apportionment_file,70,REVIEW,Missing apportionment
+unit,E17,apportionment_file,70,REVIEW,Missing apportionment
+unit,E18,apportionment_file,70,REVIEW,Missing apportionment
+unit,E19,apportionment_file,70,REVIEW,Missing apportionment
+unit,E20,apportionment_file,70,REVIEW,Missing apportionment
+unit,E21,apportionment_file,70,REVIEW,Missing apportionment
+unit,E22,apportionment_file,70,REVIEW,Missing apportionment
+unit,E23,apportionment_file,70,REVIEW,Missing apportionment
+unit,E24,apportionment_file,70,REVIEW,Missing apportionment
+unit,E25,apportionment_file,70,REVIEW,Missing apportionment
+unit,E26,apportionment_file,70,REVIEW,Missing apportionment
+unit,E27,apportionment_file,70,REVIEW,Missing apportionment
+unit,E28,apportionment_file,70,REVIEW,Missing apportionment
+unit,E29,apportionment_file,70,REVIEW,Missing apportionment
+unit,E30,apportionment_file,70,REVIEW,Missing apportionment
+unit,E31,apportionment_file,70,REVIEW,Missing apportionment
+unit,F1,apportionment_file,70,REVIEW,Missing apportionment
+unit,F2,apportionment_file,70,REVIEW,Missing apportionment
+unit,F3,apportionment_file,70,REVIEW,Missing apportionment
+unit,F4,apportionment_file,70,REVIEW,Missing apportionment
+unit,F5,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 80,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 81,apportionment_file,70,REVIEW,Missing apportionment
+unit,Flat 82,apportionment_file,70,REVIEW,Missing apportionment
 unit,Flat 5,apportionment_file,70,REVIEW,Missing apportionment
-unit,Flat 6,apportionment_file,70,REVIEW,Missing apportionment
-unit,Flat 7,apportionment_file,70,REVIEW,Missing apportionment
-unit,Flat 8,apportionment_file,70,REVIEW,Missing apportionment
-document,Important Information .pdf,Important Information .pdf,50,REJECT,Type: unknown
-document,ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf,ACCOUNTS - YE 31.03.21 - Service Charge Accounts (1).pdf,50,REJECT,Type: unknown
-document,Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf,Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf,50,REJECT,Type: unknown
-document,Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf,Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf,50,REJECT,Type: unknown
-document,Official Copy (Lease) 13.06.2003 - NGL827422.pdf,Official Copy (Lease) 13.06.2003 - NGL827422.pdf,50,REJECT,Type: unknown
-document,Official Copy (Lease) 04.08.2022 - NGL809841.pdf,Official Copy (Lease) 04.08.2022 - NGL809841.pdf,50,REJECT,Type: unknown
-document,Signed April 2025 Arrears Collection Procedure.pdf,Signed April 2025 Arrears Collection Procedure.pdf,50,REJECT,Type: unknown
-document,WP0005V17 Welcome Pack.pdf,WP0005V17 Welcome Pack.pdf,50,REJECT,Type: unknown
-document,Jobcard_For_Job_No_33844_07-04-2025_1143.pdf,Jobcard_For_Job_No_33844_07-04-2025_1143.pdf,50,REJECT,Type: unknown
-document,Jobcard_For_Job_No_37675_25-07-2025_1549.pdf,Jobcard_For_Job_No_37675_25-07-2025_1549.pdf,50,REJECT,Type: unknown
-document,Jobcard_For_Job_No_34012_01-05-2025_1616.pdf,Jobcard_For_Job_No_34012_01-05-2025_1616.pdf,50,REJECT,Type: unknown
-document,Jobcard_For_Job_No_32759_17-03-2025_1145.pdf,Jobcard_For_Job_No_32759_17-03-2025_1145.pdf,50,REJECT,Type: unknown
-document,Jobcard_For_Job_No_32810_17-03-2025_1311.pdf,Jobcard_For_Job_No_32810_17-03-2025_1311.pdf,50,REJECT,Type: unknown
-document,Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf,Quote_No_23550 - Connaught Square (32-34) 2023-2024.pdf,50,REJECT,Type: unknown
-document,Licence_Document_352024.pdf,Licence_Document_352024.pdf,50,REJECT,Type: unknown
-document,JLGServiceVisit-M00813-12-09-2024.pdf,JLGServiceVisit-M00813-12-09-2024.pdf,50,REJECT,Type: unknown
-document,JLGServiceVisit-M00813-13-11-2024.pdf,JLGServiceVisit-M00813-13-11-2024.pdf,50,REJECT,Type: unknown
-document,JLGServiceVisit-M00813-02-12-2024.pdf,JLGServiceVisit-M00813-02-12-2024.pdf,50,REJECT,Type: unknown
-document,JLGServiceVisit-M00813-08-07-2024.pdf,JLGServiceVisit-M00813-08-07-2024.pdf,50,REJECT,Type: unknown
-document,JLGServiceVisit-M00813-08-10-2024.pdf,JLGServiceVisit-M00813-08-10-2024.pdf,50,REJECT,Type: unknown
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Legionella Risk Assessment,extracted,85,AUTO,Status: pending
-compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Fire Door Inspection,extracted,85,AUTO,Status: pending
-compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
-compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+document,"Units, Leaseholders List.xlsx","Units, Leaseholders List.xlsx",50,REJECT,Type: unknown
+document,Principle Lift Care Service Contract Proposal for Pimlico Place x 7 Lifts SW1V 1JJ.pdf,Principle Lift Care Service Contract Proposal for Pimlico Place x 7 Lifts SW1V 1JJ.pdf,50,REJECT,Type: unknown
+document,Pimlico Place Lift C1- Technical Visit Quotation - 21.06.24.pdf,Pimlico Place Lift C1- Technical Visit Quotation - 21.06.24.pdf,50,REJECT,Type: unknown
+document,Pimlico Place - Lift Maintenance Quotation - 21.06.24.pdf,Pimlico Place - Lift Maintenance Quotation - 21.06.24.pdf,50,REJECT,Type: unknown
+document,1944302 Grainger Pimlico Place.pdf,1944302 Grainger Pimlico Place.pdf,50,REJECT,Type: unknown
+document,Letter and enclosures TLT to Pimlico Place Residents Association (1).pdf,Letter and enclosures TLT to Pimlico Place Residents Association (1).pdf,50,REJECT,Type: unknown
+document,2020 Grainger Licence to Alter Letter.docx,2020 Grainger Licence to Alter Letter.docx,50,REJECT,Type: unknown
+document,Pimlico Place - Maintenance11.pdf,Pimlico Place - Maintenance11.pdf,50,REJECT,Type: unknown
+document,Pimlico Place - Maintenance10.pdf,Pimlico Place - Maintenance10.pdf,50,REJECT,Type: unknown
+document,Pimlico Place - Maintenance12.pdf,Pimlico Place - Maintenance12.pdf,50,REJECT,Type: unknown
+document,20191121_Review of LH repair responsibilities_PVD_PD (003).docx,20191121_Review of LH repair responsibilities_PVD_PD (003).docx,50,REJECT,Type: unknown
+document,EV Charging Letter PP.docx,EV Charging Letter PP.docx,50,REJECT,Type: unknown
+document,SQ1785 (2).pdf,SQ1785 (2).pdf,50,REJECT,Type: unknown
+document,Help Us Keep You Informed.docx,Help Us Keep You Informed.docx,50,REJECT,Type: unknown
+document,PP Progress and Plans VFinal Full (004).docx,PP Progress and Plans VFinal Full (004).docx,50,REJECT,Type: unknown
+document,Subletting and Westiminster Council.docx,Subletting and Westiminster Council.docx,50,REJECT,Type: unknown
+document,Help Us Keep You Informed.pdf,Help Us Keep You Informed.pdf,50,REJECT,Type: unknown
+document,PP Progress and Plans VFinal Full (004).pdf,PP Progress and Plans VFinal Full (004).pdf,50,REJECT,Type: unknown
+document,Contact Information Form.pdf,Contact Information Form.pdf,50,REJECT,Type: unknown
+document,B4 Pimlico Place - LPE1.pdf,B4 Pimlico Place - LPE1.pdf,50,REJECT,Type: unknown
 compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
 compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Legionella Risk Assessment,extracted,85,AUTO,Status: pending
-compliance,Legionella Risk Assessment,extracted,85,AUTO,Status: pending
-compliance,Compliance Asset,extracted,85,AUTO,Status: pending
-compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
-compliance,Electrical Installation Condition Report (EICR),extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
 compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Emergency Lighting Testing,extracted,85,AUTO,Status: pending
+compliance,Emergency Lighting Testing,extracted,85,AUTO,Status: pending
+compliance,Emergency Lighting Testing,extracted,85,AUTO,Status: pending
+compliance,Emergency Lighting Testing,extracted,85,AUTO,Status: pending
+compliance,Emergency Lighting Testing,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Lift Inspection (LOLER),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Compliance Asset,extracted,85,AUTO,Status: pending
+compliance,Fire Risk Assessment (FRA),extracted,85,AUTO,Status: pending

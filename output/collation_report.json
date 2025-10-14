@@ -1,115 +1,1151 @@
 {
-  "conflicts_count": 8,
+  "conflicts_count": 82,
   "conflicts": [
     {
       "type": "unit",
-      "unit_number": "Flat 1",
+      "unit_number": "A1",
       "field": "id",
       "values": [
-        "c0c997ba-06a1-422b-834b-11e7a98a2dad",
-        "af0eeb9e-9d29-445f-9b68-ce3ee6ecbae0"
+        "72e454de-7141-450f-beb0-4e91e0164e94",
+        "ff35c0df-b7f5-4d90-b765-d2e03b3f6c2f"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 2",
+      "unit_number": "A2",
       "field": "id",
       "values": [
-        "4975937d-ac01-4190-8afc-acbe137b8e66",
-        "50739030-ccd5-4492-b677-cc9bdcc2a978"
+        "5495ba6f-8f31-4c28-be44-fba793654e97",
+        "e107c119-3668-48f8-b49f-1ddc528bbb76"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 3",
+      "unit_number": "A3",
       "field": "id",
       "values": [
-        "e6e6b660-a933-4fdd-b576-9e6695e354d0",
-        "3186f505-3acb-4089-b4bb-f2e7ccbcd88b"
+        "ea7f06ad-2284-46c8-9660-88893c12e130",
+        "3a0507a5-58ae-443a-8c04-b506e34e9b09"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 4",
+      "unit_number": "A4",
       "field": "id",
       "values": [
-        "d93a2de7-055a-44fa-a810-15ba15a1cd34",
-        "105f0828-36b6-4f24-8138-bf56b7c85109"
+        "88367861-d588-4d08-a65b-86742614ace1",
+        "a6b5d698-f3bd-4e4a-a270-c412018a47ba"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 5",
+      "unit_number": "A5",
       "field": "id",
       "values": [
-        "f3877866-d3ec-40f2-86f3-32c9046c01f1",
-        "41eb68b6-ee13-4a86-8535-8e91a35c8bbd"
+        "c53fb4d0-e17a-4536-9c47-4117f3fd328d",
+        "ca34a34d-4c53-4978-b12b-d6ced07e3eda"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 6",
+      "unit_number": "A6",
       "field": "id",
       "values": [
-        "da454b7f-860b-439b-8651-88a13a231556",
-        "4cf5938c-2884-4aaa-9a1d-a657ee77a175"
+        "2ff50aea-efea-4704-938f-9dcf8f7e8656",
+        "8c8fb9ae-5579-4505-abf9-939a5c97082d"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 7",
+      "unit_number": "A7",
       "field": "id",
       "values": [
-        "d4706576-f9f5-4787-8fbc-0681af5d0190",
-        "d6916365-32c3-48b8-8cf3-ab521d322c7b"
+        "644cd297-73f1-4db4-9820-a4ae3c30162e",
+        "438b453e-c5cd-4cec-ab8f-72301da4003f"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     },
     {
       "type": "unit",
-      "unit_number": "Flat 8",
+      "unit_number": "A8",
       "field": "id",
       "values": [
-        "4230a0dd-5b3e-4dac-ba71-ecb1e9f4909f",
-        "26bf5c0b-069f-4ec4-80f1-23d4548d86dd"
+        "d232b74c-897f-498e-8c15-2b81e095c4a2",
+        "6484f4de-2aba-461b-8ef8-2fe6cd9e6704"
       ],
       "sources": [
-        "Tenancy Schedule by Property.pdf",
-        "connaught apportionment.xlsx"
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A9",
+      "field": "id",
+      "values": [
+        "9217bffb-1e47-444c-8039-6e5242e14958",
+        "d9346e98-ec04-496b-8f9f-80331e15209c"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A10",
+      "field": "id",
+      "values": [
+        "7f1666f3-0860-4bd4-9624-57adb974695a",
+        "4f691da6-faf5-49c6-bb86-b08e5a2e4dfe"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A11",
+      "field": "id",
+      "values": [
+        "6dbc0b23-e3df-4a7e-9272-82a9e9626d8c",
+        "41689a8d-fdaa-43cc-a8a8-163ebfef84f8"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A12",
+      "field": "id",
+      "values": [
+        "998520b1-eeb3-4c6f-a2b9-35a4f9628a6f",
+        "41b1d020-9ff0-4013-9a1b-f8960d4deddc"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A13",
+      "field": "id",
+      "values": [
+        "b62033f5-5941-4008-87c0-4d6e4056a96d",
+        "3ff20fb9-1354-41de-a9c0-b9cdd3050b3f"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A14",
+      "field": "id",
+      "values": [
+        "35b4f0db-c34a-4f57-8a14-c9ad703d1bd2",
+        "84a8ab48-f284-4018-9028-29cde9c7084d"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A15",
+      "field": "id",
+      "values": [
+        "07ae7ef4-f9e4-4312-bcb1-7aa5818420f5",
+        "87592916-0c09-41fd-93a8-f63c3ff34de2"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A16",
+      "field": "id",
+      "values": [
+        "7193e6cc-acb4-4bc8-b97d-f8139ef02eb0",
+        "79ec602c-10f6-49d4-9c6b-2e03f9e8669e"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A17",
+      "field": "id",
+      "values": [
+        "687e45b2-8ff7-42b9-90ec-72aed717f3b0",
+        "a769e606-331f-400d-9827-5df19a0c8421"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A18",
+      "field": "id",
+      "values": [
+        "bb9f2bb6-261a-4b06-b868-a6c89bf9e1aa",
+        "bce879df-50cd-4bf0-aa81-e35894279188"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A19",
+      "field": "id",
+      "values": [
+        "2d81dcf9-2dbc-4a5f-8ff2-c2172352bb2d",
+        "67882f1a-1629-455d-b1af-5e584d09acaf"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A20",
+      "field": "id",
+      "values": [
+        "83162662-32f9-4f0c-8062-f9169f9395b6",
+        "2bb7693a-e9b6-4979-98b0-9ce108be0d9f"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "A21",
+      "field": "id",
+      "values": [
+        "fcadfc09-b8c0-47db-8f2f-ebb5f2bebec1",
+        "931a6fd4-d1f6-406d-b1b4-56b24d057342"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B1",
+      "field": "id",
+      "values": [
+        "d5526bdb-0194-40db-a33a-080e74fa7c83",
+        "342b27fa-ef51-4749-8b65-148d77ab098b"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B2",
+      "field": "id",
+      "values": [
+        "99216565-7f63-4266-a150-1fca4b52005e",
+        "33049b09-3942-4127-98df-82c934ea1093"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B3",
+      "field": "id",
+      "values": [
+        "b843a63f-3f57-40d0-baa4-438e876aca10",
+        "0af9779d-ef58-4acb-a2ab-48e226f01bf0"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B4",
+      "field": "id",
+      "values": [
+        "99339922-5455-4d79-8c34-6e5ec1e50235",
+        "9aa616cb-017d-483d-91f5-aa4361de98d5"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B5",
+      "field": "id",
+      "values": [
+        "d2c9be8c-063d-46cd-861f-4ab9dad41d2b",
+        "4aa20a55-97ee-4cbe-b695-408cb41488e5"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B6",
+      "field": "id",
+      "values": [
+        "b5741e5f-9d97-4e29-b92f-88195bd46db1",
+        "007d5865-5512-4c7b-af9e-9646607e4687"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B7",
+      "field": "id",
+      "values": [
+        "a3f86cc2-bfa2-44a6-989e-7c3228ee898d",
+        "a086d728-5440-4c4c-b705-f709c0dd4c72"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B8",
+      "field": "id",
+      "values": [
+        "c81f26b5-998b-496d-92dd-197eee47a087",
+        "e823a928-9b78-4e8f-8cdb-1b23ccf8b95f"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "B9",
+      "field": "id",
+      "values": [
+        "0a73f4ec-03c6-4f63-931a-bcf57ee89d20",
+        "011c5a21-6b93-45dd-820e-0bb5d865df4b"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "C1",
+      "field": "id",
+      "values": [
+        "5530bdcc-027b-44d4-8a70-13a52094ae20",
+        "22309c6a-535d-40c0-b214-97a0ef6ac935"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "C2",
+      "field": "id",
+      "values": [
+        "a2a8aa3b-cad6-4162-9fa4-ce72372167b2",
+        "24f2ab8d-83df-4858-bd5f-d5923aca56a3"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D1",
+      "field": "id",
+      "values": [
+        "f9d495c2-1286-4d14-86d9-9d7ed378a138",
+        "efff37a6-5475-4050-9482-90e922f8be57"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D2",
+      "field": "id",
+      "values": [
+        "5bc422c8-0cba-4778-9439-d0438d11451a",
+        "11e7d8d9-3331-4ba7-a8e5-42dff8644602"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D3",
+      "field": "id",
+      "values": [
+        "0a4acc2c-b300-4488-9af0-ffd34093b024",
+        "0e9aebce-02f4-4fc7-9ea6-3fd3b3633149"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D4",
+      "field": "id",
+      "values": [
+        "5b98223a-684b-4677-84b8-43e9870ab707",
+        "6a6a37e2-d4a5-4fc4-b478-274a9c2ea77f"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D5",
+      "field": "id",
+      "values": [
+        "fdfab0fa-0152-487c-895c-0c1c573781aa",
+        "77a19315-8844-48b4-b8e6-1f9c1e51f7f0"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D6",
+      "field": "id",
+      "values": [
+        "37539eeb-b4e7-4319-8ef9-44f081ba24d0",
+        "dc9b3282-6298-4546-92fc-eeba94c79750"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D7",
+      "field": "id",
+      "values": [
+        "5036812b-2ede-4ceb-95f2-77769a39bb75",
+        "a14f40fc-8502-4fe0-919a-f5b24398610d"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D8",
+      "field": "id",
+      "values": [
+        "6e0024f3-ea90-455c-bbb9-e98b27222882",
+        "a379ca91-6fec-4c6b-83b1-21298e21bedd"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D9",
+      "field": "id",
+      "values": [
+        "4e605671-aa89-4bfa-8e47-5df2222ffedb",
+        "93cf8301-1be3-4f1d-aafd-3e8c91d2f9bb"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D10",
+      "field": "id",
+      "values": [
+        "869e059c-e84e-4df1-aa85-53cfbf46c79d",
+        "e211073e-0457-47b6-9767-f48cf2fdfe9c"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "D11",
+      "field": "id",
+      "values": [
+        "f2d12f12-7710-4b2e-aaf8-b5dbe36af14b",
+        "7acbf01b-03b6-435b-b190-91e1a60bb83d"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E1",
+      "field": "id",
+      "values": [
+        "6f0e242c-feee-4519-a9f8-62de5b9745a1",
+        "ed7d7abc-7252-4296-a0c0-2eb15545a6e7"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E2",
+      "field": "id",
+      "values": [
+        "63868345-38bb-48e3-8d41-ee9f2196e13f",
+        "390cf37b-f12d-4d77-a850-358b8567cd3f"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E3",
+      "field": "id",
+      "values": [
+        "d4f2d220-32d0-448b-a7e0-b49e221ab239",
+        "3266b8dd-17a1-4793-8fe9-1accb63c1a91"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E4",
+      "field": "id",
+      "values": [
+        "9a6f146d-eed0-441a-b0c7-14c05642a186",
+        "fc64a225-38e6-4bb1-b918-118b2f020d96"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E5",
+      "field": "id",
+      "values": [
+        "57bc1bed-592e-40e5-b5cb-19ccbaa987e1",
+        "8379bb14-297d-426c-80a6-4d7b72eb7c47"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E6",
+      "field": "id",
+      "values": [
+        "c7f1a8d0-da63-4b12-ba02-58111b6d5b9c",
+        "e8ca1a30-bb38-4e3a-b912-ef2dc0ece64e"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E7",
+      "field": "id",
+      "values": [
+        "2e4215a5-e3c0-4bd4-ba8d-aa2ffc37d100",
+        "627c1b70-d5c5-42cd-85b1-ef266db211f7"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E8",
+      "field": "id",
+      "values": [
+        "4c1c850f-8334-4e5e-a39c-25c52a3f6735",
+        "92f9e393-4cc7-4c20-8c01-cec11232eee8"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E9",
+      "field": "id",
+      "values": [
+        "b2c82521-fc46-4162-8fae-73d9367dcb6d",
+        "2ba9b48a-9ed4-4f29-8bb9-3aa5f6dc3c65"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E10",
+      "field": "id",
+      "values": [
+        "14bafd77-5c2d-4564-8c27-8408035d5251",
+        "43766c67-7545-408e-b52b-bf8b6b0431e6"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E11",
+      "field": "id",
+      "values": [
+        "8360b86a-097a-4715-b07a-3f231ec363a0",
+        "2abbf5f7-d6be-4b81-ba52-df45cafff16c"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E12",
+      "field": "id",
+      "values": [
+        "f5a0369c-24bd-4af2-9bf9-610a382aa2a2",
+        "c4ffeef5-14ca-4f67-bd00-4349681fc620"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E13",
+      "field": "id",
+      "values": [
+        "b93d389a-5a54-4f83-982c-a367e98deef4",
+        "540ab176-f473-4db4-9674-fa541aa1899a"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E14",
+      "field": "id",
+      "values": [
+        "e29cd244-23e2-494b-bbe5-ab1536c0ae81",
+        "aeb04f85-a351-475b-8bc8-de904c5462ca"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E15",
+      "field": "id",
+      "values": [
+        "f9ea2b30-9f9d-44cf-b96a-604607e2113d",
+        "b2b9904a-0b58-457e-b7c6-16e6cab13c6c"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E16",
+      "field": "id",
+      "values": [
+        "fdc8b22c-5375-48de-8d6f-4468693fc898",
+        "69b0c9d1-e715-44f8-bb69-0fedfead6c28"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E17",
+      "field": "id",
+      "values": [
+        "375821f0-d643-4bf6-86dc-39314addddec",
+        "f5caa51b-ebcb-48ef-b70b-94ce4f0f9d97"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E18",
+      "field": "id",
+      "values": [
+        "2bfe4797-1d3b-4879-b806-fb910a1f44b6",
+        "519a1665-2078-432c-bb96-8f3e0ba2a6aa"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E19",
+      "field": "id",
+      "values": [
+        "89ee9a29-6c05-4823-aa3a-86e5151284b6",
+        "914181df-f7e6-415e-92c7-fb106776befc"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E20",
+      "field": "id",
+      "values": [
+        "87782d5d-0328-4385-97c0-578b8dd3ec0d",
+        "132e5ef9-b42b-46e0-8db1-c3755327e08c"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E21",
+      "field": "id",
+      "values": [
+        "a741c274-7062-49cb-8523-a46710837857",
+        "521d0a7a-8ea8-4e2c-8054-eb3a52792c40"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E22",
+      "field": "id",
+      "values": [
+        "d413e92f-818f-4858-9f3b-edffe07aa0a0",
+        "1cb6d4d1-861a-4b0a-a901-9cf07ed8c957"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E23",
+      "field": "id",
+      "values": [
+        "7cda4530-ebc9-47d2-ba8b-42aeebebddc7",
+        "83008682-b6ec-4320-b0bc-0fd8ebe61ff7"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E24",
+      "field": "id",
+      "values": [
+        "766eb821-e386-4e85-a32e-7d851bd94f29",
+        "a34c3c7d-c144-4ef1-bb78-8ff3c5f3b596"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E25",
+      "field": "id",
+      "values": [
+        "e37e1cbd-362a-4908-8ea8-afab4d536c92",
+        "2eb7cc08-0c88-441d-af29-00b7ccee6e8d"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E26",
+      "field": "id",
+      "values": [
+        "9f84d1b5-9393-4f7b-bd52-f246cefa0ed9",
+        "1d68ab4a-ef80-4354-9d7a-5024b67fe5ef"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E27",
+      "field": "id",
+      "values": [
+        "2c0e2f9e-a456-4e96-83b0-b27c15b75929",
+        "35e54e80-5e56-49f9-8c76-385c5c3d4535"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E28",
+      "field": "id",
+      "values": [
+        "897165d8-a2b0-4545-9ab9-85b2b7e02545",
+        "2af626b4-fc5c-44c3-96f9-1af42b2e12c4"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E29",
+      "field": "id",
+      "values": [
+        "d181d48e-0525-4af4-929f-40c698997d36",
+        "94816c1a-29b9-407c-9acf-94deebeafc57"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E30",
+      "field": "id",
+      "values": [
+        "987179ff-bfa4-46a3-bcfc-4f13096a031a",
+        "ada86a73-702b-446a-8a66-aa8c8f1dac55"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "E31",
+      "field": "id",
+      "values": [
+        "c7ef5b90-bb32-4f35-9b34-f74f58d361d0",
+        "47ecba72-cfd5-4f8b-9876-6265495314c1"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "F1",
+      "field": "id",
+      "values": [
+        "28b1efdf-f883-402b-8268-fc6e4ae5ecd3",
+        "17e96f88-18b5-4fcb-8175-ca2265c609e6"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "F2",
+      "field": "id",
+      "values": [
+        "b61294d2-f9ae-41a6-a10e-29ae23236f24",
+        "1604c296-c0cc-4279-9fe5-dfcf7294418b"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "F3",
+      "field": "id",
+      "values": [
+        "6ea98d77-4417-4f4f-94f9-27629618d52d",
+        "d1b7a170-cab4-45f6-bdc5-05f0504fcd15"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "F4",
+      "field": "id",
+      "values": [
+        "b57c1f08-52ba-429c-be15-56554cb7a52b",
+        "4503d02a-b9a8-473b-b8ca-663b5db94588"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "F5",
+      "field": "id",
+      "values": [
+        "5680b518-255f-411e-b566-61344fc4005c",
+        "e753959c-94a9-4ad6-a124-9616f4ab9950"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 80",
+      "field": "id",
+      "values": [
+        "978a67b8-92d3-440b-a265-c01c567106cb",
+        "3256977e-0a3f-4f6f-bddd-f80d50dbe816"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 81",
+      "field": "id",
+      "values": [
+        "fd045e67-eb38-4563-84c2-e60f7dfd081b",
+        "2768b5dc-06c1-46f7-862c-846cf347af2b"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
+      ],
+      "resolution": "kept_first"
+    },
+    {
+      "type": "unit",
+      "unit_number": "Flat 82",
+      "field": "id",
+      "values": [
+        "0f003619-a81b-4194-8e13-9a6961059487",
+        "71240dde-6e73-4b73-9c5e-a72ea939e486"
+      ],
+      "sources": [
+        "apportionment.xlsx",
+        "Units, Leaseholders List.xlsx"
       ],
       "resolution": "kept_first"
     }
@@ -117,6 +1153,6 @@
   "merges_count": 0,
   "merge_log": [],
   "recommendations": [
-    "Found 8 conflicts that need manual review"
+    "Found 82 conflicts that need manual review"
   ]
 }

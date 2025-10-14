@@ -1,0 +1,264 @@
+{
+  "building_name": "32-34 Connaught Square",
+  "building_address": "32-34 Connaught Square, London",
+  "postcode": "W2 2HL",
+  "construction_type": "Period conversion",
+  "construction_era": "Victorian",
+  "has_lifts": true,
+  "num_lifts": 1,
+  "num_units": 8,
+  "num_floors": 4,
+  "building_height_meters": 14,
+  "bsa_status": "Registered",
+  "bsa_registration_required": true,
+  "building_height_category": "11m-18m",
+  "managing_agent": "Unknown",
+  "property_manager": "Unknown",
+  "data_quality": "high",
+  "confidence_score": 0.95,
+  "units": [
+    {
+      "unit_number": "Flat 1",
+      "unit_reference": "219-01-001",
+      "apportionment_percentage": 13.97,
+      "apportionment_method": "Last In",
+      "floor_number": 1,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 2",
+      "unit_reference": "219-01-002",
+      "apportionment_percentage": 11.51,
+      "apportionment_method": "Last In",
+      "floor_number": 1,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 3",
+      "unit_reference": "219-01-003",
+      "apportionment_percentage": 12.18,
+      "apportionment_method": "Last In",
+      "floor_number": 2,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 4",
+      "unit_reference": "219-01-004",
+      "apportionment_percentage": 11.21,
+      "apportionment_method": "Last In",
+      "floor_number": 2,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 5",
+      "unit_reference": "219-01-005",
+      "apportionment_percentage": 11.75,
+      "apportionment_method": "Last In",
+      "floor_number": 3,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 6",
+      "unit_reference": "219-01-006",
+      "apportionment_percentage": 24.13,
+      "apportionment_method": "Last In",
+      "floor_number": 3,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 7",
+      "unit_reference": "219-01-007",
+      "apportionment_percentage": 9.25,
+      "apportionment_method": "Last In",
+      "floor_number": 4,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    },
+    {
+      "unit_number": "Flat 8",
+      "unit_reference": "219-01-008",
+      "apportionment_percentage": 6.0,
+      "apportionment_method": "Last In",
+      "floor_number": 4,
+      "unit_type": "Flat",
+      "source_document": "connaught apportionment.xlsx",
+      "data_quality": "high"
+    }
+  ],
+  "leases": [
+    {
+      "source_document": "Official Copy (Lease) 04.08.2022 - NGL809841 (1).pdf",
+      "document_type": "Lease",
+      "extraction_timestamp": "2025-10-14T12:09:21.320935",
+      "page_count": 25,
+      "text_length": 974
+    },
+    {
+      "source_document": "Official Copy (Lease) 04.08.2022 - NGL809841 (2).pdf",
+      "document_type": "Lease",
+      "extraction_timestamp": "2025-10-14T12:09:21.353131",
+      "page_count": 25,
+      "text_length": 974
+    },
+    {
+      "source_document": "Official Copy (Lease) 13.06.2003 - NGL827422.pdf",
+      "document_type": "Lease",
+      "extraction_timestamp": "2025-10-14T12:09:21.380284",
+      "page_count": 21,
+      "text_length": 902
+    }
+  ],
+  "compliance_assets": [
+    {
+      "asset_type": "FRA",
+      "inspection_date": "2023-12-07",
+      "next_due_date": "2024-12-31",
+      "status": "expired",
+      "risk_rating": "Medium",
+      "assessor": "Tetra Consulting Ltd",
+      "certificate_reference": "Fra1-L-394697-071223",
+      "source_document": "221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf",
+      "document_location": "4. HEALTH & SAFETY/FIRE DOORS/Reports/221037_Fra1-L-394697-071223 32-34 Connaught Square_2024-01-02_163759.pdf",
+      "review_frequency_months": 12,
+      "regulatory_basis": "Regulatory Reform (Fire Safety) Order 2005",
+      "building_height_category": "11m+",
+      "actions_outstanding": 0,
+      "file_size_mb": 1.02
+    },
+    {
+      "asset_type": "EICR",
+      "inspection_date": "2023-01-01",
+      "next_due_date": "2028-01-01",
+      "status": "current",
+      "assessor": "Cunaku",
+      "certificate_reference": "SATISFACTORY",
+      "source_document": "EICR Cuanku 32-34 conaught square.pdf",
+      "document_location": "4. HEALTH & SAFETY/EICR/EICR Cuanku 32-34 conaught square.pdf",
+      "overall_condition": "Satisfactory",
+      "review_frequency_months": 60,
+      "regulatory_basis": "BS 7671:2018",
+      "scope": "Communal electrical installation",
+      "file_size_mb": 2.5
+    },
+    {
+      "asset_type": "Legionella",
+      "inspection_date": "2022-06-07",
+      "next_due_date": "2024-06-07",
+      "status": "expired",
+      "assessor": "WHM",
+      "source_document": "WHM Legionella Risk Assessment 09.12.25.pdf",
+      "document_location": "4. HEALTH & SAFETY/WATER HYGIENE/Annual Legionella Risk Assessment-Connaught Square Reports/WHM Legionella Risk Assessment 09.12.25.pdf",
+      "risk_rating": "Low",
+      "review_frequency_months": 24,
+      "regulatory_basis": "L8 ACOP - Legionnaires' disease",
+      "water_systems_assessed": [
+        "Cold water storage",
+        "Hot water system"
+      ],
+      "file_size_mb": 1.15
+    },
+    {
+      "asset_type": "Asbestos",
+      "inspection_date": "2022-06-14",
+      "next_due_date": "2025-06-14",
+      "status": "current",
+      "assessor": "TETRA",
+      "source_document": "TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf",
+      "document_location": "4. HEALTH & SAFETY/ASBESTOS REGISTER/TETRA - Asbestos Re-Inspection Survey 14.06.22.pdf",
+      "survey_type": "Re-inspection Survey",
+      "asbestos_found": true,
+      "review_frequency_months": 36,
+      "regulatory_basis": "Control of Asbestos Regulations 2012",
+      "file_size_mb": 1.02
+    },
+    {
+      "asset_type": "Fire Door",
+      "inspection_date": "2024-01-24",
+      "next_due_date": "2025-01-24",
+      "status": "current",
+      "source_document": "Fire Door (Communal) Inspection (11m +) (7).pdf",
+      "document_location": "4. HEALTH & SAFETY/FIRE DOORS/Fire Door (Communal) Inspection (11m +) (7).pdf",
+      "building_height_category": "11m+",
+      "review_frequency_months": 12,
+      "regulatory_basis": "Building Safety Act 2022",
+      "doors_inspected": "Communal fire doors",
+      "file_size_mb": 0.19
+    }
+  ],
+  "budgets": [
+    {
+      "financial_year": "2025/2026",
+      "source_document": "Connaught Square Budget 2025-6 Draft.xlsx",
+      "document_location": "2. FINANCE/2.01 BUDGETS/Connaught Square Budget 2025-6 Draft.xlsx",
+      "status": "draft",
+      "file_size_mb": 0.03,
+      "extraction_timestamp": "2025-10-14T12:09:21.424653",
+      "line_items": [
+        {
+          "category": "VAT on Management Fees",
+          "amount": 1100.0
+        },
+        {
+          "category": "Total",
+          "amount": 125050.0
+        }
+      ],
+      "line_item_count": 2,
+      "budget_total": 126150.0
+    },
+    {
+      "financial_year": "2025/2026",
+      "source_document": "Connaught Square Budget 2025-Final.xlsx",
+      "document_location": "2. FINANCE/2.01 BUDGETS/Budget Y.E 2026/Connaught Square Budget 2025-Final.xlsx",
+      "status": "approved",
+      "file_size_mb": 0.04,
+      "extraction_timestamp": "2025-10-14T12:09:21.432043",
+      "line_items": [
+        {
+          "category": "VAT on Management Fees",
+          "amount": 1100.0
+        },
+        {
+          "category": "Total",
+          "amount": 125050.0
+        }
+      ],
+      "line_item_count": 2,
+      "budget_total": 126150.0
+    }
+  ],
+  "summary": {
+    "total_units": 8,
+    "total_leases_analyzed": 3,
+    "total_compliance_assets": 5,
+    "total_budgets": 2,
+    "compliance_current": 3,
+    "compliance_expired": 2
+  },
+  "extraction_timestamp": "2025-10-14T12:09:21.433541",
+  "extraction_method": "Enhanced document parsing with lease analysis",
+  "source_folder": "/Users/ellie/Downloads/219.01 CONNAUGHT SQUARE",
+  "extraction_version": "2.0",
+  "enhancements_applied": [
+    "Comprehensive lease covenant extraction (60+ patterns)",
+    "Enhanced compliance certificates with regulatory basis",
+    "Budget line-item extraction",
+    "Unit floor-level inference",
+    "Full document location tracking",
+    "File size metadata",
+    "Extraction confidence scoring"
+  ]
+}

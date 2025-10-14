@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Summary Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+        }
+
+        .header {
+            border-bottom: 4px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            margin: 20px 0 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card.green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .stat-card.orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+
+        thead {
+            background: #34495e;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 15mm;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Building Summary Report</h1>
+        <div class="subtitle">Comprehensive Property Overview</div>
+        <div class="subtitle">Report Generated: October 13, 2025</div>
+        <div class="subtitle" style="margin-top: 10px; color: #3498db; font-weight: 600;">Created by BlocIQ</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Executive Summary</div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="number">83</div>
+                <div class="label">Residential Units</div>
+            </div>
+            <div class="stat-card green">
+                <div class="number">1264</div>
+                <div class="label">Documents Processed</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="number">81</div>
+                <div class="label">Compliance Assets</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="number">197</div>
+                <div class="label">Validation Warnings</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Building Information</div>
+        <table>
+            <tbody>
+                <tr>
+                    <td style="width: 30%; font-weight: 600;">Building Name:</td>
+                    <td>Pimlico Place</td>
+                </tr>
+                <tr>
+                    <td style="width: 30%; font-weight: 600;">Address:</td>
+                    <td>Not specified</td>
+                </tr>
+                <tr>
+                    <td style="width: 30%; font-weight: 600;">Building Type:</td>
+                    <td><strong style="color: #27ae60;">Standard Residential Building</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Leaseholder Directory</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Flat</th>
+                    <th>Leaseholder Name(s)</th>
+                    <th>Apportionment %</th>
+                    <th>Contact Details</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div class="alert info" style="margin-top: 15px;">
+            <strong>Data Protection Notice:</strong> Full contact details including email addresses, telephone numbers, and correspondence addresses are held securely in the property management system. Access to this information is restricted in accordance with GDPR requirements. For contact details, please refer to the Tenancy Schedule or contact the property management company.
+        </div>
+    </div>
+    <div class="section">
+        <div class="section-title">Data Migration Summary</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Records Migrated</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Leaseholders</strong></td>
+                    <td>82</td>
+                    <td style="color: #27ae60;">✓ Complete</td>
+                </tr>
+                <tr>
+                    <td><strong>Leases</strong></td>
+                    <td>265</td>
+                    <td style="color: #27ae60;">✓ Complete</td>
+                </tr>
+                <tr>
+                    <td><strong>Budgets</strong></td>
+                    <td>197</td>
+                    <td style="color: #27ae60;">✓ Complete</td>
+                </tr>
+                <tr>
+                    <td><strong>Apportionments</strong></td>
+                    <td>0</td>
+                    <td style="color: #e67e22;">⚠ No data</td>
+                </tr>
+                <tr>
+                    <td><strong>Compliance Assets</strong></td>
+                    <td>81</td>
+                    <td style="color: #27ae60;">✓ Complete</td>
+                </tr>
+                <tr>
+                    <td><strong>Contractors</strong></td>
+                    <td>44</td>
+                    <td style="color: #27ae60;">✓ Complete</td>
+                </tr>
+                <tr>
+                    <td><strong>Documents</strong></td>
+                    <td>1264</td>
+                    <td style="color: #27ae60;">✓ Complete</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 4px solid #27ae60;">
+            <strong>✅ Migration Complete</strong><br>
+            All data has been successfully extracted and validated. Total records migrated: 669
+        </div>
+    </div>
+    <div class="section">
+        <div class="section-title">Compliance Assets Overview</div>
+        <div class="alert info">
+            <strong>📋 81 Compliance Assets Identified</strong><br>
+            Compliance assets have been extracted from building documentation and uploaded to the database.
+            These include items requiring regular inspection, certification, or maintenance to meet regulatory requirements.
+        </div>
+        <p style="margin-top: 15px; font-size: 12px; color: #666;">
+            <strong>Common Asset Types:</strong> Fire safety equipment, lifts/elevators, heating systems, ventilation systems,
+            emergency lighting, fire alarms, sprinkler systems, and other building safety systems.
+        </p>
+        <p style="margin-top: 10px; font-size: 12px; color: #666;">
+            <strong>Note:</strong> Full compliance asset details including inspection schedules, due dates, and status
+            are available in the compliance_assets table of the database.
+        </p>
+    </div>
+    <div class="section">
+        <div class="section-title">Contractors Overview</div>
+        <div class="alert info">
+            <strong>🔧 44 Contractor Relationships Recorded</strong><br>
+            Contractor information has been extracted from building contracts and service agreements.
+            These relationships are critical for ongoing building maintenance and compliance.
+        </div>
+        <p style="margin-top: 15px; font-size: 12px; color: #666;">
+            <strong>Typical Contractor Categories:</strong> Property management, maintenance contractors,
+            specialist services (fire safety, lift maintenance, cleaning, security), and utility providers.
+        </p>
+        <p style="margin-top: 10px; font-size: 12px; color: #666;">
+            <strong>Note:</strong> Full contractor details including contact information, service agreements, and contract terms
+            are available in the contractors and building_contractors tables of the database.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p><strong>Building Summary Report</strong></p>
+        <p>Generated: October 13, 2025 | BlocIQ Onboarding System</p>
+        <p>This report summarizes data extracted from 1264 documents during the migration process.</p>
+        <p style="margin-top: 10px; font-size: 10px;">CONFIDENTIAL - This document contains personal information and should be handled in accordance with data protection regulations.</p>
+    </div>
+
+    <div class="no-print" style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()" style="background: #2c3e50; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
+            Print / Save as PDF
+        </button>
+    </div>
+</body>
+</html>

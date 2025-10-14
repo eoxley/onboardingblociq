@@ -1,38 +1,12 @@
 {
   "valid": false,
   "errors": [
-    "major_works_projects[0]: Missing required field 'project_type'",
-    "major_works_projects[1]: Missing required field 'project_type'",
-    "major_works_projects[2]: Missing required field 'project_type'",
-    "major_works_projects[3]: Missing required field 'project_type'",
-    "budgets[0]: Missing required field 'financial_year'",
-    "budgets[1]: Missing required field 'financial_year'",
-    "budgets[2]: Missing required field 'financial_year'",
-    "budgets[3]: Missing required field 'financial_year'",
-    "budgets[4]: Missing required field 'financial_year'",
-    "budgets[5]: Missing required field 'financial_year'",
-    "budgets[6]: Missing required field 'financial_year'",
-    "budgets[7]: Missing required field 'financial_year'",
-    "budgets[8]: Missing required field 'financial_year'",
-    "budgets[9]: Missing required field 'financial_year'",
-    "budgets[10]: Missing required field 'financial_year'",
-    "budgets[11]: Missing required field 'financial_year'",
-    "budgets[12]: Missing required field 'financial_year'",
-    "budgets[13]: Missing required field 'financial_year'",
-    "budgets[14]: Missing required field 'financial_year'",
-    "budgets[15]: Missing required field 'financial_year'",
-    "budgets[16]: Missing required field 'financial_year'",
-    "budgets[17]: Missing required field 'financial_year'",
-    "budgets[18]: Missing required field 'financial_year'",
-    "budgets[19]: Missing required field 'financial_year'",
-    "budgets[20]: Missing required field 'financial_year'",
-    "budgets[21]: Missing required field 'financial_year'"
+    "buildings: Missing required field 'address'"
   ],
   "warnings": [],
   "results": [
-    "\u2705 buildings.id: 6f70b361-8781-47bc-934b-06892458b603",
-    "\u2705 buildings.name: Connaught Square",
-    "\u2705 buildings.address: CONNAUGHT SQUARE"
+    "\u2705 buildings.id: e09da17d-6c31-4112-a11a-6b9217ae7c0f",
+    "\u2705 buildings.name: Pimlico Place"
   ],
-  "enrichment_summary": "\u2705 Extracted 260 building knowledge entrie(s)"
+  "enrichment_summary": "\u2705 Enrichment Passed: 1 address(es) extracted\n\u2705 Extracted 295 building knowledge entrie(s)"
 }
