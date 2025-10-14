@@ -8,6 +8,8 @@ Intelligently infers missing/forgotten compliance assets based on:
 - Regulatory requirements
 - Industry best practices
 
+Uses comprehensive UK compliance taxonomy (50+ asset types).
+
 Author: BlocIQ Team
 Date: 2025-10-14
 """
@@ -15,105 +17,11 @@ Date: 2025-10-14
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import re
+from comprehensive_compliance_taxonomy import ComplianceAssetTaxonomy
 
 
 class ComplianceAssetInference:
     """Infer missing compliance assets based on building profile"""
-
-    # UK Compliance Asset Requirements
-    ASSET_REQUIREMENTS = {
-        "FRA": {
-            "required_if": lambda b: True,  # Always required
-            "frequency_months": 12,
-            "regulatory_basis": "Regulatory Reform (Fire Safety) Order 2005",
-            "evidence_keywords": ["fire risk", "fire safety", "FRA", "fire door", "fire alarm"],
-            "priority": "critical",
-        },
-        "EICR": {
-            "required_if": lambda b: True,  # Always required for communal areas
-            "frequency_months": 60,
-            "regulatory_basis": "BS 7671:2018 (IET Wiring Regulations)",
-            "evidence_keywords": ["electrical", "EICR", "wiring", "consumer unit", "distribution board"],
-            "priority": "critical",
-        },
-        "Legionella": {
-            "required_if": lambda b: b.get("has_hot_water") or b.get("has_communal_heating"),
-            "frequency_months": 24,
-            "regulatory_basis": "L8 ACOP - Legionnaires' disease",
-            "evidence_keywords": ["water", "legionella", "TMV", "temperature", "calorifier"],
-            "priority": "high",
-        },
-        "Asbestos": {
-            "required_if": lambda b: b.get("construction_era") in ["Victorian", "Edwardian", "1920s-1970s"] or b.get("year_built", 9999) < 2000,
-            "frequency_months": 36,
-            "regulatory_basis": "Control of Asbestos Regulations 2012",
-            "evidence_keywords": ["asbestos", "ACM", "artex", "pipe lagging"],
-            "priority": "high",
-        },
-        "Fire Door": {
-            "required_if": lambda b: b.get("building_height_meters", 0) >= 11 or b.get("bsa_registration_required"),
-            "frequency_months": 12,
-            "regulatory_basis": "Building Safety Act 2022",
-            "evidence_keywords": ["fire door", "FD30", "FD60", "intumescent", "door closer"],
-            "priority": "critical",
-        },
-        "Fire Alarm": {
-            "required_if": lambda b: b.get("num_units", 0) >= 4 or b.get("num_floors", 0) >= 3,
-            "frequency_months": 12,
-            "regulatory_basis": "BS 5839-1",
-            "evidence_keywords": ["fire alarm", "smoke detector", "heat detector", "break glass", "sounder"],
-            "priority": "critical",
-        },
-        "Emergency Lighting": {
-            "required_if": lambda b: b.get("num_units", 0) >= 4 or b.get("has_lifts"),
-            "frequency_months": 12,
-            "regulatory_basis": "BS 5266-1",
-            "evidence_keywords": ["emergency light", "exit sign", "3HR drain test", "maintained", "non-maintained"],
-            "priority": "high",
-        },
-        "Lift": {
-            "required_if": lambda b: b.get("has_lifts") or b.get("num_lifts", 0) > 0,
-            "frequency_months": 6,
-            "regulatory_basis": "LOLER 1998",
-            "evidence_keywords": ["lift", "elevator", "LOLER", "thorough examination", "Jackson"],
-            "priority": "critical",
-        },
-        "Lightning Protection": {
-            "required_if": lambda b: b.get("building_height_meters", 0) >= 18,
-            "frequency_months": 12,
-            "regulatory_basis": "BS EN 62305",
-            "evidence_keywords": ["lightning", "earthing", "surge protection"],
-            "priority": "medium",
-        },
-        "AOV": {
-            "required_if": lambda b: b.get("building_height_meters", 0) >= 11 or b.get("has_smoke_shaft"),
-            "frequency_months": 6,
-            "regulatory_basis": "BS 9991 / BS 9999",
-            "evidence_keywords": ["AOV", "smoke vent", "automatic opening vent", "smoke shaft", "smoke control"],
-            "priority": "high",
-        },
-        "Gas Safety": {
-            "required_if": lambda b: b.get("has_communal_heating") or b.get("heating_type", "").lower() == "gas boiler",
-            "frequency_months": 12,
-            "regulatory_basis": "Gas Safety (Installation and Use) Regulations 1998",
-            "evidence_keywords": ["gas", "boiler", "CP12", "gas safety", "gas appliance"],
-            "priority": "critical",
-        },
-        "EPC": {
-            "required_if": lambda b: True,  # Required for all communal areas
-            "frequency_months": 120,  # 10 years
-            "regulatory_basis": "Energy Performance of Buildings Regulations 2012",
-            "evidence_keywords": ["EPC", "energy performance", "energy rating"],
-            "priority": "low",
-        },
-        "PAT Testing": {
-            "required_if": lambda b: b.get("has_communal_areas_with_appliances"),
-            "frequency_months": 12,
-            "regulatory_basis": "Electricity at Work Regulations 1989",
-            "evidence_keywords": ["PAT", "portable appliance", "appliance testing"],
-            "priority": "low",
-        },
-    }
 
     def __init__(self, building_profile: Dict, detected_assets: List[Dict], all_documents: List[Dict] = None):
         """
@@ -128,11 +36,34 @@ class ComplianceAssetInference:
         self.detected_assets = detected_assets
         self.all_documents = all_documents or []
 
+        # Import comprehensive taxonomy
+        self.taxonomy = ComplianceAssetTaxonomy()
+        self.ASSET_REQUIREMENTS = self._convert_taxonomy_to_requirements()
+
         # Results
         self.inferred_assets = []
         self.missing_assets = []
         self.expired_assets = []
         self.evidence_found = {}
+
+    def _convert_taxonomy_to_requirements(self) -> Dict:
+        """
+        Convert comprehensive taxonomy to inference requirements format
+        """
+        requirements = {}
+
+        for asset_name, asset_info in self.taxonomy.COMPLIANCE_ASSETS.items():
+            requirements[asset_name] = {
+                "required_if": asset_info['required_if'],
+                "frequency_months": asset_info['frequency_months'],
+                "regulatory_basis": asset_info['regulatory_basis'],
+                "evidence_keywords": asset_info['keywords'],
+                "priority": asset_info['priority'],
+                "full_name": asset_info['full_name'],
+                "category": asset_info['category'],
+            }
+
+        return requirements
 
     def infer_all_assets(self) -> Dict:
         """

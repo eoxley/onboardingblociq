@@ -2806,7 +2806,7 @@
       "regulatory_basis": "BS 5839-1",
       "priority": "critical",
       "recommended_action": "Verify if Fire Alarm exists and commission inspection",
-      "frequency_months": 12
+      "frequency_months": 6
     },
     {
       "asset_type": "Emergency Lighting",
@@ -2815,24 +2815,6 @@
       "regulatory_basis": "BS 5266-1",
       "priority": "high",
       "recommended_action": "Verify if Emergency Lighting exists and commission inspection",
-      "frequency_months": 12
-    },
-    {
-      "asset_type": "Lift",
-      "status": "missing",
-      "inference_reason": "Required by regulation (no historical evidence found)",
-      "regulatory_basis": "LOLER 1998",
-      "priority": "critical",
-      "recommended_action": "Verify if Lift exists and commission inspection",
-      "frequency_months": 6
-    },
-    {
-      "asset_type": "Lightning Protection",
-      "status": "missing",
-      "inference_reason": "Required by regulation (no historical evidence found)",
-      "regulatory_basis": "BS EN 62305",
-      "priority": "medium",
-      "recommended_action": "Verify if Lightning Protection exists and commission inspection",
       "frequency_months": 12
     },
     {
@@ -2845,22 +2827,229 @@
       "frequency_months": 6
     },
     {
-      "asset_type": "Gas Safety",
+      "asset_type": "Sprinkler System",
       "status": "missing",
       "inference_reason": "Required by regulation (no historical evidence found)",
-      "regulatory_basis": "Gas Safety (Installation and Use) Regulations 1998",
+      "regulatory_basis": "BS 9251 / BS EN 12845",
       "priority": "critical",
-      "recommended_action": "Verify if Gas Safety exists and commission inspection",
+      "recommended_action": "Verify if Sprinkler System exists and commission inspection",
+      "frequency_months": 6
+    },
+    {
+      "asset_type": "Fire Extinguishers",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS 5306-3",
+      "priority": "medium",
+      "recommended_action": "Verify if Fire Extinguishers exists and commission inspection",
       "frequency_months": 12
     },
     {
-      "asset_type": "EPC",
+      "asset_type": "Fire Stopping",
       "status": "missing",
       "inference_reason": "Required by regulation (no historical evidence found)",
-      "regulatory_basis": "Energy Performance of Buildings Regulations 2012",
+      "regulatory_basis": "Building Regulations Part B",
+      "priority": "high",
+      "recommended_action": "Verify if Fire Stopping exists and commission inspection",
+      "frequency_months": 36
+    },
+    {
+      "asset_type": "Dry Riser",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS 9990",
+      "priority": "critical",
+      "recommended_action": "Verify if Dry Riser exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Smoke Detectors",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Smoke and Carbon Monoxide Alarm Regulations 2015",
+      "priority": "high",
+      "recommended_action": "Verify if Smoke Detectors exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "PAT Testing",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Electricity at Work Regulations 1989",
+      "priority": "medium",
+      "recommended_action": "Verify if PAT Testing exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Lightning Protection",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS EN 62305",
+      "priority": "medium",
+      "recommended_action": "Verify if Lightning Protection exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Distribution Board",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS 7671",
+      "priority": "medium",
+      "recommended_action": "Verify if Distribution Board exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Roof Inspection",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "RICS Building Surveying",
+      "priority": "medium",
+      "recommended_action": "Verify if Roof Inspection exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Balcony Inspection",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Safety Act 2022",
+      "priority": "high",
+      "recommended_action": "Verify if Balcony Inspection exists and commission inspection",
+      "frequency_months": 60
+    },
+    {
+      "asset_type": "Safety Case",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Safety Act 2022",
+      "priority": "critical",
+      "recommended_action": "Verify if Safety Case exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Resident Engagement",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Safety Act 2022",
+      "priority": "medium",
+      "recommended_action": "Verify if Resident Engagement exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Compartmentation Survey",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Regulations Part B",
+      "priority": "high",
+      "recommended_action": "Verify if Compartmentation Survey exists and commission inspection",
+      "frequency_months": 36
+    },
+    {
+      "asset_type": "Lift",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "LOLER 1998",
+      "priority": "critical",
+      "recommended_action": "Verify if Lift exists and commission inspection",
+      "frequency_months": 6
+    },
+    {
+      "asset_type": "Lift Maintenance",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS EN 81-80",
+      "priority": "critical",
+      "recommended_action": "Verify if Lift Maintenance exists and commission inspection",
+      "frequency_months": 1
+    },
+    {
+      "asset_type": "Buildings Insurance",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Landlord and Tenant Act 1985",
+      "priority": "critical",
+      "recommended_action": "Verify if Buildings Insurance exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Public Liability",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Common Law",
+      "priority": "high",
+      "recommended_action": "Verify if Public Liability exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Health & Safety Risk",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Management of Health and Safety at Work Regulations 1999",
+      "priority": "medium",
+      "recommended_action": "Verify if Health & Safety Risk exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "H&S Audit",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "RIDDOR 2013",
       "priority": "low",
-      "recommended_action": "Verify if EPC exists and commission inspection",
-      "frequency_months": 120
+      "recommended_action": "Verify if H&S Audit exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Cleaning Contract",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "ARMA / RICS Standards",
+      "priority": "low",
+      "recommended_action": "Verify if Cleaning Contract exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Pest Control",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Prevention of Damage by Pests Act 1949",
+      "priority": "medium",
+      "recommended_action": "Verify if Pest Control exists and commission inspection",
+      "frequency_months": 3
+    },
+    {
+      "asset_type": "Waste Management",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Environmental Protection Act 1990",
+      "priority": "low",
+      "recommended_action": "Verify if Waste Management exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Insurance Schedule",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Landlord and Tenant Act 1985",
+      "priority": "medium",
+      "recommended_action": "Verify if Insurance Schedule exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Budget Approval",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Commonhold and Leasehold Reform Act 2002",
+      "priority": "medium",
+      "recommended_action": "Verify if Budget Approval exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Resident Communication",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Safety Act 2022",
+      "priority": "medium",
+      "recommended_action": "Verify if Resident Communication exists and commission inspection",
+      "frequency_months": 1
     }
   ],
   "compliance_analysis": {
@@ -2948,7 +3137,7 @@
         "regulatory_basis": "BS 5839-1",
         "priority": "critical",
         "recommended_action": "Verify if Fire Alarm exists and commission inspection",
-        "frequency_months": 12
+        "frequency_months": 6
       },
       {
         "asset_type": "Emergency Lighting",
@@ -2957,24 +3146,6 @@
         "regulatory_basis": "BS 5266-1",
         "priority": "high",
         "recommended_action": "Verify if Emergency Lighting exists and commission inspection",
-        "frequency_months": 12
-      },
-      {
-        "asset_type": "Lift",
-        "status": "missing",
-        "inference_reason": "Required by regulation (no historical evidence found)",
-        "regulatory_basis": "LOLER 1998",
-        "priority": "critical",
-        "recommended_action": "Verify if Lift exists and commission inspection",
-        "frequency_months": 6
-      },
-      {
-        "asset_type": "Lightning Protection",
-        "status": "missing",
-        "inference_reason": "Required by regulation (no historical evidence found)",
-        "regulatory_basis": "BS EN 62305",
-        "priority": "medium",
-        "recommended_action": "Verify if Lightning Protection exists and commission inspection",
         "frequency_months": 12
       },
       {
@@ -2987,37 +3158,244 @@
         "frequency_months": 6
       },
       {
-        "asset_type": "Gas Safety",
+        "asset_type": "Sprinkler System",
         "status": "missing",
         "inference_reason": "Required by regulation (no historical evidence found)",
-        "regulatory_basis": "Gas Safety (Installation and Use) Regulations 1998",
+        "regulatory_basis": "BS 9251 / BS EN 12845",
         "priority": "critical",
-        "recommended_action": "Verify if Gas Safety exists and commission inspection",
+        "recommended_action": "Verify if Sprinkler System exists and commission inspection",
+        "frequency_months": 6
+      },
+      {
+        "asset_type": "Fire Extinguishers",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS 5306-3",
+        "priority": "medium",
+        "recommended_action": "Verify if Fire Extinguishers exists and commission inspection",
         "frequency_months": 12
       },
       {
-        "asset_type": "EPC",
+        "asset_type": "Fire Stopping",
         "status": "missing",
         "inference_reason": "Required by regulation (no historical evidence found)",
-        "regulatory_basis": "Energy Performance of Buildings Regulations 2012",
+        "regulatory_basis": "Building Regulations Part B",
+        "priority": "high",
+        "recommended_action": "Verify if Fire Stopping exists and commission inspection",
+        "frequency_months": 36
+      },
+      {
+        "asset_type": "Dry Riser",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS 9990",
+        "priority": "critical",
+        "recommended_action": "Verify if Dry Riser exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Smoke Detectors",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Smoke and Carbon Monoxide Alarm Regulations 2015",
+        "priority": "high",
+        "recommended_action": "Verify if Smoke Detectors exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "PAT Testing",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Electricity at Work Regulations 1989",
+        "priority": "medium",
+        "recommended_action": "Verify if PAT Testing exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Lightning Protection",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS EN 62305",
+        "priority": "medium",
+        "recommended_action": "Verify if Lightning Protection exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Distribution Board",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS 7671",
+        "priority": "medium",
+        "recommended_action": "Verify if Distribution Board exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Roof Inspection",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "RICS Building Surveying",
+        "priority": "medium",
+        "recommended_action": "Verify if Roof Inspection exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Balcony Inspection",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Safety Act 2022",
+        "priority": "high",
+        "recommended_action": "Verify if Balcony Inspection exists and commission inspection",
+        "frequency_months": 60
+      },
+      {
+        "asset_type": "Safety Case",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Safety Act 2022",
+        "priority": "critical",
+        "recommended_action": "Verify if Safety Case exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Resident Engagement",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Safety Act 2022",
+        "priority": "medium",
+        "recommended_action": "Verify if Resident Engagement exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Compartmentation Survey",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Regulations Part B",
+        "priority": "high",
+        "recommended_action": "Verify if Compartmentation Survey exists and commission inspection",
+        "frequency_months": 36
+      },
+      {
+        "asset_type": "Lift",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "LOLER 1998",
+        "priority": "critical",
+        "recommended_action": "Verify if Lift exists and commission inspection",
+        "frequency_months": 6
+      },
+      {
+        "asset_type": "Lift Maintenance",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS EN 81-80",
+        "priority": "critical",
+        "recommended_action": "Verify if Lift Maintenance exists and commission inspection",
+        "frequency_months": 1
+      },
+      {
+        "asset_type": "Buildings Insurance",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Landlord and Tenant Act 1985",
+        "priority": "critical",
+        "recommended_action": "Verify if Buildings Insurance exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Public Liability",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Common Law",
+        "priority": "high",
+        "recommended_action": "Verify if Public Liability exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Health & Safety Risk",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Management of Health and Safety at Work Regulations 1999",
+        "priority": "medium",
+        "recommended_action": "Verify if Health & Safety Risk exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "H&S Audit",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "RIDDOR 2013",
         "priority": "low",
-        "recommended_action": "Verify if EPC exists and commission inspection",
-        "frequency_months": 120
+        "recommended_action": "Verify if H&S Audit exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Cleaning Contract",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "ARMA / RICS Standards",
+        "priority": "low",
+        "recommended_action": "Verify if Cleaning Contract exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Pest Control",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Prevention of Damage by Pests Act 1949",
+        "priority": "medium",
+        "recommended_action": "Verify if Pest Control exists and commission inspection",
+        "frequency_months": 3
+      },
+      {
+        "asset_type": "Waste Management",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Environmental Protection Act 1990",
+        "priority": "low",
+        "recommended_action": "Verify if Waste Management exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Insurance Schedule",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Landlord and Tenant Act 1985",
+        "priority": "medium",
+        "recommended_action": "Verify if Insurance Schedule exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Budget Approval",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Commonhold and Leasehold Reform Act 2002",
+        "priority": "medium",
+        "recommended_action": "Verify if Budget Approval exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Resident Communication",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Safety Act 2022",
+        "priority": "medium",
+        "recommended_action": "Verify if Resident Communication exists and commission inspection",
+        "frequency_months": 1
       }
     ],
     "summary": {
-      "total_required": 11,
+      "total_required": 34,
       "current": 9,
       "expired": 0,
       "inferred": 0,
-      "missing": 7,
-      "compliance_rate": 81.8
+      "missing": 28,
+      "compliance_rate": 26.5
     }
   },
   "maintenance_contracts": [
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Phone Lines",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3027,11 +3405,14 @@
       "contract_source_path": "7. CONTRACTS/PHONE LINES",
       "contract_folder_detected": true,
       "document_count": 2,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "M&E",
+      "contract_type": "Electricity",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3041,11 +3422,14 @@
       "contract_source_path": "7. CONTRACTS/7.12 ELECTRICAL",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Staff Payroll",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3055,11 +3439,14 @@
       "contract_source_path": "7. CONTRACTS/7.03 STAFF",
       "contract_folder_detected": true,
       "document_count": 3,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "Boiler",
+      "contract_type": "Gas",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3069,11 +3456,14 @@
       "contract_source_path": "7. CONTRACTS/GAS SENSORS",
       "contract_folder_detected": true,
       "document_count": 5,
-      "compliance_asset_link": "Gas Safety"
+      "compliance_asset_link": null,
+      "detection_confidence": 0.5,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Bin Collections",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3083,11 +3473,14 @@
       "contract_source_path": "7. CONTRACTS/BIN COLLECTIONS",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Electricity",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3097,11 +3490,14 @@
       "contract_source_path": "7. CONTRACTS/7.02 UTILITIES",
       "contract_folder_detected": true,
       "document_count": 2,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.67,
+      "is_new_type": false,
+      "requires_review": false
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Quotes",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3111,11 +3507,14 @@
       "contract_source_path": "7. CONTRACTS/QUOTES",
       "contract_folder_detected": true,
       "document_count": 2,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Fire Safety Consultant",
       "contract_start_date": "1346-01-01",
       "contract_end_date": "2801-12-31",
       "contract_auto_renew": false,
@@ -3125,11 +3524,14 @@
       "contract_source_path": "7. CONTRACTS/7.10 FIRE SAFETY MAINTENANCE",
       "contract_folder_detected": true,
       "document_count": 4,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.5,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Electricity",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3139,11 +3541,14 @@
       "contract_source_path": "7. CONTRACTS/Electricty",
       "contract_folder_detected": true,
       "document_count": 6,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Gates",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3153,11 +3558,14 @@
       "contract_source_path": "7. CONTRACTS/7.13 GATES",
       "contract_folder_detected": true,
       "document_count": 6,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Curtain Heater",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3167,7 +3575,10 @@
       "contract_source_path": "7. CONTRACTS/7.15 CURTAIN HEATER",
       "contract_folder_detected": true,
       "document_count": 2,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
@@ -3181,11 +3592,14 @@
       "contract_source_path": "7. CONTRACTS/7.22 PUMP",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "Pest Control",
+      "contract_type": "Generator",
       "contract_start_date": "2022-01-01",
       "contract_end_date": "2023-12-31",
       "contract_auto_renew": false,
@@ -3195,7 +3609,10 @@
       "contract_source_path": "7. CONTRACTS/7.06 GENERATOR",
       "contract_folder_detected": true,
       "document_count": 7,
-      "compliance_asset_link": null
+      "compliance_asset_link": "Emergency Generator",
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
@@ -3209,11 +3626,14 @@
       "contract_source_path": "7. CONTRACTS/7.07 LIFT",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": "Lift"
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Lightning Protection",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3223,7 +3643,10 @@
       "contract_source_path": "7. CONTRACTS/7.11 LIGHTNING PROTECTION",
       "contract_folder_detected": true,
       "document_count": 4,
-      "compliance_asset_link": null
+      "compliance_asset_link": "Lightning Protection",
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
@@ -3237,11 +3660,14 @@
       "contract_source_path": "7. CONTRACTS/7.08 CABLE SYSTEM",
       "contract_folder_detected": true,
       "document_count": 2,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Phone Lines",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3251,7 +3677,10 @@
       "contract_source_path": "7. CONTRACTS/7.21 ENTRYPHONE",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
@@ -3265,11 +3694,14 @@
       "contract_source_path": "7. CONTRACTS/7.3 GARDENING",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Contractors",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3279,11 +3711,14 @@
       "contract_source_path": "7. CONTRACTS/CONTRACTORS",
       "contract_folder_detected": true,
       "document_count": 2,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "CCTV",
+      "contract_type": "General Maintenance",
       "contract_start_date": "0301-01-01",
       "contract_end_date": "2020-12-31",
       "contract_auto_renew": false,
@@ -3293,11 +3728,14 @@
       "contract_source_path": "7. CONTRACTS/7.18 CCTV",
       "contract_folder_detected": true,
       "document_count": 3,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Water",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -3307,7 +3745,10 @@
       "contract_source_path": "7. CONTRACTS/7.05 WATER",
       "contract_folder_detected": true,
       "document_count": 10,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     }
   ],
   "contract_summary": {
@@ -3315,15 +3756,26 @@
     "active": 1,
     "expired": 2,
     "by_type": {
-      "General Maintenance": 14,
-      "M&E": 1,
-      "Boiler": 1,
+      "Phone Lines": 2,
+      "Electricity": 3,
+      "Staff Payroll": 1,
+      "Gas": 1,
+      "Bin Collections": 1,
+      "Quotes": 1,
+      "Fire Safety Consultant": 1,
+      "Gates": 1,
+      "Curtain Heater": 1,
       "Pump": 1,
-      "Pest Control": 1,
+      "Generator": 1,
       "Lift": 1,
+      "Lightning Protection": 1,
+      "General Maintenance": 2,
       "Gardening": 1,
-      "CCTV": 1
-    }
+      "Contractors": 1,
+      "Water": 1
+    },
+    "new_types_detected": 14,
+    "low_confidence_detections": 14
   },
   "summary": {
     "total_units": 82,
@@ -3332,11 +3784,11 @@
     "units_with_leaseholders": 82,
     "leaseholders_with_balances": 43,
     "total_outstanding_balance": 79224.73999999999,
-    "compliance_rate": 81.8,
+    "compliance_rate": 26.5,
     "total_contracts": 21,
     "contracts_with_compliance_link": 2
   },
-  "extraction_timestamp": "2025-10-14T12:32:58.281722",
+  "extraction_timestamp": "2025-10-14T12:59:37.163496",
   "extraction_version": "6.0 - PRODUCTION",
   "data_quality": "production",
   "confidence_score": 0.98

@@ -12,6 +12,8 @@ Extracts maintenance contracts from contracts folder with:
 - Contract status (Active/Expired)
 - Links to compliance assets
 
+Uses adaptive detection for unknown contract types.
+
 Author: BlocIQ Team
 Date: 2025-10-14
 """
@@ -21,47 +23,44 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from collections import defaultdict
+from adaptive_contract_compliance_detector import AdaptiveDetector
 
 
 class MaintenanceContractExtractor:
-    """Extract maintenance contracts from contracts folder"""
+    """Extract maintenance contracts from contracts folder with adaptive detection"""
 
-    # Contract type detection keywords
-    CONTRACT_TYPES = {
-        "Lift": ["lift", "elevator", "loler", "jackson", "ardent"],
-        "Fire Alarm": ["fire alarm", "fire detection", "firetech", "fire panel"],
-        "Fire Equipment": ["fire equipment", "extinguisher", "hose reel", "fire fighting"],
-        "Fire Door": ["fire door", "FD30", "FD60", "door inspection"],
-        "Emergency Lighting": ["emergency light", "exit sign", "3HR", "maintained", "non-maintained"],
-        "Cleaning": ["cleaning", "cleaner", "housekeeping", "janitorial"],
-        "Gardening": ["garden", "landscaping", "grounds", "tree", "hedge"],
-        "Boiler": ["boiler", "heating", "gas", "warmth", "radiator"],
-        "Pump": ["pump", "water pump", "booster", "pressure"],
-        "Swimming Pool": ["pool", "swimming", "chlorine", "filtration"],
-        "M&E": ["M&E", "mechanical", "electrical", "building services"],
-        "Drainage": ["drain", "gutter", "downpipe", "sewer"],
-        "Pest Control": ["pest", "rodent", "vermin", "mouse", "rat"],
-        "CCTV": ["CCTV", "camera", "surveillance", "security"],
-        "Water Hygiene": ["water hygiene", "legionella", "TMV", "temperature"],
-        "Door Entry": ["door entry", "intercom", "access control", "entry system"],
-        "General Maintenance": ["maintenance", "handyman", "repairs", "general"],
-    }
-
-    # Compliance asset links
+    # Compliance asset links (maps contract types to compliance assets)
     COMPLIANCE_LINKS = {
-        "Lift": "Lift",
+        "Lift Maintenance": "Lift",
         "Fire Alarm": "Fire Alarm",
         "Fire Equipment": "FRA",
-        "Fire Door": "Fire Door",
+        "Fire Door Maintenance": "Fire Door",
         "Emergency Lighting": "Emergency Lighting",
-        "Boiler": "Gas Safety",
+        "Boiler Maintenance": "Gas Safety",
         "Water Hygiene": "Legionella",
+        "HVAC": "HVAC",
+        "Door Entry System": "Door Entry",
+        "Sprinkler System": "Sprinkler System",
+        "AOV System": "AOV",
+        "Dry Riser": "Dry Riser",
+        "Automatic Doors": "Automatic Doors",
+        "Gas Safety": "Gas Safety",
+        "Electrical Maintenance": "EICR",
+        "Lightning Protection": "Lightning Protection",
+        "Generator": "Emergency Generator",
     }
 
     def __init__(self, building_folder: Path):
-        """Initialize extractor"""
+        """Initialize extractor with adaptive detector"""
         self.building_folder = building_folder
         self.contracts = []
+
+        # Initialize adaptive detector
+        self.adaptive_detector = AdaptiveDetector()
+
+        # Track detection results
+        self.new_types_detected = []
+        self.low_confidence_detections = []
 
     def extract_all(self) -> Dict:
         """
@@ -116,6 +115,26 @@ class MaintenanceContractExtractor:
         for ctype, count in sorted(by_type.items()):
             print(f"   {ctype}: {count}")
 
+        # Adaptive detection summary
+        if self.new_types_detected:
+            print(f"\n⚠️  NEW Contract Types Detected: {len(self.new_types_detected)}")
+            for item in self.new_types_detected:
+                print(f"   - {item['detected_type']} (from: {item['folder']})")
+
+        if self.low_confidence_detections:
+            print(f"\n⚠️  Low Confidence Detections: {len(self.low_confidence_detections)}")
+            for item in self.low_confidence_detections:
+                print(f"   - {item['detected_type']}: {item['reason']}")
+
+        # Export new types for review if any found
+        if self.new_types_detected or self.low_confidence_detections:
+            output_file = self.building_folder / "output" / "new_contract_types_for_review.json"
+            if not output_file.parent.exists():
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+
+            self.adaptive_detector.export_new_categories_for_approval(str(output_file))
+            print(f"\n✅ Exported new types for review: {output_file}")
+
         return {
             'contracts': self.contracts,
             'summary': {
@@ -123,27 +142,61 @@ class MaintenanceContractExtractor:
                 'active': active,
                 'expired': expired,
                 'by_type': dict(by_type),
+                'new_types_detected': len(self.new_types_detected),
+                'low_confidence_detections': len(self.low_confidence_detections),
+            },
+            'adaptive_detection': {
+                'new_types': self.new_types_detected,
+                'low_confidence': self.low_confidence_detections,
             }
         }
 
     def _extract_from_folder(self, folder: Path) -> Optional[Dict]:
-        """Extract contract details from a folder"""
+        """Extract contract details from a folder using adaptive detection"""
         folder_name = folder.name
         print(f"\n📁 {folder_name}")
 
-        # Detect contract type from folder name
-        contract_type = self._detect_contract_type(folder_name)
-        print(f"   Type: {contract_type}")
-
-        # Extract contractor name from folder name
-        contractor_name = self._extract_contractor_name(folder_name)
-
-        # Find contract documents
+        # Get all files for better detection
         pdf_files = list(folder.glob("*.pdf"))
         xlsx_files = list(folder.glob("*.xlsx")) + list(folder.glob("*.xls"))
         docx_files = list(folder.glob("*.docx"))
-
         all_files = pdf_files + xlsx_files + docx_files
+
+        file_names = [f.name for f in all_files] if all_files else []
+
+        # Use adaptive detector to identify contract type
+        detection_result = self.adaptive_detector.detect_contract_type(
+            folder_name,
+            file_names,
+            confidence_threshold=0.6
+        )
+
+        contract_type = detection_result['type']
+        confidence = detection_result['confidence']
+        is_new = detection_result['is_new']
+        requires_review = detection_result['requires_review']
+
+        # Print detection info
+        if is_new:
+            print(f"   Type: {contract_type} ⚠️  NEW TYPE (confidence: {confidence})")
+            self.new_types_detected.append({
+                'folder': folder_name,
+                'detected_type': contract_type,
+                'confidence': confidence,
+            })
+        elif requires_review:
+            print(f"   Type: {contract_type} ⚠️  LOW CONFIDENCE ({confidence})")
+            self.low_confidence_detections.append({
+                'folder': folder_name,
+                'detected_type': contract_type,
+                'confidence': confidence,
+                'reason': detection_result.get('review_reason', 'Unknown'),
+            })
+        else:
+            print(f"   Type: {contract_type} (confidence: {confidence})")
+
+        # Extract contractor name from folder name
+        contractor_name = self._extract_contractor_name(folder_name)
 
         if not all_files:
             print(f"   ⚠️  No contract documents found")
@@ -179,6 +232,9 @@ class MaintenanceContractExtractor:
             'contract_folder_detected': True,
             'document_count': len(all_files),
             'compliance_asset_link': compliance_link,
+            'detection_confidence': confidence,
+            'is_new_type': is_new,
+            'requires_review': requires_review,
         }
 
         # Print summary
@@ -193,17 +249,6 @@ class MaintenanceContractExtractor:
             print(f"   Links to: {compliance_link} compliance asset")
 
         return contract_data
-
-    def _detect_contract_type(self, text: str) -> str:
-        """Detect contract type from text"""
-        text_lower = text.lower()
-
-        for contract_type, keywords in self.CONTRACT_TYPES.items():
-            for keyword in keywords:
-                if keyword.lower() in text_lower:
-                    return contract_type
-
-        return "General Maintenance"
 
     def _extract_contractor_name(self, folder_name: str) -> Optional[str]:
         """Extract contractor name from folder name"""

@@ -496,7 +496,7 @@
       "regulatory_basis": "BS 5839-1",
       "priority": "critical",
       "recommended_action": "Verify if Fire Alarm exists and commission inspection",
-      "frequency_months": 12
+      "frequency_months": 6
     },
     {
       "asset_type": "Emergency Lighting",
@@ -508,6 +508,87 @@
       "frequency_months": 12
     },
     {
+      "asset_type": "AOV",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS 9991 / BS 9999",
+      "priority": "high",
+      "recommended_action": "Verify if AOV exists and commission inspection",
+      "frequency_months": 6
+    },
+    {
+      "asset_type": "Fire Extinguishers",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS 5306-3",
+      "priority": "medium",
+      "recommended_action": "Verify if Fire Extinguishers exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Fire Stopping",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Regulations Part B",
+      "priority": "high",
+      "recommended_action": "Verify if Fire Stopping exists and commission inspection",
+      "frequency_months": 36
+    },
+    {
+      "asset_type": "Smoke Detectors",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Smoke and Carbon Monoxide Alarm Regulations 2015",
+      "priority": "high",
+      "recommended_action": "Verify if Smoke Detectors exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "PAT Testing",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Electricity at Work Regulations 1989",
+      "priority": "medium",
+      "recommended_action": "Verify if PAT Testing exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Distribution Board",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "BS 7671",
+      "priority": "medium",
+      "recommended_action": "Verify if Distribution Board exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Roof Inspection",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "RICS Building Surveying",
+      "priority": "medium",
+      "recommended_action": "Verify if Roof Inspection exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Resident Engagement",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Safety Act 2022",
+      "priority": "medium",
+      "recommended_action": "Verify if Resident Engagement exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Compartmentation Survey",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Regulations Part B",
+      "priority": "high",
+      "recommended_action": "Verify if Compartmentation Survey exists and commission inspection",
+      "frequency_months": 36
+    },
+    {
       "asset_type": "Lift",
       "status": "missing",
       "inference_reason": "Required by regulation (no historical evidence found)",
@@ -517,13 +598,13 @@
       "frequency_months": 6
     },
     {
-      "asset_type": "AOV",
+      "asset_type": "Lift Maintenance",
       "status": "missing",
       "inference_reason": "Required by regulation (no historical evidence found)",
-      "regulatory_basis": "BS 9991 / BS 9999",
-      "priority": "high",
-      "recommended_action": "Verify if AOV exists and commission inspection",
-      "frequency_months": 6
+      "regulatory_basis": "BS EN 81-80",
+      "priority": "critical",
+      "recommended_action": "Verify if Lift Maintenance exists and commission inspection",
+      "frequency_months": 1
     },
     {
       "asset_type": "Gas Safety",
@@ -535,13 +616,94 @@
       "frequency_months": 12
     },
     {
-      "asset_type": "EPC",
+      "asset_type": "Buildings Insurance",
       "status": "missing",
       "inference_reason": "Required by regulation (no historical evidence found)",
-      "regulatory_basis": "Energy Performance of Buildings Regulations 2012",
+      "regulatory_basis": "Landlord and Tenant Act 1985",
+      "priority": "critical",
+      "recommended_action": "Verify if Buildings Insurance exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Public Liability",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Common Law",
+      "priority": "high",
+      "recommended_action": "Verify if Public Liability exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Health & Safety Risk",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Management of Health and Safety at Work Regulations 1999",
+      "priority": "medium",
+      "recommended_action": "Verify if Health & Safety Risk exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "H&S Audit",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "RIDDOR 2013",
       "priority": "low",
-      "recommended_action": "Verify if EPC exists and commission inspection",
-      "frequency_months": 120
+      "recommended_action": "Verify if H&S Audit exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Cleaning Contract",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "ARMA / RICS Standards",
+      "priority": "low",
+      "recommended_action": "Verify if Cleaning Contract exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Pest Control",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Prevention of Damage by Pests Act 1949",
+      "priority": "medium",
+      "recommended_action": "Verify if Pest Control exists and commission inspection",
+      "frequency_months": 3
+    },
+    {
+      "asset_type": "Waste Management",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Environmental Protection Act 1990",
+      "priority": "low",
+      "recommended_action": "Verify if Waste Management exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Insurance Schedule",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Landlord and Tenant Act 1985",
+      "priority": "medium",
+      "recommended_action": "Verify if Insurance Schedule exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Budget Approval",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Commonhold and Leasehold Reform Act 2002",
+      "priority": "medium",
+      "recommended_action": "Verify if Budget Approval exists and commission inspection",
+      "frequency_months": 12
+    },
+    {
+      "asset_type": "Resident Communication",
+      "status": "missing",
+      "inference_reason": "Required by regulation (no historical evidence found)",
+      "regulatory_basis": "Building Safety Act 2022",
+      "priority": "medium",
+      "recommended_action": "Verify if Resident Communication exists and commission inspection",
+      "frequency_months": 1
     }
   ],
   "compliance_analysis": {
@@ -679,7 +841,7 @@
         "regulatory_basis": "BS 5839-1",
         "priority": "critical",
         "recommended_action": "Verify if Fire Alarm exists and commission inspection",
-        "frequency_months": 12
+        "frequency_months": 6
       },
       {
         "asset_type": "Emergency Lighting",
@@ -691,6 +853,87 @@
         "frequency_months": 12
       },
       {
+        "asset_type": "AOV",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS 9991 / BS 9999",
+        "priority": "high",
+        "recommended_action": "Verify if AOV exists and commission inspection",
+        "frequency_months": 6
+      },
+      {
+        "asset_type": "Fire Extinguishers",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS 5306-3",
+        "priority": "medium",
+        "recommended_action": "Verify if Fire Extinguishers exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Fire Stopping",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Regulations Part B",
+        "priority": "high",
+        "recommended_action": "Verify if Fire Stopping exists and commission inspection",
+        "frequency_months": 36
+      },
+      {
+        "asset_type": "Smoke Detectors",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Smoke and Carbon Monoxide Alarm Regulations 2015",
+        "priority": "high",
+        "recommended_action": "Verify if Smoke Detectors exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "PAT Testing",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Electricity at Work Regulations 1989",
+        "priority": "medium",
+        "recommended_action": "Verify if PAT Testing exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Distribution Board",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "BS 7671",
+        "priority": "medium",
+        "recommended_action": "Verify if Distribution Board exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Roof Inspection",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "RICS Building Surveying",
+        "priority": "medium",
+        "recommended_action": "Verify if Roof Inspection exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Resident Engagement",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Safety Act 2022",
+        "priority": "medium",
+        "recommended_action": "Verify if Resident Engagement exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Compartmentation Survey",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Regulations Part B",
+        "priority": "high",
+        "recommended_action": "Verify if Compartmentation Survey exists and commission inspection",
+        "frequency_months": 36
+      },
+      {
         "asset_type": "Lift",
         "status": "missing",
         "inference_reason": "Required by regulation (no historical evidence found)",
@@ -700,13 +943,13 @@
         "frequency_months": 6
       },
       {
-        "asset_type": "AOV",
+        "asset_type": "Lift Maintenance",
         "status": "missing",
         "inference_reason": "Required by regulation (no historical evidence found)",
-        "regulatory_basis": "BS 9991 / BS 9999",
-        "priority": "high",
-        "recommended_action": "Verify if AOV exists and commission inspection",
-        "frequency_months": 6
+        "regulatory_basis": "BS EN 81-80",
+        "priority": "critical",
+        "recommended_action": "Verify if Lift Maintenance exists and commission inspection",
+        "frequency_months": 1
       },
       {
         "asset_type": "Gas Safety",
@@ -718,28 +961,109 @@
         "frequency_months": 12
       },
       {
-        "asset_type": "EPC",
+        "asset_type": "Buildings Insurance",
         "status": "missing",
         "inference_reason": "Required by regulation (no historical evidence found)",
-        "regulatory_basis": "Energy Performance of Buildings Regulations 2012",
+        "regulatory_basis": "Landlord and Tenant Act 1985",
+        "priority": "critical",
+        "recommended_action": "Verify if Buildings Insurance exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Public Liability",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Common Law",
+        "priority": "high",
+        "recommended_action": "Verify if Public Liability exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Health & Safety Risk",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Management of Health and Safety at Work Regulations 1999",
+        "priority": "medium",
+        "recommended_action": "Verify if Health & Safety Risk exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "H&S Audit",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "RIDDOR 2013",
         "priority": "low",
-        "recommended_action": "Verify if EPC exists and commission inspection",
-        "frequency_months": 120
+        "recommended_action": "Verify if H&S Audit exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Cleaning Contract",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "ARMA / RICS Standards",
+        "priority": "low",
+        "recommended_action": "Verify if Cleaning Contract exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Pest Control",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Prevention of Damage by Pests Act 1949",
+        "priority": "medium",
+        "recommended_action": "Verify if Pest Control exists and commission inspection",
+        "frequency_months": 3
+      },
+      {
+        "asset_type": "Waste Management",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Environmental Protection Act 1990",
+        "priority": "low",
+        "recommended_action": "Verify if Waste Management exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Insurance Schedule",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Landlord and Tenant Act 1985",
+        "priority": "medium",
+        "recommended_action": "Verify if Insurance Schedule exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Budget Approval",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Commonhold and Leasehold Reform Act 2002",
+        "priority": "medium",
+        "recommended_action": "Verify if Budget Approval exists and commission inspection",
+        "frequency_months": 12
+      },
+      {
+        "asset_type": "Resident Communication",
+        "status": "missing",
+        "inference_reason": "Required by regulation (no historical evidence found)",
+        "regulatory_basis": "Building Safety Act 2022",
+        "priority": "medium",
+        "recommended_action": "Verify if Resident Communication exists and commission inspection",
+        "frequency_months": 1
       }
     ],
     "summary": {
-      "total_required": 11,
+      "total_required": 29,
       "current": 3,
       "expired": 2,
       "inferred": 0,
-      "missing": 6,
-      "compliance_rate": 27.3
+      "missing": 24,
+      "compliance_rate": 10.3
     }
   },
   "maintenance_contracts": [
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Staff Payroll",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -749,11 +1073,14 @@
       "contract_source_path": "7. CONTRACTS/7.03 STAFF",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.33,
+      "is_new_type": false,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Conditional Reports",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -763,11 +1090,14 @@
       "contract_source_path": "7. CONTRACTS/7.14-CONDITIONAL REPORTS",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "CCTV",
+      "contract_type": "Cctv",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -777,11 +1107,14 @@
       "contract_source_path": "7. CONTRACTS/7.06 CCTV",
       "contract_folder_detected": true,
       "document_count": 3,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "General Maintenance",
+      "contract_type": "Business Roadio Simple Site Licence",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -791,11 +1124,14 @@
       "contract_source_path": "7. CONTRACTS/7.12 BUSINESS ROADIO SIMPLE SITE LICENCE",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
-      "contract_type": "Lift",
+      "contract_type": "Lifts",
       "contract_start_date": null,
       "contract_end_date": null,
       "contract_auto_renew": false,
@@ -805,7 +1141,10 @@
       "contract_source_path": "7. CONTRACTS/7.04 LIFTS",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": "Lift"
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     },
     {
       "contractor_name": "Unknown",
@@ -819,7 +1158,10 @@
       "contract_source_path": "7. CONTRACTS/7.01 CLEANING",
       "contract_folder_detected": true,
       "document_count": 1,
-      "compliance_asset_link": null
+      "compliance_asset_link": null,
+      "detection_confidence": 0.0,
+      "is_new_type": true,
+      "requires_review": true
     }
   ],
   "contract_summary": {
@@ -827,11 +1169,15 @@
     "active": 0,
     "expired": 0,
     "by_type": {
-      "General Maintenance": 3,
-      "CCTV": 1,
-      "Lift": 1,
+      "Staff Payroll": 1,
+      "Conditional Reports": 1,
+      "Cctv": 1,
+      "Business Roadio Simple Site Licence": 1,
+      "Lifts": 1,
       "Cleaning": 1
-    }
+    },
+    "new_types_detected": 9,
+    "low_confidence_detections": 2
   },
   "budgets": [
     {
@@ -1439,19 +1785,19 @@
     "units_with_leaseholders": 8,
     "leaseholders_with_balances": 4,
     "total_outstanding_balance": 13481.53,
-    "compliance_total_required": 11,
+    "compliance_total_required": 29,
     "compliance_current": 3,
     "compliance_expired": 2,
-    "compliance_missing": 6,
-    "compliance_rate": 27.3,
+    "compliance_missing": 24,
+    "compliance_rate": 10.3,
     "total_contracts": 6,
-    "contracts_with_compliance_link": 1,
+    "contracts_with_compliance_link": 0,
     "total_leases": 4,
     "total_budgets": 2,
     "total_budget_line_items": 52,
     "total_insurance_policies": 3
   },
-  "extraction_timestamp": "2025-10-14T12:28:47.910690",
+  "extraction_timestamp": "2025-10-14T12:59:25.498122",
   "extraction_method": "PRODUCTION FINAL - Complete leaseholder data + Maintenance contracts + Compliance inference",
   "extraction_version": "6.0 - PRODUCTION FINAL",
   "data_quality": "production",
