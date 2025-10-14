@@ -1,17 +1,17 @@
-#!/usr/bin/env python3
 """
-BlocIQ SQL Generator v2 - Supabase Schema
-==========================================
+BlocIQ SQL Writer - Enhanced V2
+================================
 Generates INSERT statements for the comprehensive Supabase schema.
 Handles buildings, units, leaseholders, compliance, contracts, and documents.
 
 Features:
 - UUIDs for all primary keys
-- References new comprehensive schema
+- Clean SQL generation
+- References Supabase schema
 - Document registry with storage bucket paths
 - Extraction run metadata
-- No file uploads (files uploaded manually)
 
+Integrated with BlocIQ Onboarder
 Author: BlocIQ Team
 Date: 2025-10-14
 """
@@ -30,6 +30,7 @@ class SQLGeneratorV2:
         self.building_id = None
         self.extraction_run_id = None
         self.storage_bucket = "building-documents"  # Supabase storage bucket name
+        self.agency_id = '11111111-1111-1111-1111-111111111111'  # BlocIQ agency ID
 
         # Track UUIDs for foreign keys
         self.unit_ids = {}  # unit_number -> UUID
@@ -38,6 +39,456 @@ class SQLGeneratorV2:
         self.contract_ids = {}  # contract key -> UUID
         self.asset_type_ids = {}  # Pre-loaded from reference table
         self.contract_type_ids = {}  # Pre-loaded from reference table
+        
+        # For compatibility with onboarder
+        self.sql_statements = []
+
+    def generate_migration(self, mapped_data: Dict) -> str:
+        """
+        Generate SQL migration script (BlocIQ Onboarder Interface)
+        
+        Args:
+            mapped_data: Dictionary containing mapped data for all tables from the onboarder
+            
+        Returns:
+            SQL migration script as string
+        """
+        # This method needs to convert the onboarder's mapped_data format
+        # to the format that generate_sql_file() expects
+        
+        # Convert mapped_data to the format expected by generate_sql_file()
+        data = self._convert_mapped_data_to_extraction_format(mapped_data)
+        
+        # Use the full generate_sql_file() method with in-memory output
+        sql_statements = []
+        
+        self.building_id = data.get('id') or str(uuid.uuid4())
+        self.extraction_run_id = str(uuid.uuid4())
+        
+        # Header
+        sql_statements.append(self._generate_header(data, None))
+        
+        # 1. Building
+        building_sql = self._generate_building_insert(data, None)
+        if building_sql:
+            sql_statements.append(building_sql)
+        
+        # 2. Building Blocks (if multi-block)
+        if data.get('num_blocks', 0) > 1:
+            blocks_sql = self._generate_blocks_insert(data)
+            if blocks_sql:
+                sql_statements.append(blocks_sql)
+        
+        # 3. Units
+        units_sql = self._generate_units_insert(data)
+        if units_sql:
+            sql_statements.append(units_sql)
+        
+        # 4. Leaseholders
+        leaseholders_sql = self._generate_leaseholders_insert(data)
+        if leaseholders_sql:
+            sql_statements.append(leaseholders_sql)
+        
+        # 5. Compliance Assets
+        compliance_sql = self._generate_compliance_insert(data)
+        if compliance_sql:
+            sql_statements.append(compliance_sql)
+        
+        # 6. Maintenance Contracts
+        contracts_sql = self._generate_contracts_insert(data)
+        if contracts_sql:
+            sql_statements.append(contracts_sql)
+        
+        # 7. Budgets + Budget Line Items
+        budget_result = self._generate_budgets_with_line_items(data)
+        if budget_result:
+            sql_statements.append(budget_result)
+        
+        # 7b. Maintenance Schedules (inferred from contracts)
+        schedules_sql = self._generate_maintenance_schedules(data)
+        if schedules_sql:
+            sql_statements.append(schedules_sql)
+        
+        # 8. Insurance (if available)
+        if data.get('insurance_policies'):
+            insurance_sql = self._generate_insurance_insert(data)
+            if insurance_sql:
+                sql_statements.append(insurance_sql)
+        
+        # 8a. Leases
+        if data.get('leases'):
+            leases_sql = self._generate_leases_insert(data)
+            if leases_sql:
+                sql_statements.append(leases_sql)
+        
+        # 8b. Contractors
+        if data.get('contractors'):
+            contractors_sql = self._generate_contractors_insert(data)
+            if contractors_sql:
+                sql_statements.append(contractors_sql)
+        
+        # 8c. Major Works
+        if data.get('major_works'):
+            major_works_sql = self._generate_major_works_insert(data)
+            if major_works_sql:
+                sql_statements.append(major_works_sql)
+        
+        # 9. Documents Registry
+        documents_sql = self._generate_documents_insert(data, None)
+        if documents_sql:
+            sql_statements.append(documents_sql)
+        
+        # 10. Extraction Run Metadata
+        stats = {
+            'units': len(data.get('units', [])),
+            'leaseholders': len(data.get('leaseholders', [])),
+            'compliance_assets': len(data.get('compliance_assets_all', [])),
+            'contracts': len(data.get('maintenance_contracts', []))
+        }
+        extraction_sql = self._generate_extraction_run(data, stats, None)
+        if extraction_sql:
+            sql_statements.append(extraction_sql)
+        
+        # Footer
+        sql_statements.append("COMMIT;")
+        
+        return "\n\n".join(sql_statements)
+    
+    def _convert_mapped_data_to_extraction_format(self, mapped_data: Dict) -> Dict:
+        """Convert onboarder's mapped_data format to extraction format"""
+        # The onboarder uses different field names than the extraction scripts
+        # This method bridges the gap
+        
+        building = mapped_data.get('building', {})
+        
+        # Start with building data
+        data = {
+            'building_name': building.get('name', 'Unknown Building'),
+            'building_address': building.get('address', ''),
+            'postcode': building.get('postcode', ''),
+            'city': building.get('city', 'London'),
+            'id': building.get('id'),
+            
+            # Add all building fields
+            **building,
+            
+            # Core entity lists
+            'units': mapped_data.get('units', []),
+            'leaseholders': mapped_data.get('leaseholders', []),
+            'compliance_assets_all': mapped_data.get('compliance_assets', []),
+            'maintenance_contracts': mapped_data.get('maintenance_contracts', []),
+            
+            # Financial data
+            'insurance_policies': mapped_data.get('insurance_policies', []),
+            
+            # Summary
+            'summary': mapped_data.get('summary', {}),
+            
+            # Metadata
+            'extraction_version': '6.0',
+            'data_quality': 'production',
+            'confidence_score': 0.99
+        }
+        
+        # Handle budget data - convert from onboarder format
+        if 'annual_service_charge_budget' in building or 'budgets' in mapped_data:
+            budget_amount = building.get('annual_service_charge_budget') or \
+                          (mapped_data.get('budgets', [{}])[0].get('total_amount') if mapped_data.get('budgets') else None)
+            if budget_amount:
+                data['summary']['service_charge_budget'] = budget_amount
+        
+        return data
+    
+    def _generate_insurance_insert(self, data: Dict) -> str:
+        """Generate insurance policies INSERT statements (SCHEMA ALIGNED)"""
+        policies = data.get('insurance_policies', [])
+        if not policies:
+            return ""
+        
+        sql_parts = ["""
+-- ============================================================================
+-- Insurance Policies (Supabase: insurance_policies table)
+-- ============================================================================"""]
+        
+        for policy in policies:
+            policy_id = str(uuid.uuid4())
+            
+            # Map extracted fields to schema fields
+            policy_type = policy.get('policy_type') or policy.get('insurance_type', 'General')
+            insurer = policy.get('insurer') or policy.get('insurer_name', '')
+            annual_premium = policy.get('annual_premium') or policy.get('estimated_premium') or policy.get('premium_amount')
+            
+            sql_parts.append(f"""
+INSERT INTO insurance_policies (
+    id, building_id, policy_type, insurer,
+    renewal_date, annual_premium, policy_number
+)
+VALUES (
+    '{policy_id}',
+    '{self.building_id}',
+    '{self._sql_escape(policy_type)}',
+    '{self._sql_escape(insurer)}',
+    {self._sql_date(policy.get('renewal_date'))},
+    {annual_premium or 'NULL'},
+    '{self._sql_escape(policy.get('policy_number', ''))}'
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_budgets_with_line_items(self, data: Dict) -> str:
+        """Generate budgets INSERT with line items (COMPLETE BUDGET DATA)"""
+        budgets = data.get('budgets', [])
+        if not budgets or len(budgets) == 0:
+            return ""
+        
+        budget = budgets[0]  # Take first budget
+        budget_id = str(uuid.uuid4())
+        
+        sql_parts = []
+        
+        # 1. Main Budget Record
+        financial_year = budget.get('financial_year', '2025/2026')
+        year = int(financial_year.split('/')[0]) if '/' in financial_year else datetime.now().year
+        
+        # Calculate total from line items
+        line_items = budget.get('line_items', [])
+        total_budget = sum(item.get('budget_2025_26', 0) for item in line_items if item.get('category') != 'Total')
+        
+        sql_parts.append(f"""
+-- ============================================================================
+-- Budget (with {len(line_items)} line items)
+-- ============================================================================
+INSERT INTO budgets (
+    id, building_id, budget_year, total_budget, 
+    status, source_document
+)
+VALUES (
+    '{budget_id}',
+    '{self.building_id}',
+    {year},
+    {total_budget},
+    '{self._sql_escape(budget.get('status', 'draft'))}',
+    '{self._sql_escape(budget.get('source_document', ''))}'
+);""")
+        
+        # 2. Budget Line Items
+        if line_items:
+            sql_parts.append(f"""
+-- Budget Line Items ({len(line_items)} items)""")
+            
+            for item in line_items:
+                # Skip the "Total" row
+                if item.get('category') == 'Total':
+                    continue
+                
+                item_id = str(uuid.uuid4())
+                category = item.get('category', 'Unknown')
+                section = item.get('section', '')
+                budgeted_amount = item.get('budget_2025_26', 0)
+                actual_amount = item.get('actual_2024_25', 0)
+                variance = item.get('variance_from_actual', 0)
+                variance_pct = item.get('variance_percentage')
+                
+                sql_parts.append(f"""
+INSERT INTO budget_line_items (
+    id, budget_id, category, subcategory, 
+    budgeted_amount, actual_amount, variance, variance_percentage
+)
+VALUES (
+    '{item_id}',
+    '{budget_id}',
+    '{self._sql_escape(category)}',
+    '{self._sql_escape(section)}',
+    {budgeted_amount},
+    {actual_amount or 0},
+    {variance or 0},
+    {variance_pct or 'NULL'}
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_maintenance_schedules(self, data: Dict) -> str:
+        """Generate maintenance schedules from contracts (INFERRED SCHEDULES)"""
+        contracts = data.get('maintenance_contracts', [])
+        if not contracts:
+            return ""
+        
+        # Map contract types to service frequencies
+        FREQUENCY_MAP = {
+            'Lift Maintenance': ('annual', 12),
+            'Fire Alarm': ('biannual', 6),
+            'Emergency Lighting': ('annual', 12),
+            'EICR': ('five_yearly', 60),
+            'Legionella': ('annual', 12),
+            'Water Hygiene': ('quarterly', 3),
+            'Gas Safety': ('annual', 12),
+            'Boiler Maintenance': ('annual', 12),
+            'PAT Testing': ('biannual', 6),
+            'Pest Control': ('quarterly', 3),
+            'Cleaning': ('weekly', 0.25),
+            'Gardening': ('monthly', 1),
+            'CCTV': ('annual', 12),
+            'Door Entry': ('biannual', 6)
+        }
+        
+        # Track created schedules by contract_id
+        self.schedule_ids = {}
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Maintenance Schedules (inferred from {len(contracts)} contracts)
+-- ============================================================================"""]
+        
+        for contract in contracts:
+            contract_type = contract.get('contract_type', 'General Maintenance')
+            contract_id = self.contract_ids.get(contract.get('contractor_name', ''))
+            
+            if not contract_id:
+                continue  # Skip if contract wasn't generated
+            
+            # Get frequency for this contract type
+            frequency_info = FREQUENCY_MAP.get(contract_type, ('annual', 12))
+            frequency, frequency_months = frequency_info
+            
+            schedule_id = str(uuid.uuid4())
+            self.schedule_ids[contract.get('contractor_name', '')] = schedule_id
+            
+            # Determine priority based on contract type
+            priority = 'critical' if contract_type in ['Fire Alarm', 'Lift Maintenance', 'Gas Safety', 'EICR'] else 'high' if contract_type in ['Legionella', 'Water Hygiene', 'Emergency Lighting'] else 'medium'
+            
+            # Status: active if contract is active, otherwise cancelled
+            status = 'active' if contract.get('contract_status', '').lower() == 'active' else 'upcoming'
+            
+            sql_parts.append(f"""
+INSERT INTO maintenance_schedules (
+    id, building_id, contract_id, service_type,
+    frequency, frequency_months, priority, status,
+    responsible_contractor, description
+)
+VALUES (
+    '{schedule_id}',
+    '{self.building_id}',
+    '{contract_id}',
+    '{self._sql_escape(contract_type)}',
+    '{frequency}',
+    {frequency_months},
+    '{priority}',
+    '{status}',
+    '{self._sql_escape(contract.get('contractor_name', 'Unknown'))}',
+    'Scheduled {frequency} maintenance for {self._sql_escape(contract_type)}'
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_leases_insert(self, data: Dict) -> str:
+        """Generate leases INSERT statements"""
+        leases = data.get('leases', [])
+        if not leases:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Leases ({len(leases)} lease documents)
+-- ============================================================================"""]
+        
+        for lease in leases:
+            lease_id = str(uuid.uuid4())
+            
+            sql_parts.append(f"""
+INSERT INTO leases (
+    id, building_id, title_number, lease_type,
+    source_document, document_location, page_count,
+    file_size_mb, extraction_timestamp, extracted_successfully
+)
+VALUES (
+    '{lease_id}',
+    '{self.building_id}',
+    '{self._sql_escape(lease.get('title_number', ''))}',
+    '{self._sql_escape(lease.get('document_type', 'Lease'))}',
+    '{self._sql_escape(lease.get('source_document', ''))}',
+    '{self._sql_escape(lease.get('document_location', ''))}',
+    {lease.get('page_count') or 'NULL'},
+    {lease.get('file_size_mb') or 'NULL'},
+    {self._sql_nullable(lease.get('extraction_timestamp'))},
+    {self._sql_bool(lease.get('extracted_successfully', True))}
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_contractors_insert(self, data: Dict) -> str:
+        """Generate contractors INSERT statements"""
+        contractors = data.get('contractors', [])
+        if not contractors:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Contractors ({len(contractors)} contractors)
+-- ============================================================================"""]
+        
+        for contractor in contractors:
+            contractor_id = str(uuid.uuid4())
+            
+            # Extract service type from folder path
+            folder_path = contractor.get('folder_path', '')
+            service_type = contractor.get('service_type', 'General Maintenance')
+            
+            sql_parts.append(f"""
+INSERT INTO contractors (
+    id, company_name, services_offered, is_active, notes
+)
+VALUES (
+    '{contractor_id}',
+    '{self._sql_escape(contractor.get('contractor_name', 'Unknown'))}',
+    ARRAY['{self._sql_escape(service_type)}'],
+    TRUE,
+    'Folder: {self._sql_escape(folder_path)}, Documents: {contractor.get('contract_documents_count', 0)}'
+);""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_major_works_insert(self, data: Dict) -> str:
+        """Generate major works projects INSERT statements"""
+        major_works = data.get('major_works', [])
+        if not major_works:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Major Works Projects ({len(major_works)} projects detected)
+-- ============================================================================"""]
+        
+        for project in major_works:
+            project_id = str(uuid.uuid4())
+            
+            # Extract from major_works structure
+            detected = project.get('major_works_detected', False)
+            if not detected:
+                continue
+            
+            total_docs = project.get('total_documents', 0)
+            s20_docs = project.get('s20_consultation_documents', 0)
+            folder_path = project.get('folder_path', '')
+            
+            sql_parts.append(f"""
+INSERT INTO major_works_projects (
+    id, building_id, project_name, description,
+    status, s20_consultation_required, s20_documents_count,
+    folder_path, total_documents
+)
+VALUES (
+    '{project_id}',
+    '{self.building_id}',
+    'Major Works Project',
+    'Detected from documents folder',
+    'planned',
+    {self._sql_bool(s20_docs > 0)},
+    {s20_docs},
+    '{self._sql_escape(folder_path)}',
+    {total_docs}
+);""")
+        
+        return "\n".join(sql_parts)
 
     def generate_sql_file(self, data: Dict, output_file: str, source_folder: str = None) -> Dict:
         """
@@ -106,19 +557,56 @@ class SQLGeneratorV2:
             sql_statements.append(contracts_sql)
             stats['contracts'] = len(data.get('maintenance_contracts', []))
 
-        # 7. Budgets
-        budgets_sql = self._generate_budgets_insert(data)
+        # 7. Budgets + Budget Line Items
+        budgets_sql = self._generate_budgets_with_line_items(data)
         if budgets_sql:
             sql_statements.append(budgets_sql)
             stats['budgets'] += 1
+            # Count line items
+            if data.get('budgets') and data['budgets'][0].get('line_items'):
+                stats['budget_line_items'] = len(data['budgets'][0]['line_items'])
 
-        # 8. Documents Registry
+        # 7b. Maintenance Schedules
+        schedules_sql = self._generate_maintenance_schedules(data)
+        if schedules_sql:
+            sql_statements.append(schedules_sql)
+            stats['maintenance_schedules'] = len(data.get('maintenance_contracts', []))
+
+        # 8. Insurance Policies
+        if data.get('insurance_policies'):
+            insurance_sql = self._generate_insurance_insert(data)
+            if insurance_sql:
+                sql_statements.append(insurance_sql)
+                stats['insurance_policies'] = len(data.get('insurance_policies', []))
+
+        # 8a. Leases
+        if data.get('leases'):
+            leases_sql = self._generate_leases_insert(data)
+            if leases_sql:
+                sql_statements.append(leases_sql)
+                stats['leases'] = len(data.get('leases', []))
+
+        # 8b. Contractors
+        if data.get('contractors'):
+            contractors_sql = self._generate_contractors_insert(data)
+            if contractors_sql:
+                sql_statements.append(contractors_sql)
+                stats['contractors'] = len(data.get('contractors', []))
+
+        # 8c. Major Works
+        if data.get('major_works'):
+            major_works_sql = self._generate_major_works_insert(data)
+            if major_works_sql:
+                sql_statements.append(major_works_sql)
+                stats['major_works'] = len(data.get('major_works', []))
+
+        # 9. Documents Registry
         documents_sql = self._generate_documents_insert(data, source_folder)
         if documents_sql:
             sql_statements.append(documents_sql)
             stats['documents'] = documents_sql.count('INSERT INTO documents')
 
-        # 9. Extraction Run Metadata
+        # 10. Extraction Run Metadata
         extraction_sql = self._generate_extraction_run(data, stats, source_folder)
         if extraction_sql:
             sql_statements.append(extraction_sql)
@@ -414,6 +902,10 @@ VALUES (
         for contract in contracts:
             contract_id = str(uuid.uuid4())
             contract_type = contract.get('contract_type', 'General Maintenance')
+            contractor_name = contract.get('contractor_name', 'Unknown')
+            
+            # Track contract_id for schedules
+            self.contract_ids[contractor_name] = contract_id
 
             sql_parts.append(f"""
 -- {contract_type}
@@ -585,6 +1077,17 @@ VALUES (
             return 'NULL'
         # Assume date is already in YYYY-MM-DD format
         return f"'{date_value}'"
+    
+    def _sql_nullable(self, value: Any) -> str:
+        """Format nullable value for SQL (handles timestamps, strings, numbers)"""
+        if value is None or value == '':
+            return 'NULL'
+        if isinstance(value, bool):
+            return self._sql_bool(value)
+        if isinstance(value, (int, float)):
+            return str(value)
+        # For timestamps and strings
+        return f"'{self._sql_escape(str(value))}'"
 
     def _get_asset_type_code(self, asset_type: str) -> str:
         """Map asset type name to database code"""
@@ -627,6 +1130,11 @@ VALUES (
         }
         return mapping.get(contract_type, 'GENERAL_MAINTENANCE')
 
+
+# ============================================================================
+# Backward Compatibility Alias for BlocIQ_Onboarder
+# ============================================================================
+SQLWriter = SQLGeneratorV2
 
 # ============================================================================
 # CLI Interface
