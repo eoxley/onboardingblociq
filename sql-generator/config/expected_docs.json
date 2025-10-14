@@ -1,0 +1,27 @@
+{
+  "default": [
+    "FRA",
+    "EICR",
+    "Asbestos",
+    "Legionella",
+    "Insurance"
+  ],
+  "has_lifts": [
+    "Lift_LOLER"
+  ],
+  "over_11m": [
+    "Safety_Case"
+  ],
+  "has_gas": [
+    "Gas_Safety"
+  ],
+  "has_communal_electrics": [
+    "Emergency_Lighting",
+    "Fire_Alarm"
+  ],
+  "conditional": {
+    "has_aov_systems": ["AOV_Systems"],
+    "has_dry_riser": ["Dry_Riser"],
+    "has_lightning_protection": ["Lightning_Protection"]
+  }
+}
