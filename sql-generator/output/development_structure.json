@@ -1,0 +1,77 @@
+{
+  "development_name": "Kensington Gardens Estate Estate",
+  "tenure_type": "Leasehold",
+  "num_buildings": 3,
+  "buildings": [
+    {
+      "building_name": "54 Kensington Gardens Square",
+      "building_alias": null,
+      "address": "54 Kensington Gardens Square",
+      "postcode": "W2 4BA",
+      "source_document": "Estate_Overview.pdf",
+      "building_id": "BLD-001"
+    },
+    {
+      "building_name": "50 Kensington Gardens Square",
+      "building_alias": null,
+      "address": "50 Kensington Gardens Square",
+      "postcode": "W2 4BA",
+      "source_document": "Estate_Overview.pdf",
+      "building_id": "BLD-002"
+    },
+    {
+      "building_name": "52 Kensington Gardens Square",
+      "building_alias": null,
+      "address": "52 Kensington Gardens Square",
+      "postcode": "W2 4BA",
+      "source_document": "Estate_Overview.pdf",
+      "building_id": "BLD-003"
+    }
+  ],
+  "estate_assets": [
+    {
+      "asset_type": "Gardens",
+      "description": "Estate gardens",
+      "shared_by_all_buildings": true
+    },
+    {
+      "asset_type": "Parking",
+      "description": "Communal car park",
+      "shared_by_all_buildings": true
+    },
+    {
+      "asset_type": "Shared Services",
+      "description": "Shared heating",
+      "shared_by_all_buildings": true
+    }
+  ],
+  "has_estate_service_charge": true,
+  "has_master_apportionment": true,
+  "insurance_policy": {
+    "policy_reference": "KGE-INS-2025",
+    "shared_across_buildings": true
+  },
+  "bsa_registration_number": "BSA-KGE-12345",
+  "document_classifications": [
+    {
+      "file_name": "Estate_Overview.pdf",
+      "document_type": "Management Agreement",
+      "attachment_level": "development"
+    },
+    {
+      "file_name": "FRA_Block_A.pdf",
+      "document_type": "FRA",
+      "attachment_level": "building"
+    },
+    {
+      "file_name": "EICR_Block_B.pdf",
+      "document_type": "EICR",
+      "attachment_level": "building"
+    },
+    {
+      "file_name": "Lease_Flat_4.pdf",
+      "document_type": "Lease",
+      "attachment_level": "unit"
+    }
+  ]
+}
