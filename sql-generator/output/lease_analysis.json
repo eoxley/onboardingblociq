@@ -1,0 +1,70 @@
+{
+  "lease_date": "1996-03-25",
+  "lease_term_years": 125,
+  "lease_term_start": "1996-03-25",
+  "lease_term_end": "2121-02-23",
+  "title_number": "NGL123456",
+  "landlord_name": "CONNAUGHT ESTATES LTD",
+  "tenant_name": "JOHN SMITH",
+  "demised_premises": "Flat 4, 50 Kensington Gardens Square, London W2 4BG",
+  "ground_rent_amount": 250.0,
+  "ground_rent_review_pattern": "Doubles periodically",
+  "ground_rent_payable_to": "Freeholder",
+  "service_charge_basis": "Percentage",
+  "service_charge_percentage": 12.45,
+  "service_charge_exclusions": "excluding insurance and sinking fund contributions",
+  "tenant_repairs": "To keep and maintain the internal parts of the Demised Premises including all plaster, paint and decorations in good repair",
+  "landlord_repairs": "To keep in repair and properly maintain the structure, roof, foundations and external parts of the building and all common parts",
+  "decorations_required": "Every 5 years internal",
+  "repair_obligation": "Tenant: To keep and maintain the internal parts of the Demised Premises including all plaster, paint and decorations in good repair; Landlord: To keep in repair and properly maintain the structure, roof, foundations and external parts of the building and all common parts",
+  "use_clause": "To use the Demised Premises as a private residential dwelling only and for no other purpose",
+  "pets_clause": "Not to keep any pets or animals without the prior written consent of the Landlord.",
+  "flooring_clause": "Not to lay any timber, wooden or laminate flooring without the prior written consent of the Landlord, such consent not to be unreasonably withheld.",
+  "subletting_clause": "Not to underlet the whole or any part of the Demised Premises save that the Tenant may underlet the whole (but not part) of the premises with the Landlord's prior written consent.",
+  "business_use_clause": "Not to carry on any trade, business or profession from the Demised Premises.",
+  "nuisance_clause": "Not to cause any nuisance, noise or annoyance to neighbouring occupiers.",
+  "clauses": [
+    {
+      "type": "Use",
+      "text": "To use the Demised Premises as a private residential dwelling only and for no other purpose",
+      "allows_with_consent": false
+    },
+    {
+      "type": "Pets",
+      "text": "Not to keep any pets or animals without the prior written consent of the Landlord.",
+      "allows_with_consent": false
+    },
+    {
+      "type": "Flooring",
+      "text": "Not to lay any timber, wooden or laminate flooring without the prior written consent of the Landlord, such consent not to be unreasonably withheld.",
+      "allows_with_consent": true
+    },
+    {
+      "type": "Subletting",
+      "text": "Not to underlet the whole or any part of the Demised Premises save that the Tenant may underlet the whole (but not part) of the premises with the Landlord's prior written consent.",
+      "allows_with_consent": false
+    },
+    {
+      "type": "Business Use",
+      "text": "Not to carry on any trade, business or profession from the Demised Premises.",
+      "allows_with_consent": false
+    },
+    {
+      "type": "Nuisance",
+      "text": "Not to cause any nuisance, noise or annoyance to neighbouring occupiers.",
+      "allows_with_consent": false
+    }
+  ],
+  "insured_by": "Landlord",
+  "reinstatement_basis": "Full value",
+  "forfeiture_clause": "14 days' notice after arrears",
+  "car_space_included": "Yes",
+  "car_space_details": "parking space (Space 4) is included with the Demised Premises",
+  "storage_included": "Yes",
+  "storage_details": "STORAGE: Basement Store 3 is allocated to the Tenant",
+  "garden_or_balcony_rights": "Gardens Square, London W2 4BG (\"the Landlord\") (2) JOHN SMITH of 42 High Street, Oxford OX1 1AB (\"the Tenant\") DEMISED PREMISES: Flat 4, 50 Kensington Gardens Square, London W2 4BG TERM: 125 years from and including 25 March 1996 TITLE NUMBER: NGL123456 GROUND RENT: \u00a3250",
+  "source_files": [
+    "Lease_Flat_4_1996.pdf"
+  ],
+  "confidence": 0.8999999999999999
+}
