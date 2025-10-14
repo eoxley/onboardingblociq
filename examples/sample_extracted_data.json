@@ -1,0 +1,57 @@
+{
+  "building_name": "50 Kensington Gardens Square",
+  "building_address": "50 Kensington Gardens Square, London",
+  "postcode": "W2 4BA",
+  "year_built": 1880,
+  "num_floors": 6,
+  "num_units": 8,
+  "construction_type": "Victorian conversion",
+  "has_lifts": true,
+  "num_lifts": 2,
+  "fire_strategy_type": "Stay Put",
+  "bsa_status": "Registered",
+  "bsa_registration_number": "BSA-KGS-12345",
+
+  "unit_number": "Flat 4",
+  "floor_number": 2,
+  "bedrooms": 2,
+  "tenure_type": "Leasehold",
+  "leaseholder_name": "John Smith",
+  "correspondence_address": "42 High Street, Oxford OX1 1AB",
+  "is_resident_owner": false,
+  "apportionment_percentage": 12.45,
+
+  "lease_date": "1996-03-25",
+  "lease_term_years": 125,
+  "lease_term_start": "1996-03-25",
+  "lease_term_end": "2121-03-24",
+  "ground_rent_amount": 250.00,
+  "ground_rent_review_basis": "Doubles every 25 years",
+  "service_charge_basis": "Percentage",
+  "title_number": "NGL123456",
+  "landlord_name": "Connaught Estates Ltd",
+
+  "fra_date": "2025-03-04",
+  "fra_next_due": "2026-03-04",
+  "fra_status": "current",
+  "fra_risk_rating": "Low",
+  "fra_assessor": "TriFire Safety Ltd",
+
+  "eicr_date": "2022-06-22",
+  "eicr_next_due": "2027-06-22",
+  "eicr_status": "current",
+
+  "financial_year": "2024/2025",
+  "budget_total": 125000.00,
+  "reserve_fund_amount": 25000.00,
+  "schedule_letter": "A",
+
+  "unknown_field_1": "Additional notes about the property",
+  "custom_metadata": {
+    "heating_system": "Central heating",
+    "parking_spaces": 2,
+    "garden_access": true
+  },
+  "extraction_confidence": 0.92,
+  "source_document": "Building_Summary_Complete.pdf"
+}
