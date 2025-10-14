@@ -1,0 +1,209 @@
+{
+  "generated_at": "2025-10-14",
+  "health": {
+    "current": 4,
+    "due_soon": 0,
+    "expired": 0,
+    "missing": 9
+  },
+  "portfolio_score": 33.1,
+  "items": [
+    {
+      "category": "EICR",
+      "status": "current",
+      "inspection_date": "2022-06-22",
+      "next_due_date": "2027-06-22",
+      "days_to_due": 616,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": "EICR_2022.pdf",
+      "confidence": 0.7,
+      "notes": [
+        "explicit_next_due_detected"
+      ]
+    },
+    {
+      "category": "FIRE_ALARM",
+      "status": "current",
+      "inspection_date": "2025-09-10",
+      "next_due_date": "2025-12-10",
+      "days_to_due": 57,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": "FireAlarm_Sept2025.pdf",
+      "confidence": 0.4,
+      "notes": [
+        "default_cycle_applied",
+        "site_override_cycle"
+      ]
+    },
+    {
+      "category": "FRA",
+      "status": "current",
+      "inspection_date": "2025-03-04",
+      "next_due_date": "2026-03-04",
+      "days_to_due": 141,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": "FRA_2025.pdf",
+      "confidence": 0.7,
+      "notes": [
+        "explicit_next_due_detected"
+      ]
+    },
+    {
+      "category": "LOLER_LIFT",
+      "status": "current",
+      "inspection_date": "2025-07-15",
+      "next_due_date": "2026-01-15",
+      "days_to_due": 93,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": "LOLER_2025.pdf",
+      "confidence": 0.4,
+      "notes": [
+        "default_cycle_applied"
+      ]
+    },
+    {
+      "category": "ASBESTOS",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "EM_LIGHT",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "FIRE_DOOR",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "FRAEW_EWS",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "GAS_SAFETY",
+      "status": "not_required",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": false,
+      "source_file": null,
+      "confidence": 1.0,
+      "notes": [
+        "not_required_building_profile"
+      ]
+    },
+    {
+      "category": "HS_AUDIT",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "Medium",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "INSURANCE_POLICY",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "INS_VALUATION",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "Medium",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "LEGIONELLA_RA",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "Medium",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    },
+    {
+      "category": "WATER_MONITORING",
+      "status": "missing",
+      "inspection_date": null,
+      "next_due_date": null,
+      "days_to_due": null,
+      "criticality": "High",
+      "applicable": true,
+      "source_file": null,
+      "confidence": 0.0,
+      "notes": [
+        "no_document_found"
+      ]
+    }
+  ]
+}
