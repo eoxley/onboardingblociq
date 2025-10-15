@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /Users/ellie/onboardingblociq
+/usr/local/bin/python3 supplier_onboarding_app.py
