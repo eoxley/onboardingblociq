@@ -151,6 +151,10 @@ class BlocIQOnboarder:
         # Step 4.75: Generate Building Health Check PDF (BEFORE upload so it can be uploaded too)
         print("\n📊 Generating Building Health Check Report...")
         self._generate_health_check_pdf()
+        
+        # Step 4.76: Generate Ultimate Comprehensive PDF Report
+        print("\n📄 Generating Ultimate Comprehensive PDF Report...")
+        self._generate_ultimate_pdf_report()
 
         # Step 4.8: Upload files to Supabase Storage (includes health check PDF)
         print("\n📤 Uploading files to Supabase Storage...")
@@ -1155,6 +1159,62 @@ class BlocIQOnboarder:
             import traceback
             traceback.print_exc()
             self.health_check_pdf_path = None
+    
+    def _generate_ultimate_pdf_report(self):
+        """Generate Ultimate Comprehensive PDF Report with all extracted data"""
+        try:
+            # Import the ultimate report generator
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent))
+            from generate_ultimate_report import UltimatePropertyReport
+            
+            # Check if we have the summary JSON
+            summary_file = self.output_dir / "summary.json"
+            if not summary_file.exists():
+                print("  ⚠️  Summary JSON not found, skipping ultimate report")
+                return
+            
+            # Load summary data
+            with open(summary_file, 'r') as f:
+                data = json.load(f)
+            
+            # Generate PDF
+            building_name = data.get('building_name', 'Building').replace(' ', '_')
+            pdf_file = self.output_dir / f"{building_name}_COMPLETE_REPORT.pdf"
+            
+            print(f"  📊 Generating comprehensive report...")
+            generator = UltimatePropertyReport(data, str(pdf_file))
+            generator.generate()
+            
+            if pdf_file.exists():
+                print(f"\n  ✅ Ultimate PDF Report Generated!")
+                print(f"  📄 Location: {pdf_file}")
+                print(f"\n  📊 Report includes:")
+                print(f"     • Complete building profile")
+                print(f"     • All units & leaseholders with balances")
+                print(f"     • Compliance assets (detailed)")
+                print(f"     • Maintenance contracts with contractors")
+                print(f"     • Budget breakdown (all line items)")
+                print(f"     • Insurance policies")
+                print(f"     • Lease documents & clause analysis")
+                print(f"     • Lease financial terms (ground rent, SC%)")
+                print(f"     • Contractors & service providers")
+                print(f"     • Client-ready professional formatting")
+                
+                self.ultimate_pdf_path = str(pdf_file)
+            else:
+                print("  ⚠️  PDF file was not created")
+                self.ultimate_pdf_path = None
+                
+        except ImportError as e:
+            print(f"  ⚠️  Could not import ultimate report generator: {e}")
+            print(f"  ℹ️  Make sure generate_ultimate_report.py is in parent directory")
+            self.ultimate_pdf_path = None
+        except Exception as e:
+            print(f"  ⚠️  Error generating ultimate PDF report: {e}")
+            import traceback
+            traceback.print_exc()
+            self.ultimate_pdf_path = None
 
     def _extract_compliance_data(self):
         """Extract compliance assets and inspections from parsed files"""
@@ -2050,8 +2110,11 @@ class BlocIQOnboarder:
 
         print(f"\nOutput directory: {self.output_dir.absolute()}")
         print("\n📝 Generated files:")
-        print("  1. migration.sql - SQL migration script")
-        print("  2. confidence_report.csv - Confidence scores for all data")
+        print("  1. migration.sql - SQL migration script (with contractor names)")
+        print("  2. summary.json - Complete extracted data")
+        print("  3. building_health_check.pdf - Health check report (HTML)")
+        print("  4. <Building>_COMPLETE_REPORT.pdf - Ultimate comprehensive PDF ✨")
+        print("  5. confidence_report.csv - Confidence scores for all data")
         print("  3. validation_report.json - Detailed validation results")
         print("  4. document_log.csv - Document metadata")
         print("  5. audit_log.json - Processing audit trail")
