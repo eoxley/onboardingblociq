@@ -391,8 +391,15 @@ class SupplierOnboardingApp:
         except Exception as e:
             self.log_result(f"\n❌ ERROR: {e}")
             import traceback
-            self.log_result(traceback.format_exc())
-            self.status_var.set("Error occurred")
+            error_details = traceback.format_exc()
+            self.log_result(error_details)
+            self.status_var.set(f"Error: {str(e)[:50]}")
+            
+            # Show error dialog
+            self.root.after(0, lambda: messagebox.showerror(
+                "Extraction Error",
+                f"Failed to extract supplier data:\n\n{str(e)}\n\nCheck the results area for details."
+            ))
         
         finally:
             # Re-enable process button
@@ -470,9 +477,21 @@ class SupplierOnboardingApp:
                 self.log_result(f"\n❌ Error: {result.stderr}")
                 self.status_var.set("Error applying to database")
                 
+                self.root.after(0, lambda: messagebox.showerror(
+                    "Database Error",
+                    f"Failed to apply SQL to database:\n\n{result.stderr[:200]}"
+                ))
+                
         except Exception as e:
             self.log_result(f"\n❌ Error applying to database: {e}")
+            import traceback
+            self.log_result(traceback.format_exc())
             self.status_var.set("Error occurred")
+            
+            self.root.after(0, lambda: messagebox.showerror(
+                "Application Error",
+                f"Error: {str(e)}\n\nCheck the results area for details."
+            ))
         
         finally:
             self.root.after(0, lambda: self.apply_btn.config(state=tk.NORMAL))
