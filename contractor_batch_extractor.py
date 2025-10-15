@@ -114,10 +114,10 @@ class BatchContractorExtractor:
                 print(f"   ⚠️  No name column mapped!")
                 return []
             
-            print(f"\n   Scanning rows {header_row + 1} to {min(header_row + 100, ws.max_row + 1)}...")
+            print(f"\n   Scanning ALL rows: {header_row + 1} to {ws.max_row}...")
             print(f"   Name column: {name_col}")
             
-            for row_idx in range(header_row + 1, min(header_row + 100, ws.max_row + 1)):  # First 100 rows
+            for row_idx in range(header_row + 1, ws.max_row + 1):  # ALL ROWS
                 
                 # Get cell value (column index is 1-based)
                 name_cell = ws.cell(row=row_idx, column=name_col)
