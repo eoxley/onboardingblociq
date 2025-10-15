@@ -206,21 +206,27 @@ class SupplierOnboardingApp:
             self.supplier_folder.set(folder)
     
     def browse_files(self):
-        """Open file selection dialog (multiple files)"""
+        """Open file selection dialog (single or multiple files)"""
         files = filedialog.askopenfilenames(
-            title="Select Supplier Documents (Excel, PDF, Word)",
+            title="Select Supplier Documents (Can select multiple with Cmd+Click)",
             initialdir=os.path.expanduser("~/Downloads"),
             filetypes=[
-                ("All Supported", "*.xlsx;*.xls;*.pdf;*.docx;*.doc"),
-                ("Excel files", "*.xlsx;*.xls"),
-                ("PDF files", "*.pdf"),
-                ("Word files", "*.docx;*.doc"),
+                ("Excel files", "*.xlsx *.xls *.XLSX *.XLS"),
+                ("PDF files", "*.pdf *.PDF"),
+                ("Word files", "*.docx *.doc *.DOCX *.DOC"),
+                ("All Supported", "*.xlsx *.xls *.pdf *.docx *.doc"),
                 ("All files", "*.*")
             ]
         )
         if files:
-            # Store files as a list (separated by semicolon)
-            self.supplier_folder.set(";".join(files))
+            if len(files) == 1:
+                # Single file - show just the filename
+                self.supplier_folder.set(files[0])
+                print(f"Selected: {Path(files[0]).name}")
+            else:
+                # Multiple files - store as semicolon-separated
+                self.supplier_folder.set(";".join(files))
+                print(f"Selected {len(files)} files")
     
     def start_processing(self):
         """Start supplier data extraction"""
@@ -230,18 +236,28 @@ class SupplierOnboardingApp:
             messagebox.showwarning("No Selection", "Please select a folder or files first")
             return
         
-        # Check if it's files (semicolon-separated) or folder
+        # Check what was selected: folder, single file, or multiple files
+        path_obj = Path(path_input.split(';')[0] if ';' in path_input else path_input)
+        
         if ';' in path_input:
             # Multiple files selected
             files = [f for f in path_input.split(';') if f.strip()]
             if not all(Path(f).exists() for f in files):
                 messagebox.showerror("File Not Found", "One or more selected files do not exist")
                 return
-        else:
-            # Single folder selected
-            if not Path(path_input).exists():
-                messagebox.showerror("Not Found", f"Folder or file does not exist:\n{path_input}")
+        elif path_obj.is_file():
+            # Single file selected
+            if not path_obj.exists():
+                messagebox.showerror("File Not Found", f"File does not exist:\n{path_input}")
                 return
+        elif path_obj.is_dir():
+            # Folder selected
+            if not path_obj.exists():
+                messagebox.showerror("Folder Not Found", f"Folder does not exist:\n{path_input}")
+                return
+        else:
+            messagebox.showerror("Invalid Selection", f"Invalid path:\n{path_input}")
+            return
         
         # Disable button during processing
         self.process_btn.config(state=tk.DISABLED)
@@ -265,7 +281,9 @@ class SupplierOnboardingApp:
             self.log_result("🚀 SUPPLIER ONBOARDING STARTED")
             self.log_result("="*70)
             
-            # Check if it's files or folder
+            # Check what was selected
+            path_obj = Path(path_input.split(';')[0] if ';' in path_input else path_input)
+            
             if ';' in path_input:
                 # Multiple files selected
                 files = [Path(f) for f in path_input.split(';') if f.strip()]
@@ -274,9 +292,12 @@ class SupplierOnboardingApp:
                     self.log_result(f"   • {f.name}")
                 if len(files) > 3:
                     self.log_result(f"   • ... and {len(files) - 3} more")
+            elif path_obj.is_file():
+                # Single file selected
+                self.log_result(f"File: {path_obj.name}\n")
             else:
                 # Folder selected
-                self.log_result(f"Folder: {Path(path_input).name}\n")
+                self.log_result(f"Folder: {path_obj.name}\n")
             
             self.status_var.set("Extracting data...")
             
@@ -286,10 +307,16 @@ class SupplierOnboardingApp:
             
             extractor = ContractorExtractor()
             
-            # Handle both folder and file list
+            # Handle folder, single file, or multiple files
             if ';' in path_input:
-                self.extracted_data = extractor.extract_from_files([Path(f) for f in path_input.split(';') if f.strip()])
+                # Multiple files
+                file_list = [Path(f) for f in path_input.split(';') if f.strip()]
+                self.extracted_data = extractor.extract_from_files(file_list)
+            elif path_obj.is_file():
+                # Single file - wrap in list
+                self.extracted_data = extractor.extract_from_files([path_obj])
             else:
+                # Folder
                 self.extracted_data = extractor.extract_from_folder(path_input)
             
             # Display results
