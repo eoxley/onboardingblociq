@@ -206,10 +206,15 @@ class UltimatePropertyReport:
         
         summary = self.data.get('summary', {})
         
-        # Key metrics table
-        data = [
-            ['<b>PROPERTY OVERVIEW</b>', '<b>VALUE</b>', '<b>FINANCIAL OVERVIEW</b>', '<b>VALUE</b>'],
-        ]
+        # Key metrics table with proper formatting
+        header_style = ParagraphStyle('SummaryHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=9, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('PROPERTY OVERVIEW', header_style),
+            Paragraph('VALUE', header_style),
+            Paragraph('FINANCIAL OVERVIEW', header_style),
+            Paragraph('VALUE', header_style)
+        ]]
         
         data.extend([
             ['Total Units', str(summary.get('total_units', 0)), 
@@ -239,8 +244,12 @@ class UltimatePropertyReport:
         # Compliance and legal summary
         self.story.append(Spacer(1, 0.2*inch))
         
-        data2 = [
-            ['<b>COMPLIANCE & LEGAL</b>', '<b>VALUE</b>', '<b>CONTRACTS & SERVICES</b>', '<b>VALUE</b>'],
+        data2 = [[
+            Paragraph('COMPLIANCE & LEGAL', header_style),
+            Paragraph('VALUE', header_style),
+            Paragraph('CONTRACTS & SERVICES', header_style),
+            Paragraph('VALUE', header_style)
+        ],
             ['Compliance Rate', f"{summary.get('compliance_rate', 0):.1f}%", 
              'Maintenance Contracts', str(summary.get('total_contracts', 0))],
             ['Current Compliance', str(summary.get('compliance_current', 0)),
@@ -269,15 +278,15 @@ class UltimatePropertyReport:
         """Detailed building characteristics"""
         self.story.append(Paragraph("🏢 BUILDING PROFILE & CHARACTERISTICS", self.section_style))
         
-        # Basic info
+        # Basic info - section headers use bold text, not HTML
         data = [
-            ['<b>Basic Information</b>', ''],
+            ['Basic Information', ''],
             ['Building Name', self.data.get('building_name', '')],
             ['Full Address', self.data.get('building_address', '')],
             ['Postcode', self.data.get('postcode', '')],
             ['City', self.data.get('city', 'London')],
             ['', ''],
-            ['<b>Physical Characteristics</b>', ''],
+            ['Physical Characteristics', ''],
             ['Construction Type', self.data.get('construction_type', 'N/A')],
             ['Construction Era', self.data.get('construction_era', '')],
             ['Number of Units', str(self.data.get('num_units', 0))],
@@ -285,12 +294,12 @@ class UltimatePropertyReport:
             ['Building Height', f"{self.data.get('building_height_meters', 0)} meters"],
             ['Number of Blocks', str(self.data.get('num_blocks', 1))],
             ['', ''],
-            ['<b>Services & Systems</b>', ''],
+            ['Services & Systems', ''],
             ['Lifts', f"{self.data.get('num_lifts', 0)} lift(s)" if self.data.get('has_lifts') else 'None'],
             ['Communal Heating', 'Yes (Quotehedge)' if self.data.get('has_communal_heating', True) else 'No'],
             ['Gas Supply', 'Yes' if self.data.get('has_gas', True) else 'No'],
             ['', ''],
-            ['<b>Regulatory</b>', ''],
+            ['Regulatory', ''],
             ['BSA Status', 'Not BSA' if self.data.get('building_height_meters', 0) < 18 else self.data.get('bsa_status', 'Registered')],
             ['BSA Registration Required', 'No' if self.data.get('building_height_meters', 0) < 18 else 'Yes'],
         ]
@@ -300,14 +309,19 @@ class UltimatePropertyReport:
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BACKGROUND', (0, 0), (1, 0), self.primary_color),
+            # Section headers formatting - rows 0, 6, 14, 18
+            ('BACKGROUND', (0, 0), (1, 0), self.secondary_color),
             ('TEXTCOLOR', (0, 0), (1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
             ('BACKGROUND', (0, 6), (1, 6), self.secondary_color),
             ('TEXTCOLOR', (0, 6), (1, 6), colors.whitesmoke),
+            ('FONTNAME', (0, 6), (1, 6), 'Helvetica-Bold'),
             ('BACKGROUND', (0, 14), (1, 14), self.secondary_color),
             ('TEXTCOLOR', (0, 14), (1, 14), colors.whitesmoke),
+            ('FONTNAME', (0, 14), (1, 14), 'Helvetica-Bold'),
             ('BACKGROUND', (0, 18), (1, 18), self.secondary_color),
             ('TEXTCOLOR', (0, 18), (1, 18), colors.whitesmoke),
+            ('FONTNAME', (0, 18), (1, 18), 'Helvetica-Bold'),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
@@ -324,7 +338,16 @@ class UltimatePropertyReport:
         # Leaseholder lookup
         lh_by_unit = {lh.get('unit_number'): lh for lh in leaseholders}
         
-        data = [['<b>Unit</b>', '<b>Leaseholder</b>', '<b>Contact</b>', '<b>Apport %</b>', '<b>Balance</b>']]
+        # Proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=8, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Unit', header_style),
+            Paragraph('Leaseholder', header_style),
+            Paragraph('Contact', header_style),
+            Paragraph('Apport %', header_style),
+            Paragraph('Balance', header_style)
+        ]]
         
         for unit in units:
             unit_num = unit.get('unit_number', '')
@@ -877,7 +900,7 @@ class UltimatePropertyReport:
             ['Lease 2 (Flat 2)', '£50/year', '25 years', 'Est. 2015 (next cycle due)'],
             ['Lease 3 (Flat 3)', '£50/year', '25 years', 'Est. 2028'],
             ['Lease 4 (Flat 4)', '£50/year', '25 years', 'Est. 2015 (next cycle due)'],
-            ['<b>TOTAL</b>', '<b>£200/year</b>', '', ''],
+            ['TOTAL', '£200/year', '', ''],
         ]
         
         table = Table(data, colWidths=[1.5*inch, 1.5*inch, 1.5*inch, 2*inch])
@@ -925,9 +948,9 @@ class UltimatePropertyReport:
             ])
         
         data.append([
-            '<b>TOTAL</b>',
-            '<b>100.00%</b>',
-            f'<b>£{total_budget:,.0f}</b>',
+            'TOTAL',
+            '100.00%',
+            f'£{total_budget:,.0f}',
             ''
         ])
         
