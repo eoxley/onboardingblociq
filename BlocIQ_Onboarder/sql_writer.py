@@ -1098,6 +1098,36 @@ def main():
     """CLI entry point"""
     import argparse
 
+def generate_document_log_csv(documents: List[Dict]) -> str:
+    """Generate CSV log of all documents"""
+    if not documents:
+        return "file_name,category,confidence,file_size,file_path,notes\n"
+    
+    def csv_escape(val):
+        if val is None:
+            return ''
+        val_str = str(val)
+        if ',' in val_str or '"' in val_str or '\n' in val_str:
+            return f'"{val_str.replace(chr(34), chr(34)+chr(34))}"'
+        return val_str
+    
+    csv_lines = ["file_name,category,confidence,file_size,file_path,notes"]
+    for doc in documents:
+        row = [
+            csv_escape(doc.get('file_name', '')),
+            csv_escape(doc.get('category', '')),
+            csv_escape(doc.get('confidence', '')),
+            csv_escape(doc.get('file_size', '')),
+            csv_escape(doc.get('file_path', '')),
+            csv_escape(doc.get('notes', ''))
+        ]
+        csv_lines.append(','.join(row))
+    return '\n'.join(csv_lines)
+
+
+if __name__ == '__main__':
+    import argparse
+
     parser = argparse.ArgumentParser(description='Generate Supabase SQL from BlocIQ extraction data')
     parser.add_argument('json_file', help='Input JSON file from extraction')
     parser.add_argument('-o', '--output', help='Output SQL file', default=None)
