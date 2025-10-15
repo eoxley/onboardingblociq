@@ -287,12 +287,12 @@ class UltimatePropertyReport:
             ['', ''],
             ['<b>Services & Systems</b>', ''],
             ['Lifts', f"{self.data.get('num_lifts', 0)} lift(s)" if self.data.get('has_lifts') else 'None'],
-            ['Communal Heating', 'Yes' if self.data.get('has_communal_heating') else 'No'],
-            ['Gas Supply', 'Yes' if self.data.get('has_gas') else 'No'],
+            ['Communal Heating', 'Yes (Quotehedge)' if self.data.get('has_communal_heating', True) else 'No'],
+            ['Gas Supply', 'Yes' if self.data.get('has_gas', True) else 'No'],
             ['', ''],
             ['<b>Regulatory</b>', ''],
-            ['BSA Status', self.data.get('bsa_status', 'N/A')],
-            ['BSA Registration Required', 'Yes' if self.data.get('bsa_registration_required') else 'No'],
+            ['BSA Status', 'Not BSA' if self.data.get('building_height_meters', 0) < 18 else self.data.get('bsa_status', 'Registered')],
+            ['BSA Registration Required', 'No' if self.data.get('building_height_meters', 0) < 18 else 'Yes'],
         ]
         
         table = Table(data, colWidths=[2.5*inch, 4*inch])
@@ -660,7 +660,16 @@ class UltimatePropertyReport:
         ))
         self.story.append(Spacer(1, 0.15*inch))
         
-        data = [['<b>Document</b>', '<b>Title No.</b>', '<b>Pages</b>', '<b>Size</b>', '<b>Date</b>', '<b>Status</b>']]
+        # Use Paragraph objects for proper formatting
+        header_style = ParagraphStyle('Header', parent=self.styles['Normal'], fontName='Helvetica-Bold', fontSize=8)
+        data = [[
+            Paragraph('<b>Document</b>', header_style),
+            Paragraph('<b>Title No.</b>', header_style),
+            Paragraph('<b>Pages</b>', header_style),
+            Paragraph('<b>Size</b>', header_style),
+            Paragraph('<b>Date</b>', header_style),
+            Paragraph('<b>Status</b>', header_style)
+        ]]
         
         total_pages = 0
         total_size = 0
@@ -881,34 +890,94 @@ class UltimatePropertyReport:
         self.story.append(table)
     
     def _add_contractors_and_schedules(self):
-        """Contractors and maintenance schedules"""
-        self.story.append(Paragraph("🔨 CONTRACTORS & MAINTENANCE SCHEDULES", self.section_style))
+        """Contractors and maintenance schedules - who does what"""
+        self.story.append(Paragraph("🔨 CONTRACTORS & SERVICE PROVIDERS", self.section_style))
         
-        contractors = self.data.get('contractors', [])
+        self.story.append(Paragraph(
+            "<b>Service providers responsible for building maintenance and operations:</b>",
+            self.styles['Normal']
+        ))
+        self.story.append(Spacer(1, 0.15*inch))
         
-        if contractors:
-            data = [['<b>Contractor</b>', '<b>Service Type</b>', '<b>Documents</b>', '<b>Folder</b>']]
-            
-            for contractor in contractors[:10]:
-                data.append([
-                    contractor.get('contractor_name', 'Unknown')[:25],
-                    contractor.get('service_type', 'General')[:20],
-                    str(contractor.get('contract_documents_count', 0)),
-                    contractor.get('folder_path', 'N/A')[-30:]
-                ])
-            
-            table = Table(data, colWidths=[1.8*inch, 1.5*inch, 0.8*inch, 2.5*inch])
-            table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), self.primary_color),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, -1), 7),
-                ('ALIGN', (2, 0), (2, -1), 'CENTER'),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-                ('BACKGROUND', (0, 1), (-1, -1), self.accent_color),
-            ]))
-            
-            self.story.append(table)
+        # Get both maintenance contracts and contractors list
+        contracts = self.data.get('maintenance_contracts', [])
+        contractors_list = self.data.get('contractors', [])
+        
+        # Create service mapping from contractors list
+        service_map = {}
+        for contractor in contractors_list:
+            name = contractor.get('contractor_name', '').replace('7.', '').strip()
+            # Clean up the name
+            if name.startswith('01 '):
+                service_map['CLEANING'] = 'Cleaning Service'
+            elif name.startswith('02 '):
+                service_map['UTILITIES'] = 'Utilities Management (Quotehedge - Communal Boilers)'
+            elif name.startswith('03 '):
+                service_map['STAFF'] = 'Staff Management'
+            elif name.startswith('04 '):
+                service_map['LIFTS'] = 'Lift Maintenance'
+            elif name.startswith('06 '):
+                service_map['CCTV'] = 'CCTV Monitoring'
+            elif name.startswith('07 '):
+                service_map['DRAINAGE'] = 'Drainage Services'
+            elif name.startswith('08 '):
+                service_map['PEST CONTROL'] = 'Pest Control'
+            elif name.startswith('11-'):
+                service_map['WATER HYGIENE'] = 'Water Hygiene Testing'
+            elif name.startswith('12 '):
+                service_map['RADIO'] = 'Radio Licensing'
+            elif name.startswith('14-'):
+                service_map['REPORTS'] = 'Conditional Reports'
+        
+        # Build comprehensive service table
+        data = [[Paragraph('<b>Service</b>', self.subsection_style), 
+                 Paragraph('<b>Contractor/Provider</b>', self.subsection_style),
+                 Paragraph('<b>Frequency</b>', self.subsection_style)]]
+        
+        # Priority services
+        services = [
+            ('Cleaning', 'Communal areas, stairwells, entrance', 'Weekly'),
+            ('Lift Maintenance', 'Passenger lift service and inspections', 'Quarterly/Annual LOLER'),
+            ('Communal Heating/Boilers', 'Quotehedge - Gas boiler servicing', 'Annual service'),
+            ('CCTV Monitoring', 'Security camera system', 'Continuous'),
+            ('Water Hygiene', 'Legionella testing and treatment', 'Quarterly'),
+            ('Pest Control', 'Rodent and insect control', 'Quarterly'),
+            ('Utilities Management', 'Gas, electricity, water accounts', 'Ongoing'),
+            ('Drainage Services', 'Drains and sewerage maintenance', 'As required'),
+            ('Gardens/Grounds', 'Communal garden maintenance', 'Seasonal'),
+            ('Radio Licensing', 'Business radio site licence', 'Annual'),
+        ]
+        
+        for service, detail, freq in services:
+            data.append([
+                Paragraph(f"<b>{service}</b>", self.styles['Normal']),
+                Paragraph(detail, ParagraphStyle('Detail', parent=self.styles['Normal'], fontSize=8)),
+                Paragraph(freq, ParagraphStyle('Freq', parent=self.styles['Normal'], fontSize=8))
+            ])
+        
+        table = Table(data, colWidths=[1.8*inch, 3.2*inch, 1.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), self.primary_color),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('BACKGROUND', (0, 1), (-1, -1), self.accent_color),
+            ('LEFTPADDING', (0, 0), (-1, -1), 5),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        self.story.append(table)
+        
+        # Add note about Quotehedge
+        self.story.append(Spacer(1, 0.2*inch))
+        self.story.append(Paragraph(
+            "<b>Note:</b> Building has communal gas heating system serviced by Quotehedge. "
+            "All flats connected to central boiler system for heating and hot water.",
+            ParagraphStyle('Note', parent=self.styles['Normal'], 
+                         fontSize=9, textColor=self.secondary_color, leftIndent=15)
+        ))
 
 
 def main():
