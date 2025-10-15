@@ -403,7 +403,7 @@ class UltimatePropertyReport:
             unit = lh.get('unit_number', 'N/A')
             balance = lh.get('balance', 0)
             
-            status_color = self.warning_color if balance > 0 else self.success_color
+            status_color = 'red' if balance > 0 else 'green'
             balance_text = f"<font color='{status_color}'>Balance: £{balance:,.2f}</font>"
             
             para = Paragraph(
@@ -451,15 +451,17 @@ class UltimatePropertyReport:
         status_order = {'current': 1, 'expired': 2, 'missing': 3}
         sorted_assets = sorted(assets, key=lambda x: status_order.get(x.get('status', 'missing'), 4))
         
+        cell_style = ParagraphStyle('CellText', parent=self.styles['Normal'], fontSize=7)
+        
         for asset in sorted_assets:
             status = asset.get('status', 'unknown')
             
             if status == 'current':
-                status_text = f"<font color='{self.success_color}'>✓ Current</font>"
+                status_text = Paragraph("<font color='green'>✓ Current</font>", cell_style)
             elif status == 'expired':
-                status_text = f"<font color='{self.warning_color}'>⚠ Expired</font>"
+                status_text = Paragraph("<font color='orange'>⚠ Expired</font>", cell_style)
             else:
-                status_text = f"<font color='red'>✗ Missing</font>"
+                status_text = Paragraph("<font color='red'>✗ Missing</font>", cell_style)
             
             data.append([
                 asset.get('asset_type', 'Unknown'),
@@ -499,16 +501,18 @@ class UltimatePropertyReport:
             Paragraph('Confidence', header_style)
         ]]
         
+        cell_style = ParagraphStyle('CellText', parent=self.styles['Normal'], fontSize=8)
+        
         for contract in contracts:
             confidence = contract.get('detection_confidence', 0)
-            conf_color = self.success_color if confidence > 0.7 else self.warning_color
+            conf_color = 'green' if confidence > 0.7 else 'orange'
             
             data.append([
                 contract.get('contract_type', 'Unknown'),
                 contract.get('contractor_name', 'Unknown')[:20],
                 contract.get('contract_status', 'Unknown').title(),
                 contract.get('maintenance_frequency', 'N/A'),
-                f"<font color='{conf_color}'>{confidence:.0%}</font>"
+                Paragraph(f"<font color='{conf_color}'>{confidence:.0%}</font>", cell_style)
             ])
         
         table = Table(data, colWidths=[1.8*inch, 1.8*inch, 1*inch, 1*inch, 1*inch])
@@ -592,6 +596,8 @@ class UltimatePropertyReport:
             section_budget = 0
             section_actual = 0
             
+            cell_style = ParagraphStyle('CellText', parent=self.styles['Normal'], fontSize=7)
+            
             for item in items:
                 budget_amt = item.get('budget_2025_26', 0)
                 actual_amt = item.get('actual_2024_25', 0)
@@ -601,13 +607,13 @@ class UltimatePropertyReport:
                 section_budget += budget_amt
                 section_actual += actual_amt
                 
-                var_color = self.success_color if variance >= 0 else self.warning_color
+                var_color = 'green' if variance >= 0 else 'red'
                 
                 data.append([
                     item.get('category', 'Unknown')[:30],
                     f"£{budget_amt:,.0f}",
                     f"£{actual_amt:,.0f}",
-                    f"<font color='{var_color}'>£{abs(variance):,.0f}</font>",
+                    Paragraph(f"<font color='{var_color}'>£{abs(variance):,.0f}</font>", cell_style),
                     f"{variance_pct:.0f}%" if variance_pct else 'N/A'
                 ])
             
@@ -732,13 +738,18 @@ class UltimatePropertyReport:
         total_pages = 0
         total_size = 0
         
+        cell_style = ParagraphStyle('CellText', parent=self.styles['Normal'], fontSize=7)
+        
         for lease in leases:
             pages = lease.get('page_count', 0)
             size = lease.get('file_size_mb', 0)
             total_pages += pages
             total_size += size
             
-            status = '<font color="green">✓ Extracted</font>' if lease.get('extracted_successfully') else '<font color="orange">⚠ Pending</font>'
+            if lease.get('extracted_successfully'):
+                status = Paragraph('<font color="green">✓ Extracted</font>', cell_style)
+            else:
+                status = Paragraph('<font color="orange">⚠ Pending</font>', cell_style)
             
             data.append([
                 lease.get('source_document', 'Unknown')[:35],
@@ -817,13 +828,20 @@ class UltimatePropertyReport:
             Paragraph('Key Terms', header_style)
         ]]
         
+        cell_style = ParagraphStyle('CellText', parent=self.styles['Normal'], fontSize=8)
+        
         for cat, count, importance, terms in clause_categories:
-            imp_color = self.warning_color if importance == 'Critical' else self.secondary_color if importance == 'High' else colors.grey
+            if importance == 'Critical':
+                imp_color = 'red'
+            elif importance == 'High':
+                imp_color = 'orange'
+            else:
+                imp_color = 'gray'
             
             data.append([
                 cat,
                 str(count),
-                f"<font color='{imp_color}'><b>{importance}</b></font>",
+                Paragraph(f"<font color='{imp_color}'><b>{importance}</b></font>", cell_style),
                 terms
             ])
         
