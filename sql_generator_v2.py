@@ -704,6 +704,13 @@ BEGIN;"""
             'bsa_registration_required': self._sql_bool(data.get('bsa_registration_required', False)),
             'bsa_status': self._sql_escape(data.get('bsa_status', '')),
 
+            # Contractors (extracted from contracts/documents)
+            'cleaning_contractor': self._sql_escape(data.get('cleaning_contractor', '')),
+            'lift_contractor': self._sql_escape(data.get('lift_contractor', '')),
+            'property_manager': self._sql_escape(data.get('property_manager', '') or data.get('managing_agent', '')),
+            'heating_contractor': self._sql_escape(data.get('heating_contractor', '')),
+            'gardening_contractor': self._sql_escape(data.get('gardening_contractor', '')),
+
             # Metadata
             'data_quality': self._sql_escape(data.get('data_quality', 'production')),
             'confidence_score': data.get('confidence_score', 0.98),
