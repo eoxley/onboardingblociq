@@ -349,11 +349,11 @@ class UltimatePropertyReport:
         # Totals
         total_balance = sum(lh.get('balance', 0) for lh in leaseholders)
         data.append([
-            '<b>TOTAL</b>',
-            f'<b>{len(leaseholders)} leaseholders</b>',
-            f'<b>100% occupancy</b>',
-            '<b>100%</b>',
-            f'<b>£{total_balance:,.2f}</b>'
+            'TOTAL',
+            f'{len(leaseholders)} leaseholders',
+            '100% occupancy',
+            '100%',
+            f'£{total_balance:,.2f}'
         ])
         
         table = Table(data, colWidths=[0.8*inch, 1.6*inch, 2*inch, 0.9*inch, 1*inch])
@@ -565,10 +565,10 @@ class UltimatePropertyReport:
             # Section total
             section_var = section_budget - section_actual
             data.append([
-                f'<b>{section_name} TOTAL</b>',
-                f'<b>£{section_budget:,.0f}</b>',
-                f'<b>£{section_actual:,.0f}</b>',
-                f'<b>£{section_var:,.0f}</b>',
+                f'{section_name} TOTAL',
+                f'£{section_budget:,.0f}',
+                f'£{section_actual:,.0f}',
+                f'£{section_var:,.0f}',
                 ''
             ])
             
@@ -625,10 +625,10 @@ class UltimatePropertyReport:
             ])
         
         data.append([
-            '<b>TOTAL PREMIUMS</b>',
+            'TOTAL PREMIUMS',
             '',
             '',
-            f'<b>£{total_premium:,.0f}</b>',
+            f'£{total_premium:,.0f}',
             ''
         ])
         
@@ -692,10 +692,10 @@ class UltimatePropertyReport:
             ])
         
         data.append([
-            f'<b>TOTAL ({len(leases)} documents)</b>',
+            f'TOTAL ({len(leases)} documents)',
             '',
-            f'<b>{total_pages}</b>',
-            f'<b>{total_size:.2f} MB</b>',
+            str(total_pages),
+            f'{total_size:.2f} MB',
             '',
             ''
         ])
@@ -934,18 +934,18 @@ class UltimatePropertyReport:
                  Paragraph('<b>Contractor/Provider</b>', self.subsection_style),
                  Paragraph('<b>Frequency</b>', self.subsection_style)]]
         
-        # Priority services
+        # Priority services with likely contractors
         services = [
-            ('Cleaning', 'Communal areas, stairwells, entrance', 'Weekly'),
-            ('Lift Maintenance', 'Passenger lift service and inspections', 'Quarterly/Annual LOLER'),
-            ('Communal Heating/Boilers', 'Quotehedge - Gas boiler servicing', 'Annual service'),
-            ('CCTV Monitoring', 'Security camera system', 'Continuous'),
-            ('Water Hygiene', 'Legionella testing and treatment', 'Quarterly'),
-            ('Pest Control', 'Rodent and insect control', 'Quarterly'),
-            ('Utilities Management', 'Gas, electricity, water accounts', 'Ongoing'),
-            ('Drainage Services', 'Drains and sewerage maintenance', 'As required'),
-            ('Gardens/Grounds', 'Communal garden maintenance', 'Seasonal'),
-            ('Radio Licensing', 'Business radio site licence', 'Annual'),
+            ('Cleaning', 'Contracted cleaning service - Communal areas, stairwells, entrance', 'Weekly'),
+            ('Lift Maintenance', 'Certified lift engineer - Service and annual LOLER inspections', 'Quarterly/Annual'),
+            ('Communal Heating/Boilers', 'Quotehedge - Gas boiler servicing & maintenance', 'Annual service'),
+            ('CCTV Monitoring', 'Security contractor - Camera system monitoring', 'Continuous'),
+            ('Water Hygiene', 'Water treatment specialist - Legionella testing', 'Quarterly'),
+            ('Pest Control', 'Pest control contractor - Rodent and insect control', 'Quarterly'),
+            ('Utilities Management', 'Supplier accounts - Gas, electricity, water', 'Ongoing'),
+            ('Drainage Services', 'Drainage specialist - Drains and sewerage', 'As required'),
+            ('Gardens/Grounds', 'Gardening contractor - Communal garden maintenance', 'Seasonal'),
+            ('Radio Licensing', 'Business radio licensing authority', 'Annual'),
         ]
         
         for service, detail, freq in services:
@@ -970,13 +970,20 @@ class UltimatePropertyReport:
         
         self.story.append(table)
         
-        # Add note about Quotehedge
+        # Add notes
         self.story.append(Spacer(1, 0.2*inch))
         self.story.append(Paragraph(
-            "<b>Note:</b> Building has communal gas heating system serviced by Quotehedge. "
-            "All flats connected to central boiler system for heating and hot water.",
+            "<b>Key Notes:</b>",
+            self.subsection_style
+        ))
+        self.story.append(Paragraph(
+            "• <b>Communal Heating:</b> Building has central gas boiler system serviced by Quotehedge. "
+            "All flats connected to central system for heating and hot water.<br/>"
+            "• <b>Contractor Names:</b> Specific contractor company names to be confirmed from contract documents. "
+            "Services listed based on detected contract folders and building requirements.<br/>"
+            "• <b>Service Frequencies:</b> Based on industry standards and regulatory requirements.",
             ParagraphStyle('Note', parent=self.styles['Normal'], 
-                         fontSize=9, textColor=self.secondary_color, leftIndent=15)
+                         fontSize=8, textColor=colors.black, leftIndent=15, spaceBefore=5)
         ))
 
 
