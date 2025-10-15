@@ -69,23 +69,37 @@ class ContractorExtractor:
         
         print(f"\n📁 Scanning folder: {folder.name}")
         
-        # Find all relevant files
+        # Find all relevant files (case-insensitive)
         files = []
-        for ext in ['*.xlsx', '*.xls', '*.pdf', '*.docx', '*.doc']:
-            files.extend(folder.glob(ext))
+        for file in folder.iterdir():
+            if file.is_file():
+                ext_lower = file.suffix.lower()
+                if ext_lower in ['.xlsx', '.xls', '.pdf', '.docx', '.doc']:
+                    files.append(file)
         
         print(f"   Found {len(files)} document(s)")
+        
+        if not files:
+            print("   ⚠️  No Excel, PDF, or Word files found in folder")
+            return self.data
         
         # Extract from each file
         for file in files:
             print(f"\n   📄 Processing: {file.name}")
+            ext_lower = file.suffix.lower()
             
-            if file.suffix.lower() in ['.xlsx', '.xls']:
-                self._extract_from_excel(file)
-            elif file.suffix.lower() == '.pdf':
-                self._extract_from_pdf(file)
-            elif file.suffix.lower() in ['.docx', '.doc']:
-                self._extract_from_word(file)
+            try:
+                if ext_lower in ['.xlsx', '.xls']:
+                    print(f"      → Excel file detected")
+                    self._extract_from_excel(file)
+                elif ext_lower == '.pdf':
+                    print(f"      → PDF file detected")
+                    self._extract_from_pdf(file)
+                elif ext_lower in ['.docx', '.doc']:
+                    print(f"      → Word file detected")
+                    self._extract_from_word(file)
+            except Exception as e:
+                print(f"      ⚠️  Error processing file: {e}")
             
             # Track documents
             self.data['documents_found'].append({
@@ -103,72 +117,129 @@ class ContractorExtractor:
     def _extract_from_excel(self, file_path: Path):
         """Extract data from Excel file"""
         try:
-            wb = openpyxl.load_workbook(file_path, data_only=True)
+            print(f"      → Opening Excel workbook...")
+            
+            # Try with data_only first, then without
+            try:
+                wb = openpyxl.load_workbook(file_path, data_only=True)
+            except:
+                wb = openpyxl.load_workbook(file_path)
+            
             ws = wb.active
+            print(f"      → Reading worksheet: {ws.title}")
             
             # Read all cell values
             text_content = []
-            for row in ws.iter_rows(max_row=100):
+            rows_read = 0
+            
+            for row in ws.iter_rows(max_row=200):  # Increased to 200 rows
+                row_text = []
                 for cell in row:
-                    if cell.value:
-                        text_content.append(str(cell.value))
+                    if cell.value is not None:
+                        row_text.append(str(cell.value))
+                
+                if row_text:
+                    text_content.append(' | '.join(row_text))
+                    rows_read += 1
+            
+            print(f"      → Read {rows_read} rows")
             
             # Join and extract
             full_text = '\n'.join(text_content)
+            
+            if len(full_text) < 50:
+                print(f"      ⚠️  Very little text extracted ({len(full_text)} chars)")
+            else:
+                print(f"      → Extracted {len(full_text)} characters")
+            
             self._extract_fields_from_text(full_text, 'excel')
             
             self.data['extraction_method'] = 'excel'
-            print(f"      ✓ Excel data extracted")
+            print(f"      ✓ Excel data extracted successfully")
             
+            wb.close()
+            
+        except PermissionError:
+            print(f"      ⚠️  Permission denied - file may be open in Excel")
         except Exception as e:
             print(f"      ⚠️  Could not read Excel: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _extract_from_pdf(self, file_path: Path):
         """Extract data from PDF file"""
         try:
+            print(f"      → Opening PDF...")
+            
             with open(file_path, 'rb') as f:
                 reader = PyPDF2.PdfReader(f)
+                num_pages = len(reader.pages)
+                print(f"      → PDF has {num_pages} pages")
+                
                 text_content = []
                 
-                for page in reader.pages[:10]:  # First 10 pages
+                for i, page in enumerate(reader.pages[:10], 1):  # First 10 pages
                     text = page.extract_text()
                     if text:
                         text_content.append(text)
+                        print(f"      → Page {i}: {len(text)} chars")
                 
                 full_text = '\n'.join(text_content)
+                
+                if len(full_text) < 50:
+                    print(f"      ⚠️  Very little text extracted ({len(full_text)} chars)")
+                else:
+                    print(f"      → Total extracted: {len(full_text)} characters")
+                
                 self._extract_fields_from_text(full_text, 'pdf_ocr')
             
             self.data['extraction_method'] = 'pdf_ocr'
-            print(f"      ✓ PDF data extracted")
+            print(f"      ✓ PDF data extracted successfully")
             
         except Exception as e:
             print(f"      ⚠️  Could not read PDF: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _extract_from_word(self, file_path: Path):
         """Extract data from Word document"""
         try:
+            print(f"      → Opening Word document...")
+            
             doc = Document(file_path)
             text_content = []
             
+            # Read paragraphs
+            print(f"      → Reading {len(doc.paragraphs)} paragraphs")
             for para in doc.paragraphs:
                 if para.text.strip():
                     text_content.append(para.text)
             
             # Also check tables
-            for table in doc.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        if cell.text.strip():
-                            text_content.append(cell.text)
+            if doc.tables:
+                print(f"      → Reading {len(doc.tables)} tables")
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            if cell.text.strip():
+                                text_content.append(cell.text)
             
             full_text = '\n'.join(text_content)
+            
+            if len(full_text) < 50:
+                print(f"      ⚠️  Very little text extracted ({len(full_text)} chars)")
+            else:
+                print(f"      → Total extracted: {len(full_text)} characters")
+            
             self._extract_fields_from_text(full_text, 'word')
             
             self.data['extraction_method'] = 'word'
-            print(f"      ✓ Word data extracted")
+            print(f"      ✓ Word data extracted successfully")
             
         except Exception as e:
             print(f"      ⚠️  Could not read Word document: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _extract_fields_from_text(self, text: str, method: str):
         """Extract specific fields from text using regex patterns"""
