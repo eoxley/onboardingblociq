@@ -330,13 +330,13 @@ class UltimatePropertyReport:
             unit_num = unit.get('unit_number', '')
             lh = lh_by_unit.get(unit_num, {})
             lh_name = lh.get('leaseholder_name', 'Vacant')
-            address = lh.get('correspondence_address', 'N/A')
+            address = lh.get('correspondence_address', 'N/A') or 'N/A'
             apport = unit.get('apportionment_percentage', 0)
             balance = lh.get('balance', 0)
             
             # Truncate long names/addresses
-            lh_display = lh_name[:25] + '...' if len(lh_name) > 25 else lh_name
-            addr_display = address[:30] + '...' if len(address) > 30 else address
+            lh_display = lh_name[:25] + '...' if lh_name and len(lh_name) > 25 else lh_name
+            addr_display = address[:30] + '...' if address and len(address) > 30 else address
             
             data.append([
                 unit_num,
@@ -413,8 +413,16 @@ class UltimatePropertyReport:
         
         self.story.append(Spacer(1, 0.2*inch))
         
-        # Detailed assets table
-        data = [['<b>Asset Type</b>', '<b>Status</b>', '<b>Last Inspection</b>', '<b>Next Due</b>', '<b>Source</b>']]
+        # Detailed assets table - use proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=8, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Asset Type', header_style),
+            Paragraph('Status', header_style),
+            Paragraph('Last Inspection', header_style),
+            Paragraph('Next Due', header_style),
+            Paragraph('Source', header_style)
+        ]]
         
         # Sort by status
         status_order = {'current': 1, 'expired': 2, 'missing': 3}
@@ -457,7 +465,16 @@ class UltimatePropertyReport:
         
         contracts = self.data.get('maintenance_contracts', [])
         
-        data = [['<b>Service</b>', '<b>Contractor</b>', '<b>Status</b>', '<b>Frequency</b>', '<b>Confidence</b>']]
+        # Proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=8, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Service', header_style),
+            Paragraph('Contractor', header_style),
+            Paragraph('Status', header_style),
+            Paragraph('Frequency', header_style),
+            Paragraph('Confidence', header_style)
+        ]]
         
         for contract in contracts:
             confidence = contract.get('detection_confidence', 0)
@@ -538,7 +555,16 @@ class UltimatePropertyReport:
             
             self.story.append(Paragraph(f"<b>{section_name}</b>", self.subsection_style))
             
-            data = [['<b>Item</b>', '<b>Budget 25/26</b>', '<b>Actual 24/25</b>', '<b>Variance</b>', '<b>%</b>']]
+            # Proper header formatting
+            header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                         fontName='Helvetica-Bold', fontSize=7, textColor=colors.whitesmoke)
+            data = [[
+                Paragraph('Item', header_style),
+                Paragraph('Budget 25/26', header_style),
+                Paragraph('Actual 24/25', header_style),
+                Paragraph('Variance', header_style),
+                Paragraph('%', header_style)
+            ]]
             
             section_budget = 0
             section_actual = 0
@@ -609,7 +635,16 @@ class UltimatePropertyReport:
             self.story.append(Paragraph("Insurance policy data pending", self.styles['Normal']))
             return
         
-        data = [['<b>Policy Type</b>', '<b>Insurer</b>', '<b>Renewal Date</b>', '<b>Premium</b>', '<b>Source</b>']]
+        # Proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=9, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Policy Type', header_style),
+            Paragraph('Insurer', header_style),
+            Paragraph('Renewal Date', header_style),
+            Paragraph('Premium', header_style),
+            Paragraph('Source', header_style)
+        ]]
         
         total_premium = 0
         for policy in policies:
@@ -749,7 +784,15 @@ class UltimatePropertyReport:
             ('Forfeiture', 1, 'Critical', 'Re-entry permitted if rent unpaid for 21 days or breach of covenant'),
         ]
         
-        data = [['<b>Category</b>', '<b>Clauses</b>', '<b>Importance</b>', '<b>Key Terms</b>']]
+        # Proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=8, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Category', header_style),
+            Paragraph('Clauses', header_style),
+            Paragraph('Importance', header_style),
+            Paragraph('Key Terms', header_style)
+        ]]
         
         for cat, count, importance, terms in clause_categories:
             imp_color = self.warning_color if importance == 'Critical' else self.secondary_color if importance == 'High' else colors.grey
@@ -821,9 +864,15 @@ class UltimatePropertyReport:
         
         self.story.append(Paragraph("<b>Ground Rent Analysis:</b>", self.subsection_style))
         
-        # Ground rent table
-        data = [
-            ['<b>Lease/Unit</b>', '<b>Current Ground Rent</b>', '<b>Review Period</b>', '<b>Next Review</b>'],
+        # Ground rent table with proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=9, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Lease/Unit', header_style),
+            Paragraph('Current Ground Rent', header_style),
+            Paragraph('Review Period', header_style),
+            Paragraph('Next Review', header_style)
+        ],
             ['Lease 1 (Flat 1)', '£50/year', '25 years', 'Est. 2015 (next cycle due)'],
             ['Lease 2 (Flat 2)', '£50/year', '25 years', 'Est. 2015 (next cycle due)'],
             ['Lease 3 (Flat 3)', '£50/year', '25 years', 'Est. 2028'],
@@ -852,7 +901,15 @@ class UltimatePropertyReport:
         units = self.data.get('units', [])
         total_budget = self.data.get('annual_service_charge_budget', 92786)
         
-        data = [['<b>Unit</b>', '<b>Apportionment %</b>', '<b>Annual Cost (£92,786 budget)</b>', '<b>Method</b>']]
+        # Proper header formatting
+        header_style = ParagraphStyle('TableHeader', parent=self.styles['Normal'], 
+                                     fontName='Helvetica-Bold', fontSize=9, textColor=colors.whitesmoke)
+        data = [[
+            Paragraph('Unit', header_style),
+            Paragraph('Apportionment %', header_style),
+            Paragraph('Annual Cost (£92,786 budget)', header_style),
+            Paragraph('Method', header_style)
+        ]]
         
         for unit in units:
             unit_num = unit.get('unit_number', '')
@@ -934,10 +991,14 @@ class UltimatePropertyReport:
                  Paragraph('<b>Contractor/Provider</b>', self.subsection_style),
                  Paragraph('<b>Frequency</b>', self.subsection_style)]]
         
-        # Priority services with likely contractors
+        # Get actual contractor names from data
+        cleaning_contractor = self.data.get('cleaning_contractor', 'New Step')
+        lift_contractor = self.data.get('lift_contractor', 'Jacksons Lift')
+        
+        # Services with actual contractor names
         services = [
-            ('Cleaning', 'Contracted cleaning service - Communal areas, stairwells, entrance', 'Weekly'),
-            ('Lift Maintenance', 'Certified lift engineer - Service and annual LOLER inspections', 'Quarterly/Annual'),
+            ('Cleaning', f'{cleaning_contractor} - Communal areas, stairwells, entrance', 'Weekly'),
+            ('Lift Maintenance', f'{lift_contractor} - Service and annual LOLER inspections', 'Quarterly/Annual'),
             ('Communal Heating/Boilers', 'Quotehedge - Gas boiler servicing & maintenance', 'Annual service'),
             ('CCTV Monitoring', 'Security contractor - Camera system monitoring', 'Continuous'),
             ('Water Hygiene', 'Water treatment specialist - Legionella testing', 'Quarterly'),
