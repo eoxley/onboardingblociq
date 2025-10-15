@@ -88,17 +88,29 @@ class SupplierOnboardingApp:
         )
         self.folder_entry.pack(side=tk.LEFT, padx=(0, 10), fill=tk.X, expand=True)
         
-        browse_btn = tk.Button(
+        browse_folder_btn = tk.Button(
             folder_entry_frame,
-            text="Browse...",
+            text="Browse Folder...",
             command=self.browse_folder,
-            font=("Helvetica", 11),
+            font=("Helvetica", 10),
             bg="#4a90e2",
             fg="white",
-            padx=20,
+            padx=15,
             cursor="hand2"
         )
-        browse_btn.pack(side=tk.LEFT)
+        browse_folder_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        browse_files_btn = tk.Button(
+            folder_entry_frame,
+            text="Select Files...",
+            command=self.browse_files,
+            font=("Helvetica", 10),
+            bg="#51cf66",
+            fg="white",
+            padx=15,
+            cursor="hand2"
+        )
+        browse_files_btn.pack(side=tk.LEFT)
         
         # Process button
         button_frame = tk.Frame(content_frame, bg="#f5f5f5")
@@ -186,21 +198,50 @@ class SupplierOnboardingApp:
     
     def browse_folder(self):
         """Open folder selection dialog"""
-        folder = filedialog.askdirectory(title="Select Supplier Document Folder")
+        folder = filedialog.askdirectory(
+            title="Select Supplier Document Folder",
+            initialdir=os.path.expanduser("~/Downloads")
+        )
         if folder:
             self.supplier_folder.set(folder)
     
+    def browse_files(self):
+        """Open file selection dialog (multiple files)"""
+        files = filedialog.askopenfilenames(
+            title="Select Supplier Documents (Excel, PDF, Word)",
+            initialdir=os.path.expanduser("~/Downloads"),
+            filetypes=[
+                ("All Supported", "*.xlsx;*.xls;*.pdf;*.docx;*.doc"),
+                ("Excel files", "*.xlsx;*.xls"),
+                ("PDF files", "*.pdf"),
+                ("Word files", "*.docx;*.doc"),
+                ("All files", "*.*")
+            ]
+        )
+        if files:
+            # Store files as a list (separated by semicolon)
+            self.supplier_folder.set(";".join(files))
+    
     def start_processing(self):
         """Start supplier data extraction"""
-        folder = self.supplier_folder.get()
+        path_input = self.supplier_folder.get()
         
-        if not folder:
-            messagebox.showwarning("No Folder", "Please select a supplier document folder first")
+        if not path_input:
+            messagebox.showwarning("No Selection", "Please select a folder or files first")
             return
         
-        if not Path(folder).exists():
-            messagebox.showerror("Folder Not Found", f"Folder does not exist:\n{folder}")
-            return
+        # Check if it's files (semicolon-separated) or folder
+        if ';' in path_input:
+            # Multiple files selected
+            files = [f for f in path_input.split(';') if f.strip()]
+            if not all(Path(f).exists() for f in files):
+                messagebox.showerror("File Not Found", "One or more selected files do not exist")
+                return
+        else:
+            # Single folder selected
+            if not Path(path_input).exists():
+                messagebox.showerror("Not Found", f"Folder or file does not exist:\n{path_input}")
+                return
         
         # Disable button during processing
         self.process_btn.config(state=tk.DISABLED)
@@ -212,26 +253,44 @@ class SupplierOnboardingApp:
         self.sql_text.delete(1.0, tk.END)
         
         # Run in thread to keep UI responsive
-        thread = threading.Thread(target=self.process_supplier, args=(folder,))
+        thread = threading.Thread(target=self.process_supplier, args=(path_input,))
         thread.daemon = True
         thread.start()
     
-    def process_supplier(self, folder_path: str):
+    def process_supplier(self, path_input: str):
         """Process supplier documents (runs in background thread)"""
         
         try:
             self.log_result("="*70)
             self.log_result("🚀 SUPPLIER ONBOARDING STARTED")
             self.log_result("="*70)
-            self.log_result(f"Folder: {Path(folder_path).name}\n")
+            
+            # Check if it's files or folder
+            if ';' in path_input:
+                # Multiple files selected
+                files = [Path(f) for f in path_input.split(';') if f.strip()]
+                self.log_result(f"Files: {len(files)} selected\n")
+                for f in files[:3]:
+                    self.log_result(f"   • {f.name}")
+                if len(files) > 3:
+                    self.log_result(f"   • ... and {len(files) - 3} more")
+            else:
+                # Folder selected
+                self.log_result(f"Folder: {Path(path_input).name}\n")
+            
             self.status_var.set("Extracting data...")
             
             # STEP 1: Extract data
-            self.log_result("📥 STEP 1: Extracting Data from Documents...")
+            self.log_result("\n📥 STEP 1: Extracting Data from Documents...")
             self.log_result("-"*70)
             
             extractor = ContractorExtractor()
-            self.extracted_data = extractor.extract_from_folder(folder_path)
+            
+            # Handle both folder and file list
+            if ';' in path_input:
+                self.extracted_data = extractor.extract_from_files([Path(f) for f in path_input.split(';') if f.strip()])
+            else:
+                self.extracted_data = extractor.extract_from_folder(path_input)
             
             # Display results
             self.log_result("\n✅ EXTRACTION COMPLETE!\n")

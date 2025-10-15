@@ -53,6 +53,52 @@ class ContractorExtractor:
             'roofing', 'painting', 'decorating', 'carpentry', 'joinery'
         ]
     
+    def extract_from_files(self, files: List[Path]) -> Dict:
+        """
+        Extract contractor data from a list of files
+        
+        Args:
+            files: List of Path objects pointing to files
+            
+        Returns:
+            Dictionary with extracted contractor data
+        """
+        print(f"\n📁 Processing {len(files)} file(s)")
+        
+        # Extract from each file
+        for file in files:
+            print(f"\n   📄 Processing: {file.name}")
+            ext_lower = file.suffix.lower()
+            
+            try:
+                if ext_lower in ['.xlsx', '.xls']:
+                    print(f"      → Excel file detected")
+                    self._extract_from_excel(file)
+                elif ext_lower == '.pdf':
+                    print(f"      → PDF file detected")
+                    self._extract_from_pdf(file)
+                elif ext_lower in ['.docx', '.doc']:
+                    print(f"      → Word file detected")
+                    self._extract_from_word(file)
+                else:
+                    print(f"      ⚠️  Unsupported file type: {ext_lower}")
+                    continue
+            except Exception as e:
+                print(f"      ⚠️  Error processing file: {e}")
+            
+            # Track documents
+            self.data['documents_found'].append({
+                'file_name': file.name,
+                'file_type': file.suffix.lower(),
+                'file_size': file.stat().st_size
+            })
+        
+        # Post-processing
+        self._infer_document_status(files)
+        self._calculate_confidence()
+        
+        return self.data
+    
     def extract_from_folder(self, folder_path: str) -> Dict:
         """
         Extract contractor data from a folder containing contractor documents
