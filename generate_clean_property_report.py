@@ -543,7 +543,11 @@ class CleanPropertyReport:
         self.story.append(Paragraph("■ CONTRACTORS & SERVICE PROVIDERS", self.section_header))
         self.story.append(Spacer(1, 0.15*inch))
         
-        contractors = self.data.get('contractors', [])
+        # Get contractors from building object (Property Bible) OR contractors list
+        contractors = (
+            self.building.get('contractors', []) or 
+            self.data.get('contractors', [])
+        )
         
         table_data = [
             [
@@ -554,14 +558,31 @@ class CleanPropertyReport:
         ]
         
         for contractor in contractors:
-            service = contractor.get('service', '—')
-            company = contractor.get('company_name', '—')
-            last_date = contractor.get('last_date', '')
-            notes = f"Last: {last_date}" if last_date else "—"
+            # Handle both Property Bible format and contractor list format
+            service = (
+                contractor.get('service') or 
+                contractor.get('service_type') or 
+                contractor.get('services_offered', [''])[0] if isinstance(contractor.get('services_offered'), list) else
+                '—'
+            )
+            
+            company = (
+                contractor.get('company_name') or 
+                contractor.get('contractor_name') or 
+                contractor.get('name') or
+                '—'
+            )
+            
+            last_date = contractor.get('last_date') or contractor.get('last_inspection_date') or ''
+            notes = f"Last service: {last_date}" if last_date else "Active"
+            
+            # Skip if no meaningful data
+            if service == '—' and company == '—':
+                continue
             
             table_data.append([
-                service.title(),
-                Paragraph(company[:40], self.styles['Normal']),
+                str(service).title(),
+                Paragraph(str(company)[:40], self.styles['Normal']),
                 notes
             ])
         
