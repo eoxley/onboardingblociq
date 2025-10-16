@@ -121,7 +121,13 @@ class SQLWriter:
             if leases_sql:
                 sql_statements.append(leases_sql)
         
-        # 8b. Contractors
+        # 8b. Lease Clauses
+        if data.get('lease_clauses'):
+            lease_clauses_sql = self._generate_lease_clauses_insert(data)
+            if lease_clauses_sql:
+                sql_statements.append(lease_clauses_sql)
+        
+        # 8c. Contractors
         if data.get('contractors'):
             contractors_sql = self._generate_contractors_insert(data)
             if contractors_sql:
@@ -236,23 +242,46 @@ VALUES (
         return "\n".join(sql_parts)
     
     def _generate_budgets_with_line_items(self, data: Dict) -> str:
-        """Generate budgets INSERT with line items (COMPLETE BUDGET DATA)"""
+        """Generate budgets INSERT with line items (COMPLETE BUDGET DATA) - ALL BUDGETS"""
         budgets = data.get('budgets', [])
         if not budgets or len(budgets) == 0:
             return ""
         
-        budget = budgets[0]  # Take first budget
-        budget_id = str(uuid.uuid4())
-        
         sql_parts = []
+        sql_parts.append(f"""
+-- ============================================================================
+-- Budgets ({len(budgets)} records)
+-- ============================================================================""")
         
-        # 1. Main Budget Record
-        financial_year = budget.get('financial_year', '2025/2026')
-        year = int(financial_year.split('/')[0]) if '/' in financial_year else datetime.now().year
-        
-        # Calculate total from line items
-        line_items = budget.get('line_items', [])
-        total_budget = sum(item.get('budget_2025_26', 0) for item in line_items if item.get('category') != 'Total')
+        # Generate INSERT for ALL budgets
+        for budget in budgets:
+            budget_id = budget.get('id', str(uuid.uuid4()))
+            
+            # Try multiple field name variations for compatibility
+            total_amount = budget.get('total_amount') or budget.get('total_budget') or 0
+            year = budget.get('year') or budget.get('budget_year') or budget.get('financial_year')
+            budget_type = budget.get('budget_type', 'service_charge')
+            
+            # Parse year if it's a string like "2024-2025"
+            if year and isinstance(year, str):
+                if '-' in year:
+                    year = int(year.split('-')[0])
+                elif '/' in year:
+                    year = int(year.split('/')[0])
+            
+            # Skip if no meaningful data (but include record structure)
+            sql_parts.append(f"""
+INSERT INTO budgets (
+    id, building_id, year_start_date, year_end_date, total_amount, budget_type
+)
+VALUES (
+    '{budget_id}',
+    '{self.building_id}',
+    NULL,
+    NULL,
+    {total_amount if total_amount else 'NULL'},
+    '{budget_type}'
+) ON CONFLICT (id) DO NOTHING;""")
         
         sql_parts.append(f"""
 -- ============================================================================
@@ -412,6 +441,43 @@ VALUES (
     {self._sql_nullable(lease.get('extraction_timestamp'))},
     {self._sql_bool(lease.get('extracted_successfully', True))}
 );""")
+        
+        return "\n".join(sql_parts)
+    
+    def _generate_lease_clauses_insert(self, data: Dict) -> str:
+        """Generate lease clauses INSERT statements"""
+        lease_clauses = data.get('lease_clauses', [])
+        if not lease_clauses:
+            return ""
+        
+        sql_parts = [f"""
+-- ============================================================================
+-- Lease Clauses ({len(lease_clauses)} clauses)
+-- ============================================================================"""]
+        
+        for clause in lease_clauses:
+            clause_id = clause.get('id', str(uuid.uuid4()))
+            lease_id = clause.get('lease_id')
+            building_id = clause.get('building_id', self.building_id)
+            
+            # Skip if no lease_id (orphaned clause)
+            if not lease_id:
+                continue
+            
+            sql_parts.append(f"""
+INSERT INTO lease_clauses (
+    id, lease_id, building_id, clause_number,
+    clause_category, clause_text, clause_summary
+)
+VALUES (
+    '{clause_id}',
+    '{lease_id}',
+    '{building_id}',
+    '{self._sql_escape(clause.get('clause_number', ''))}',
+    '{self._sql_escape(clause.get('clause_category', 'other'))}',
+    '{self._sql_escape(clause.get('clause_text', '')[:1000])}',
+    '{self._sql_escape(clause.get('clause_summary', '')[:100])}'
+) ON CONFLICT (id) DO NOTHING;""")
         
         return "\n".join(sql_parts)
     

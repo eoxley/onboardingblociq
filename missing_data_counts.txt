@@ -1,0 +1,3 @@
+Budgets: 197
+Leases: 265
+Lease Clauses: 1558
