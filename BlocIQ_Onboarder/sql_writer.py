@@ -628,7 +628,7 @@ BEGIN;"""
             'country': 'United Kingdom',
 
             # Physical
-            'num_units': data.get('num_units', 0),
+            'num_units': data.get('num_units') or data.get('number_of_units', 0),
             'num_floors': data.get('num_floors'),
             'num_blocks': data.get('num_blocks', 1),
             'building_height_meters': data.get('building_height_meters'),
@@ -637,10 +637,13 @@ BEGIN;"""
             'construction_era': self._sql_escape(data.get('construction_era', '')),
             'year_built': data.get('year_built'),
 
-            # Systems (from building profile)
+            # Systems (from building profile or inferred from contractors)
             'has_lifts': self._sql_bool(data.get('has_lifts', False)),
             'num_lifts': data.get('num_lifts'),
-            'has_communal_heating': self._sql_bool(data.get('has_communal_heating', False)),
+            'has_communal_heating': self._sql_bool(
+                data.get('has_communal_heating', False) or 
+                self._has_heating_contractor(data)
+            ),
             'heating_type': self._sql_escape(data.get('heating_type', '')),
             'has_hot_water': self._sql_bool(data.get('has_hot_water', False)),
             'has_hvac': self._sql_bool(data.get('has_hvac', False)),
@@ -1040,6 +1043,16 @@ VALUES (
     def _sql_bool(self, value: bool) -> str:
         """Convert Python bool to SQL boolean"""
         return 'TRUE' if value else 'FALSE'
+    
+    def _has_heating_contractor(self, data: Dict) -> bool:
+        """Check if building has heating contractor (implies communal heating)"""
+        contractors = data.get('contractors', [])
+        if contractors:
+            for c in contractors:
+                service = str(c.get('service', '')).lower()
+                if 'heating' in service or 'boiler' in service:
+                    return True
+        return False
 
     def _sql_date(self, date_value: Any) -> str:
         """Format date for SQL"""
