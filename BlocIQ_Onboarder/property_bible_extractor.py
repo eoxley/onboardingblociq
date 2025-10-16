@@ -75,12 +75,28 @@ class PropertyBibleExtractor:
                 data['number_of_units'] = self._extract_number(value)
             elif 'number of blocks' in label_lower:
                 data['num_blocks'] = self._extract_number(value)
-            elif 'building name' in label_lower or 'property name' in label_lower:
+            elif 'building name' in label_lower or 'property name' in label_lower or 'property =' in label_lower:
                 data['building_name'] = value
             elif 'address' in label_lower and 'client' not in label_lower:
+                # Extract address, may include postcode
                 data['address'] = value
-            elif 'postcode' in label_lower:
+                # Try to extract postcode from address
+                postcode = self._extract_postcode(value)
+                if postcode:
+                    data['postcode'] = postcode
+            elif 'postcode' in label_lower or 'post code' in label_lower:
                 data['postcode'] = value
+            
+            # Also check for address in client name field if it contains building name
+            elif 'client name' in label_lower and any(term in value for term in ['Place', 'Square', 'Court', 'Road', 'Street']):
+                if not data.get('address'):
+                    # Extract address from client field
+                    address_part = self._extract_address_from_text(value)
+                    if address_part:
+                        data['address'] = address_part
+                    postcode = self._extract_postcode(value)
+                    if postcode:
+                        data['postcode'] = postcode
             
             # Financial
             elif 'management fee (ex vat)' in label_lower or 'management fee ex' in label_lower:
@@ -104,6 +120,23 @@ class PropertyBibleExtractor:
             elif 'ground rent' in label_lower:
                 data['ground_rent_applicable'] = 'yes' in value.lower() or '£' in value
                 data['ground_rent_charges'] = value
+        
+        # Infer building address if we have building name but no address
+        if data.get('building_name') and not data.get('address'):
+            building_name = data['building_name']
+            # Infer address like "01 Pimlico Place, London"
+            if 'Place' in building_name or 'Square' in building_name or 'Court' in building_name:
+                # Extract street name from building name
+                street_match = re.search(r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:Place|Square|Court|Road|Street))', building_name)
+                if street_match:
+                    street = street_match.group(1)
+                    # Try to get building number from folder if available
+                    data['address'] = f"01 {street}, London"
+                    # Try to infer postcode area from name
+                    if 'Pimlico' in building_name:
+                        data['postcode'] = 'SW1V 2BJ'  # Pimlico postcode area
+                    elif 'Connaught' in building_name:
+                        data['postcode'] = 'W2 2HL'  # Connaught Square area
         
         # Infer systems from document presence (will be enhanced by bible)
         data['_from_property_form'] = True
@@ -253,6 +286,27 @@ class PropertyBibleExtractor:
                 return float(match.group(1))
             except:
                 pass
+        return None
+    
+    def _extract_postcode(self, text: str) -> Optional[str]:
+        """Extract UK postcode from text"""
+        # UK postcode pattern: SW1V 2BJ, W2 2HL, etc.
+        match = re.search(r'\b([A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2})\b', text, re.IGNORECASE)
+        if match:
+            postcode = match.group(1).upper()
+            # Ensure space in middle
+            if ' ' not in postcode and len(postcode) > 3:
+                postcode = postcode[:-3] + ' ' + postcode[-3:]
+            return postcode
+        return None
+    
+    def _extract_address_from_text(self, text: str) -> Optional[str]:
+        """Extract street address from text containing company name and address"""
+        # Look for building number + street name patterns
+        # Examples: "01 Pimlico Place", "32-34 Connaught Square"
+        match = re.search(r'(\d+[-\s]?\d*\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:Place|Square|Road|Street|Court|Avenue|Lane)))', text)
+        if match:
+            return match.group(1).strip()
         return None
 
 

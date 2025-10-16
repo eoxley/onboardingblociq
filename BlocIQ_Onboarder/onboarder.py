@@ -1328,6 +1328,19 @@ class BlocIQOnboarder:
         service_charge_years = self.mapped_data.get('service_charge_years', [])
 
         print(f"  ✅ Found {len(budgets)} budgets")
+        
+        # ENHANCED: Parse actual budget amounts from Excel files
+        if budgets:
+            print(f"  💰 Extracting budget amounts from Excel files...")
+            from budget_parser_enhanced import enhance_budgets_with_amounts
+            enhanced_budgets = enhance_budgets_with_amounts(budgets, self.client_folder)
+            self.mapped_data['budgets'] = enhanced_budgets
+            
+            # Count how many budgets now have amounts
+            budgets_with_amounts = sum(1 for b in enhanced_budgets if b.get('total_amount'))
+            if budgets_with_amounts > 0:
+                print(f"     ✅ Extracted amounts for {budgets_with_amounts}/{len(budgets)} budgets")
+        
         if service_charge_years:
             print(f"  ✅ Found {len(service_charge_years)} service charge accounts")
 
