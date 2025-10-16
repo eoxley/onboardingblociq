@@ -172,11 +172,15 @@ class CleanPropertyReport:
         else:
             annual_budget_ye = "Not specified"
         
+        # Create stats with Paragraph objects for proper rendering
+        bold_style = ParagraphStyle('Bold', parent=self.styles['Normal'], fontName='Helvetica-Bold')
+        normal_style = self.styles['Normal']
+        
         stats_data = [
-            ['<b>Units</b>', str(units_count)],
-            ['<b>Leaseholders</b>', str(leaseholders_count)],
-            ['<b>Annual Budget YE</b>', annual_budget_ye],
-            ['<b>Lease Documents</b>', str(lease_docs_count)],
+            [Paragraph('Units', bold_style), str(units_count)],
+            [Paragraph('Leaseholders', bold_style), str(leaseholders_count)],
+            [Paragraph('Annual Budget YE', bold_style), annual_budget_ye],
+            [Paragraph('Lease Documents', bold_style), str(lease_docs_count)],
         ]
         
         stats_table = Table(stats_data, colWidths=[2.5*inch, 2*inch])
