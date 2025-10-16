@@ -291,8 +291,20 @@ class BlocIQOnboarder:
         self.mapped_data['building'] = building
         building_id = building['id']
 
+        # ENHANCED: Extract comprehensive building metadata from Property Bible/Form
+        print(f"\n  📖 Enhancing building metadata from Property Bible/Form...")
+        from property_bible_extractor import enhance_building_with_property_files
+        building = enhance_building_with_property_files(building, self.client_folder)
+        self.mapped_data['building'] = building  # Update with enhanced data
+
         print(f"\n  🏢 Building: {building.get('name', 'Unknown')}")
         print(f"  📍 Address: {building.get('address', 'Not found')}")
+        if building.get('number_of_units'):
+            print(f"  🏠 Units: {building.get('number_of_units')}")
+        if building.get('has_lifts'):
+            print(f"  🛗 Lifts: Yes")
+        if building.get('has_communal_heating'):
+            print(f"  🔥 Communal Heating: Yes")
 
         # Detect and create schedules for this building
         print(f"\n  📋 Detecting service charge schedules...")
