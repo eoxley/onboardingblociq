@@ -1103,13 +1103,38 @@ def main():
     with open(args.json_file, 'r') as f:
         data = json.load(f)
     
+    # CRITICAL: Validate data integrity BEFORE PDF generation
+    # This ensures PDF contains ONLY this building's data from SQL
+    building_id = data.get('building', {}).get('id', 'unknown')
+    
+    print(f"\n🔍 Validating data integrity for building {building_id}...")
+    print(f"   Source: {args.json_file}")
+    
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'BlocIQ_Onboarder'))
+        from report_data_validator import validate_before_pdf_generation
+        
+        # Validate that report data matches SQL snapshot
+        validate_before_pdf_generation(building_id, args.json_file, data)
+        
+    except ImportError:
+        print("   ⚠️  Validator not found - proceeding without validation")
+    except Exception as e:
+        print(f"\n❌ DATA INTEGRITY VALIDATION FAILED:")
+        print(f"   {str(e)}")
+        print(f"\n🚫 PDF generation BLOCKED to prevent inaccurate client deliverable")
+        print(f"   Fix data issues before regenerating PDF")
+        sys.exit(1)
+    
     # Output file
     if args.output:
         output_file = args.output
     else:
         output_file = args.json_file.replace('.json', '_ULTIMATE_REPORT.pdf')
     
-    # Generate
+    # Generate (only if validation passed)
     generator = UltimatePropertyReport(data, output_file)
     result = generator.generate()
     
