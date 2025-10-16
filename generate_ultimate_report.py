@@ -87,7 +87,13 @@ class UltimatePropertyReport:
     def generate(self):
         """Generate the complete ultimate report"""
         print(f"\n📄 Generating Ultimate Property Report...")
-        print(f"   Building: {self.data.get('building_name', 'Unknown')}")
+        # Get building name from nested building object or root level
+        building_name = (
+            self.data.get('building', {}).get('building_name') or 
+            self.data.get('building', {}).get('name') or
+            self.data.get('building_name', 'Unknown')
+        )
+        print(f"   Building: {building_name}")
         
         # Cover page
         self._add_cover_page()
@@ -135,7 +141,13 @@ class UltimatePropertyReport:
     
     def _add_cover_page(self):
         """Professional cover page"""
-        building_name = self.data.get('building_name', 'Unknown Building')
+        # Get building data from nested object or root level
+        building = self.data.get('building', {})
+        building_name = (
+            building.get('building_name') or 
+            building.get('name') or
+            self.data.get('building_name', 'Unknown Building')
+        )
         
         self.story.append(Spacer(1, 1.5*inch))
         
@@ -159,22 +171,38 @@ class UltimatePropertyReport:
         self.story.append(building_para)
         self.story.append(Spacer(1, 0.1*inch))
         
-        address = f"{self.data.get('building_address', '')}<br/>{self.data.get('postcode', '')}"
-        addr_para = Paragraph(address, 
-            ParagraphStyle('Address', parent=self.styles['Normal'], 
-                         alignment=TA_CENTER, fontSize=12))
-        self.story.append(addr_para)
+        # Get address from nested object or root level
+        address_str = (
+            building.get('address') or 
+            self.data.get('building_address') or 
+            self.data.get('address', '')
+        )
+        postcode = (
+            building.get('postcode') or 
+            self.data.get('postcode', '')
+        )
+        
+        address = f"{address_str}<br/>{postcode}" if address_str or postcode else ""
+        if address.strip():
+            addr_para = Paragraph(address, 
+                ParagraphStyle('Address', parent=self.styles['Normal'], 
+                             alignment=TA_CENTER, fontSize=12))
+            self.story.append(addr_para)
         
         self.story.append(Spacer(1, 1*inch))
         
-        # Summary stats box
-        summary = self.data.get('summary', {})
+        # Summary stats box - use actual data counts
+        units_count = len(self.data.get('units', []))
+        leaseholders_count = len(self.data.get('leaseholders', []))
+        budgets = self.data.get('budgets', [])
+        total_budget = sum(float(b.get('total_amount') or 0) for b in budgets)
+        
         stats_data = [
-            ['Units', str(summary.get('total_units', 0))],
-            ['Leaseholders', str(summary.get('total_leaseholders', 0))],
-            ['Annual Budget', f"£{self.data.get('annual_service_charge_budget', 0):,.0f}"],
-            ['Outstanding Balance', f"£{summary.get('total_outstanding_balance', 0):,.2f}"],
-            ['Compliance Rate', f"{summary.get('compliance_rate', 0):.1f}%"],
+            ['Units', str(units_count)],
+            ['Leaseholders', str(leaseholders_count)],
+            ['Annual Budget', f"£{total_budget:,.0f}" if total_budget > 0 else "£0"],
+            ['Outstanding Balance', f"£0.00"],  # TODO: Calculate from leaseholders
+            ['Compliance Rate', f"0.0%"],  # TODO: Calculate from compliance_assets
             ['Lease Documents', str(len(self.data.get('leases', [])))],
         ]
         
