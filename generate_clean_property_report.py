@@ -23,9 +23,20 @@ class CleanPropertyReport:
     """Generate clean, professional property report"""
     
     def __init__(self, data: dict, output_file: str):
+        """
+        Initialize report generator with STRICT BUILDING ISOLATION
+        
+        CRITICAL: This generator creates reports for ONE building only
+        All data MUST have matching building_id
+        No data from previous reports or other buildings is pulled through
+        """
         self.data = data
         self.building = data.get('building', {})
+        self.building_id = self.building.get('id')
         self.output_file = output_file
+        
+        # VALIDATE: Ensure all data is for THIS building only
+        self._validate_building_isolation()
         self.doc = SimpleDocTemplate(
             output_file,
             pagesize=letter,
@@ -43,6 +54,45 @@ class CleanPropertyReport:
         self.light_bg = colors.HexColor('#edf2f7')
         
         self.setup_styles()
+    
+    def _validate_building_isolation(self):
+        """
+        CRITICAL: Validate that ALL data is for THIS building only
+        Prevents cross-contamination from previous reports
+        """
+        if not self.building_id:
+            print("⚠️  WARNING: No building ID found in data")
+            return
+        
+        # Check all entity lists have correct building_id
+        entities_to_check = ['units', 'leaseholders', 'budgets', 'compliance_assets', 
+                            'insurance_policies', 'leases', 'lease_clauses', 'apportionments']
+        
+        contamination_found = False
+        
+        for entity_type in entities_to_check:
+            records = self.data.get(entity_type, [])
+            for idx, record in enumerate(records):
+                record_building_id = record.get('building_id')
+                
+                # Skip if no building_id field (e.g., leaseholders use unit_id)
+                if not record_building_id:
+                    continue
+                
+                if record_building_id != self.building_id:
+                    print(f"❌ CONTAMINATION: {entity_type}[{idx}] has wrong building_id!")
+                    print(f"   Expected: {self.building_id}")
+                    print(f"   Found: {record_building_id}")
+                    contamination_found = True
+        
+        if contamination_found:
+            raise ValueError(
+                f"CRITICAL: Data contamination detected! "
+                f"This report contains data from multiple buildings. "
+                f"Each report must contain ONLY data for building {self.building_id}"
+            )
+        
+        print(f"   ✅ Building isolation validated: {self.building_id[:8]}...")
     
     def setup_styles(self):
         """Setup custom styles"""
@@ -98,12 +148,7 @@ class CleanPropertyReport:
             self.story.append(PageBreak())
             self._add_insurance()
         
-        # Lease Documents
-        if self.data.get('leases'):
-            self.story.append(PageBreak())
-            self._add_lease_documents()
-        
-        # Lease Clauses
+        # Lease Clauses (no separate lease documents table)
         if self.data.get('lease_clauses'):
             self.story.append(PageBreak())
             self._add_lease_clauses()
@@ -285,6 +330,7 @@ class CleanPropertyReport:
         # Combine units and leaseholders data
         units = self.data.get('units', [])
         leaseholders = self.data.get('leaseholders', [])
+        apportionments = self.data.get('apportionments', [])
         
         # Create leaseholder lookup by unit_id
         lh_by_unit = {}
@@ -292,6 +338,13 @@ class CleanPropertyReport:
             unit_id = lh.get('unit_id')
             if unit_id:
                 lh_by_unit[unit_id] = lh
+        
+        # Create apportionment lookup by unit_id
+        apport_by_unit = {}
+        for app in apportionments:
+            unit_id = app.get('unit_id')
+            if unit_id:
+                apport_by_unit[unit_id] = app.get('percentage') or app.get('amount')
         
         # Build combined table
         table_data = [
@@ -306,9 +359,11 @@ class CleanPropertyReport:
         # SHOW ALL UNITS (no limit)
         for unit in units:
             unit_num = unit.get('unit_number') or '—'
+            unit_id = unit.get('id')
             
-            # Get apportionment - try multiple field names
+            # Get apportionment from apportionments table OR unit object
             apport = (
+                apport_by_unit.get(unit_id) or  # From apportionments table
                 unit.get('apportionment_percentage') or 
                 unit.get('apportionment') or 
                 unit.get('percentage') or 
@@ -443,39 +498,45 @@ class CleanPropertyReport:
         self.story.append(lease_table)
     
     def _add_lease_clauses(self):
-        """Lease Clause Analysis"""
+        """Lease Clause Analysis - ALL CLAUSES with full text"""
         self.story.append(Paragraph("■ LEASE CLAUSE ANALYSIS", self.section_header))
         self.story.append(Spacer(1, 0.15*inch))
         
         clauses = self.data.get('lease_clauses', [])
         
-        # Group by category
-        by_category = {}
-        for clause in clauses:
-            category = clause.get('clause_category', 'other')
-            if category not in by_category:
-                by_category[category] = []
-            by_category[category].append(clause)
-        
-        # Show summary by category
-        summary_data = [
-            [Paragraph('<b>Category</b>', self.styles['Normal']), 
-             Paragraph('<b>Count</b>', self.styles['Normal'])]
+        # Show ALL clauses in a table with full details
+        table_data = [
+            [
+                Paragraph('<b>Clause No.</b>', self.styles['Normal']),
+                Paragraph('<b>Category</b>', self.styles['Normal']),
+                Paragraph('<b>Clause Text</b>', self.styles['Normal'])
+            ]
         ]
         
-        for category, cat_clauses in sorted(by_category.items(), key=lambda x: -len(x[1])):
-            summary_data.append([
-                category.replace('_', ' ').title(),
-                str(len(cat_clauses))
+        # Show ALL clauses
+        for clause in clauses:
+            clause_num = clause.get('clause_number') or '—'
+            category = (clause.get('clause_category') or 'other').replace('_', ' ').title()
+            clause_text = clause.get('clause_text') or clause.get('clause_summary') or '—'
+            
+            # Clean and truncate clause text for readability
+            clause_text_clean = str(clause_text).strip()[:300]
+            if len(str(clause_text)) > 300:
+                clause_text_clean += '...'
+            
+            table_data.append([
+                str(clause_num)[:15],
+                Paragraph(category[:30], self.styles['Normal']),
+                Paragraph(clause_text_clean, self.styles['Normal'])
             ])
         
-        summary_table = Table(summary_data, colWidths=[3*inch, 1.5*inch])
-        summary_table.setStyle(self._get_standard_table_style())
-        self.story.append(summary_table)
+        clause_table = Table(table_data, colWidths=[0.8*inch, 1.2*inch, 4.5*inch])
+        clause_table.setStyle(self._get_standard_table_style())
+        self.story.append(clause_table)
         
         self.story.append(Spacer(1, 0.15*inch))
         total_style = ParagraphStyle('Total', parent=self.styles['Normal'], fontSize=10)
-        self.story.append(Paragraph(f"<b>Total Lease Clauses Extracted:</b> {len(clauses)}", total_style))
+        self.story.append(Paragraph(f"<b>Total Lease Clauses:</b> {len(clauses)}", total_style))
     
     def _add_contractors(self):
         """Contractors & Service Providers"""
