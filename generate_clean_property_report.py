@@ -425,39 +425,56 @@ class CleanPropertyReport:
         self.story.append(units_table)
     
     def _add_insurance(self):
-        """Insurance Policies"""
-        self.story.append(Paragraph("■ INSURANCE POLICIES - COMPLETE COVERAGE", self.section_header))
+        """Insurance Policies - Current Coverage"""
+        self.story.append(Paragraph("■ INSURANCE POLICIES - CURRENT COVERAGE", self.section_header))
         self.story.append(Spacer(1, 0.15*inch))
         
+        # Get building-level insurance info first
+        insurance_broker = self.building.get('insurance_broker', '—')
+        renewal_date = self.building.get('insurance_renewal_date', '—')
+        
+        # Show building-level summary if available
+        if insurance_broker and insurance_broker != '—':
+            summary_data = [
+                ['Insurance Broker', str(insurance_broker)],
+                ['Renewal Date', str(renewal_date)],
+            ]
+            summary_table = Table(summary_data, colWidths=[2*inch, 4*inch])
+            summary_table.setStyle(self._get_info_table_style())
+            self.story.append(summary_table)
+            self.story.append(Spacer(1, 0.15*inch))
+        
+        # Show individual policies (current/active only)
         policies = self.data.get('insurance_policies', [])
         
+        # Simplify to just show policy and renewal
         table_data = [
             [
-                Paragraph('<b>Type</b>', self.styles['Normal']),
+                Paragraph('<b>Policy Type</b>', self.styles['Normal']),
                 Paragraph('<b>Insurer</b>', self.styles['Normal']),
-                Paragraph('<b>Premium</b>', self.styles['Normal']),
-                Paragraph('<b>Expiry</b>', self.styles['Normal'])
+                Paragraph('<b>Renewal Date</b>', self.styles['Normal'])
             ]
         ]
         
-        for policy in policies[:30]:
-            policy_type = policy.get('policy_type') or '—'
-            insurer = policy.get('insurer') or '—'
-            premium = policy.get('annual_premium') or policy.get('premium') or 0
-            premium_str = f"£{premium:,.0f}" if premium else "—"
-            expiry = policy.get('expiry_date') or '—'
+        for policy in policies[:20]:  # Show current policies
+            policy_type = policy.get('policy_type') or policy.get('insurance_type') or 'General Insurance'
+            insurer = policy.get('insurer') or policy.get('provider') or '—'
+            renewal = (
+                policy.get('renewal_date') or 
+                policy.get('expiry_date') or 
+                renewal_date  # Use building-level renewal as fallback
+            )
             
             table_data.append([
-                Paragraph(str(policy_type)[:30], self.styles['Normal']),
+                Paragraph(str(policy_type)[:40], self.styles['Normal']),
                 Paragraph(str(insurer)[:40], self.styles['Normal']),
-                premium_str,
-                str(expiry)[:15] if expiry != '—' else '—'
+                str(renewal)[:20] if renewal != '—' else '—'
             ])
         
-        if len(policies) > 30:
-            table_data.append([f'+ {len(policies) - 30} more policies', '', '', ''])
+        if len(policies) > 20:
+            table_data.append([f'+ {len(policies) - 20} more policies', '', ''])
         
-        insurance_table = Table(table_data, colWidths=[1.5*inch, 2*inch, 1.2*inch, 1.6*inch])
+        insurance_table = Table(table_data, colWidths=[2.5*inch, 2*inch, 2*inch])
         insurance_table.setStyle(self._get_standard_table_style())
         self.story.append(insurance_table)
     
@@ -498,97 +515,162 @@ class CleanPropertyReport:
         self.story.append(lease_table)
     
     def _add_lease_clauses(self):
-        """Lease Clause Analysis - ALL CLAUSES with full text"""
+        """Lease Clause Analysis - Grouped by individual leases"""
         self.story.append(Paragraph("■ LEASE CLAUSE ANALYSIS", self.section_header))
         self.story.append(Spacer(1, 0.15*inch))
         
         clauses = self.data.get('lease_clauses', [])
+        leases = self.data.get('leases', [])
         
-        # Show ALL clauses in a table with full details
-        table_data = [
-            [
-                Paragraph('<b>Clause No.</b>', self.styles['Normal']),
-                Paragraph('<b>Category</b>', self.styles['Normal']),
-                Paragraph('<b>Clause Text</b>', self.styles['Normal'])
-            ]
-        ]
+        # Create lease lookup
+        lease_lookup = {lease.get('id'): lease for lease in leases}
         
-        # Show ALL clauses
+        # Group clauses by lease_id
+        clauses_by_lease = {}
         for clause in clauses:
-            clause_num = clause.get('clause_number') or '—'
-            category = (clause.get('clause_category') or 'other').replace('_', ' ').title()
-            clause_text = clause.get('clause_text') or clause.get('clause_summary') or '—'
-            
-            # Clean and truncate clause text for readability
-            clause_text_clean = str(clause_text).strip()[:300]
-            if len(str(clause_text)) > 300:
-                clause_text_clean += '...'
-            
-            table_data.append([
-                str(clause_num)[:15],
-                Paragraph(category[:30], self.styles['Normal']),
-                Paragraph(clause_text_clean, self.styles['Normal'])
-            ])
+            lease_id = clause.get('lease_id')
+            if lease_id:
+                if lease_id not in clauses_by_lease:
+                    clauses_by_lease[lease_id] = []
+                clauses_by_lease[lease_id].append(clause)
         
-        clause_table = Table(table_data, colWidths=[0.8*inch, 1.2*inch, 4.5*inch])
-        clause_table.setStyle(self._get_standard_table_style())
-        self.story.append(clause_table)
+        # Show each lease with its clauses (limit to first 3 leases for readability)
+        leases_shown = 0
+        for lease_id, lease_clauses in list(clauses_by_lease.items())[:3]:
+            if leases_shown >= 3:
+                break
+            
+            lease = lease_lookup.get(lease_id, {})
+            lease_title = lease.get('title_number') or lease.get('lease_type') or f'Lease {leases_shown + 1}'
+            
+            # Lease header
+            lease_header_style = ParagraphStyle(
+                'LeaseHeader', parent=self.styles['Normal'],
+                fontSize=11, fontName='Helvetica-Bold', textColor=self.secondary
+            )
+            self.story.append(Paragraph(f"Lease: {lease_title}", lease_header_style))
+            self.story.append(Spacer(1, 0.1*inch))
+            
+            # Clauses for this lease
+            table_data = [
+                [
+                    Paragraph('<b>Clause</b>', self.styles['Normal']),
+                    Paragraph('<b>Category</b>', self.styles['Normal']),
+                    Paragraph('<b>What It Does</b>', self.styles['Normal'])
+                ]
+            ]
+            
+            for clause in lease_clauses[:20]:  # Show first 20 clauses per lease
+                clause_num = clause.get('clause_number') or '—'
+                category = (clause.get('clause_category') or 'other').replace('_', ' ').title()
+                clause_text = clause.get('clause_summary') or clause.get('clause_text') or '—'
+                
+                # Clean clause text
+                clause_text_clean = str(clause_text).strip()[:200]
+                if len(str(clause_text)) > 200:
+                    clause_text_clean += '...'
+                
+                table_data.append([
+                    str(clause_num)[:10],
+                    category[:25],
+                    Paragraph(clause_text_clean, self.styles['Normal'])
+                ])
+            
+            clause_table = Table(table_data, colWidths=[0.6*inch, 1.4*inch, 4.5*inch])
+            clause_table.setStyle(self._get_standard_table_style())
+            self.story.append(clause_table)
+            
+            if len(lease_clauses) > 20:
+                self.story.append(Spacer(1, 0.05*inch))
+                more_style = ParagraphStyle('More', parent=self.styles['Normal'], fontSize=8, textColor=colors.grey)
+                self.story.append(Paragraph(f"+ {len(lease_clauses) - 20} more clauses for this lease", more_style))
+            
+            self.story.append(Spacer(1, 0.2*inch))
+            leases_shown += 1
         
-        self.story.append(Spacer(1, 0.15*inch))
-        total_style = ParagraphStyle('Total', parent=self.styles['Normal'], fontSize=10)
-        self.story.append(Paragraph(f"<b>Total Lease Clauses:</b> {len(clauses)}", total_style))
+        # Summary
+        if len(clauses_by_lease) > 3:
+            summary_style = ParagraphStyle('Summary', parent=self.styles['Normal'], fontSize=10)
+            self.story.append(Paragraph(
+                f"<b>Summary:</b> Showing 3 of {len(clauses_by_lease)} leases. "
+                f"Total {len(clauses)} clauses extracted across all leases.",
+                summary_style
+            ))
     
     def _add_contractors(self):
-        """Contractors & Service Providers"""
+        """Contractors & Service Providers - ACTUAL NAMES from contracts"""
         self.story.append(Paragraph("■ CONTRACTORS & SERVICE PROVIDERS", self.section_header))
         self.story.append(Spacer(1, 0.15*inch))
         
-        # Get contractors from building object (Property Bible) OR contractors list
-        contractors = (
-            self.building.get('contractors', []) or 
-            self.data.get('contractors', [])
-        )
+        # Get actual contractor names from maintenance contracts
+        contracts = self.data.get('contracts', [])
         
+        # Group by service type to get unique contractors
+        contractors_by_service = {}
+        for contract in contracts:
+            service_type = (contract.get('service_type') or contract.get('contract_type') or 'General').lower()
+            contractor_name = contract.get('contractor_name') or contract.get('company_name')
+            
+            if contractor_name and contractor_name != 'N/A':
+                if service_type not in contractors_by_service:
+                    contractors_by_service[service_type] = set()
+                contractors_by_service[service_type].add(contractor_name)
+        
+        # Convert to list format for display
+        contractors = []
+        for service, companies in contractors_by_service.items():
+            for company in companies:
+                contractors.append({
+                    'service': service,
+                    'company_name': company
+                })
+        
+        # Fallback to Property Bible contractors if no contracts found
+        if not contractors:
+            contractors = (
+                self.building.get('contractors', []) or 
+                self.data.get('contractors', [])
+            )
+        
+        # Simple table: Service | Company Name
         table_data = [
             [
-                Paragraph('<b>Service</b>', self.styles['Normal']),
-                Paragraph('<b>Company</b>', self.styles['Normal']),
-                Paragraph('<b>Notes</b>', self.styles['Normal'])
+                Paragraph('<b>Service Type</b>', self.styles['Normal']),
+                Paragraph('<b>Contractor Name</b>', self.styles['Normal'])
             ]
         ]
         
         for contractor in contractors:
-            # Handle both Property Bible format and contractor list format
+            # Handle both contract format and Property Bible format
             service = (
                 contractor.get('service') or 
                 contractor.get('service_type') or 
-                contractor.get('services_offered', [''])[0] if isinstance(contractor.get('services_offered'), list) else
                 '—'
             )
             
             company = (
                 contractor.get('company_name') or 
                 contractor.get('contractor_name') or 
-                contractor.get('name') or
                 '—'
             )
-            
-            last_date = contractor.get('last_date') or contractor.get('last_inspection_date') or ''
-            notes = f"Last service: {last_date}" if last_date else "Active"
             
             # Skip if no meaningful data
             if service == '—' and company == '—':
                 continue
             
             table_data.append([
-                str(service).title(),
-                Paragraph(str(company)[:40], self.styles['Normal']),
-                notes
+                Paragraph(str(service).replace('_', ' ').title()[:40], self.styles['Normal']),
+                Paragraph(str(company)[:50], self.styles['Normal'])
             ])
         
-        contractor_table = Table(table_data, colWidths=[1.5*inch, 2.5*inch, 2.5*inch])
+        contractor_table = Table(table_data, colWidths=[2.5*inch, 4*inch])
         contractor_table.setStyle(self._get_standard_table_style())
         self.story.append(contractor_table)
+        
+        # Add summary
+        self.story.append(Spacer(1, 0.1*inch))
+        summary_style = ParagraphStyle('Summary', parent=self.styles['Normal'], fontSize=9)
+        self.story.append(Paragraph(f"Total contractors identified: {len(contractors)}", summary_style))
     
     def _add_compliance(self):
         """Compliance Assets"""
