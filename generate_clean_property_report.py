@@ -303,38 +303,53 @@ class CleanPropertyReport:
             ]
         ]
         
-        for unit in units[:50]:  # Limit to 50 for PDF size
-            unit_num = unit.get('unit_number', '—')
-            apport = unit.get('apportionment_percentage', 0)
-            apport_str = f"{apport:.2f}%" if apport else "—"
+        # SHOW ALL UNITS (no limit)
+        for unit in units:
+            unit_num = unit.get('unit_number') or '—'
+            
+            # Get apportionment - try multiple field names
+            apport = (
+                unit.get('apportionment_percentage') or 
+                unit.get('apportionment') or 
+                unit.get('percentage') or 
+                0
+            )
+            apport_str = f"{float(apport):.2f}%" if apport and float(apport) > 0 else "—"
             
             # Get leaseholder for this unit
             lh = lh_by_unit.get(unit.get('id'), {})
-            lh_name = lh.get('leaseholder_name', '—')
-            lh_address = lh.get('correspondence_address', '')
-            lh_email = lh.get('email', '')
-            lh_tel = lh.get('telephone', '')
+            lh_name = (
+                lh.get('leaseholder_name') or 
+                lh.get('name') or 
+                lh.get('full_name') or 
+                '—'
+            )
+            
+            lh_address = lh.get('correspondence_address') or ''
+            lh_email = lh.get('email') or ''
+            lh_tel = lh.get('telephone') or lh.get('phone') or ''
             
             # Combine contact info
             contact_parts = []
-            if lh_address:
-                contact_parts.append(lh_address[:100])
-            if lh_email:
-                contact_parts.append(lh_email)
-            if lh_tel:
-                contact_parts.append(lh_tel)
+            if lh_address and lh_address != '—':
+                contact_parts.append(str(lh_address)[:100])
+            if lh_email and lh_email != '—':
+                contact_parts.append(str(lh_email))
+            if lh_tel and lh_tel != '—':
+                contact_parts.append(str(lh_tel))
             
             contact = ', '.join(contact_parts) if contact_parts else '—'
             
+            # Handle leaseholder name - if it's "Unknown", show as vacant
+            if lh_name == 'Unknown' or lh_name == '—':
+                lh_name = 'Vacant' if not contact or contact == '—' else lh_name
+            
             table_data.append([
-                unit_num,
-                Paragraph(lh_name[:50], self.styles['Normal']),
-                Paragraph(contact[:150], self.styles['Normal']),
+                str(unit_num),
+                Paragraph(str(lh_name)[:60], self.styles['Normal']),
+                Paragraph(contact[:180], self.styles['Normal']),
                 apport_str
             ])
-        
-        if len(units) > 50:
-            table_data.append(['...', f'+ {len(units) - 50} more units', '', ''])
         
         units_table = Table(table_data, colWidths=[0.8*inch, 1.8*inch, 2.8*inch, 0.9*inch])
         units_table.setStyle(TableStyle([
