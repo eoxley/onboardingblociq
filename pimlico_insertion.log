@@ -1,0 +1,323 @@
+🚀 Running ALL Pimlico SQL parts to Supabase...
+
+This will run 19 SQL files in sequence
+
+🗑️  STEP 1/19: Deleting old Pimlico...
+
+================================================================================
+🚀 Applying SQL: DELETE_pimlico_65e81534.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 1,765 chars, 0 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+
+📊 STEP 2/19: Running PIMLICO_PART1.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART1.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART1.sql'
+   ⚠️  Part 1 had issues (check output above)
+
+📊 STEP 3/19: Running PIMLICO_PART2.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART2.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART2.sql'
+   ⚠️  Part 2 had issues (check output above)
+
+📊 STEP 4/19: Running PIMLICO_PART3.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART3.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART3.sql'
+   ⚠️  Part 3 had issues (check output above)
+
+📊 STEP 5/19: Running PIMLICO_PART4.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART4.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART4.sql'
+   ⚠️  Part 4 had issues (check output above)
+
+📊 STEP 6/19: Running PIMLICO_PART5.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART5.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART5.sql'
+   ⚠️  Part 5 had issues (check output above)
+
+📊 STEP 7/19: Running PIMLICO_PART6.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART6.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART6.sql'
+   ⚠️  Part 6 had issues (check output above)
+
+📊 STEP 8/19: Running PIMLICO_PART7.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART7.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART7.sql'
+   ⚠️  Part 7 had issues (check output above)
+
+📊 STEP 9/19: Running PIMLICO_PART8.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART8.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART8.sql'
+   ⚠️  Part 8 had issues (check output above)
+
+📊 STEP 10/19: Running PIMLICO_PART9.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART9.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+Traceback (most recent call last):
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 79, in <module>
+    success = apply_sql(sys.argv[1])
+  File "/Users/ellie/onboardingblociq/apply_with_new_credentials.py", line 30, in apply_sql
+    with open(filepath, 'r', encoding='utf-8') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'PIMLICO_PART9.sql'
+   ⚠️  Part 9 had issues (check output above)
+
+📊 STEP 11/19: Running PIMLICO_PART10.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART10.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 49,464 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (44.208.221.186), 
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (44.208.221.186), 
+
+❌ All connection attempts failed
+   ⚠️  Part 10 had issues (check output above)
+
+📊 STEP 12/19: Running PIMLICO_PART11.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART11.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 49,962 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (44.216.29.125), p
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (44.216.29.125), p
+
+❌ All connection attempts failed
+   ⚠️  Part 11 had issues (check output above)
+
+📊 STEP 13/19: Running PIMLICO_PART12.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART12.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 49,682 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 12 had issues (check output above)
+
+📊 STEP 14/19: Running PIMLICO_PART13.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART13.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 49,142 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 13 had issues (check output above)
+
+📊 STEP 15/19: Running PIMLICO_PART14.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART14.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 49,121 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 14 had issues (check output above)
+
+📊 STEP 16/19: Running PIMLICO_PART15.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART15.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 49,195 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 15 had issues (check output above)
+
+📊 STEP 17/19: Running PIMLICO_PART16.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART16.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 50,658 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 16 had issues (check output above)
+
+📊 STEP 18/19: Running PIMLICO_PART17.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART17.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 51,870 chars, 150 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 17 had issues (check output above)
+
+📊 STEP 19/19: Running PIMLICO_PART18.sql...
+
+================================================================================
+🚀 Applying SQL: PIMLICO_PART18.sql
+   Project: aewixchhykxyhqjvqoek
+================================================================================
+
+📊 SQL Size: 29,675 chars, 90 INSERTs
+🔄 Trying connection 1/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+🔄 Trying connection 2/3...
+   ❌ Failed: could not translate host name "db.aewixchhykxyhqjvqoek.supabase.co" to address: 
+🔄 Trying connection 3/3...
+   ❌ Failed: connection to server at "aws-0-us-east-1.pooler.supabase.com" (52.45.94.125), po
+
+❌ All connection attempts failed
+   ⚠️  Part 18 had issues (check output above)
+
+
+✅ ALL 19 FILES PROCESSED!
+
+🔍 Verify with this query in Supabase:
+SELECT building_name, num_units FROM buildings WHERE building_name = 'Pimlico Place';
