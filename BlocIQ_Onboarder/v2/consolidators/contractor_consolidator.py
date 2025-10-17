@@ -10,6 +10,10 @@ One entry per unique contractor with all services listed
 import re
 from typing import Dict, List, Set, Optional
 from difflib import SequenceMatcher
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__) + '/../extractors')
+from budget_contractor_extractor import BudgetContractorExtractor
 
 
 class ContractorConsolidator:
@@ -22,24 +26,34 @@ class ContractorConsolidator:
     def __init__(self):
         self.contractors = {}  # canonical_name -> contractor_data
         self.aliases = {}  # alias -> canonical_name
+        self.budget_contractor_extractor = BudgetContractorExtractor()
     
     def add_from_budget(self, budget_line_items: List[Dict]):
-        """Extract contractors mentioned in budget line items"""
+        """Extract contractors from budget line items - ENHANCED to use PM Comments"""
         for item in budget_line_items:
             description = item.get('description', '')
             category = item.get('category', '')
             amount = item.get('annual_amount', 0)
+            notes = item.get('notes', '')  # PM Comments - THE KEY SOURCE!
             
-            # Don't extract contractors for utilities/insurance (paid to providers not contractors)
-            if category in ['utilities', 'insurance', 'professional_fees', 'management']:
+            # Skip utilities/insurance providers (not maintenance contractors)
+            if category in ['insurance', 'professional_fees', 'management']:
                 continue
             
-            # Look for contractor names in description
-            # Common patterns: "Cleaning - ABC Ltd", "ABC Services - Garden Maintenance"
-            contractor_match = re.search(r'([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|Services))', description)
-            if contractor_match:
-                contractor_name = contractor_match.group(1).strip()
-                service_type = category
+            # PRIORITY 1: Extract from notes/PM Comments (most accurate!)
+            contractor_name = None
+            if notes:
+                contractor_name = self.budget_contractor_extractor.extract_contractor_from_notes(notes)
+            
+            # FALLBACK: Try description if notes don't have contractor
+            if not contractor_name:
+                contractor_match = re.search(r'([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|Services))', description)
+                if contractor_match:
+                    contractor_name = contractor_match.group(1).strip()
+            
+            # Add contractor if found
+            if contractor_name:
+                service_type = category or self._infer_service_from_description(description)
                 
                 self._add_contractor(
                     contractor_name,
@@ -47,6 +61,31 @@ class ContractorConsolidator:
                     source='budget',
                     annual_value=amount
                 )
+    
+    def _infer_service_from_description(self, description: str) -> str:
+        """Infer service type from description"""
+        desc_lower = description.lower()
+        
+        if 'clean' in desc_lower:
+            return 'cleaning'
+        elif 'lift' in desc_lower or 'elevator' in desc_lower:
+            return 'lifts'
+        elif 'heat' in desc_lower or 'boiler' in desc_lower:
+            return 'heating'
+        elif 'fire' in desc_lower:
+            return 'fire_safety'
+        elif 'garden' in desc_lower or 'landscape' in desc_lower:
+            return 'gardening'
+        elif 'drain' in desc_lower or 'gutter' in desc_lower:
+            return 'drainage'
+        elif 'pest' in desc_lower:
+            return 'pest_control'
+        elif 'water' in desc_lower or 'hygiene' in desc_lower:
+            return 'water_hygiene'
+        elif 'light' in desc_lower:
+            return 'lighting'
+        else:
+            return 'general'
     
     def add_from_contracts(self, contracts: List[Dict]):
         """Extract contractors from contract documents"""
