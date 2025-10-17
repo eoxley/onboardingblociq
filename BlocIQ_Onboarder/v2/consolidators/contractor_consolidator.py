@@ -14,6 +14,8 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__) + '/../extractors')
 from budget_contractor_extractor import BudgetContractorExtractor
+sys.path.insert(0, os.path.dirname(__file__) + '/../validators')
+from contractor_name_validator import ContractorNameValidator
 
 
 class ContractorConsolidator:
@@ -27,6 +29,7 @@ class ContractorConsolidator:
         self.contractors = {}  # canonical_name -> contractor_data
         self.aliases = {}  # alias -> canonical_name
         self.budget_contractor_extractor = BudgetContractorExtractor()
+        self.contractor_validator = ContractorNameValidator()
     
     def add_from_budget(self, budget_line_items: List[Dict]):
         """Extract contractors from budget line items - ENHANCED to use PM Comments"""
@@ -227,6 +230,7 @@ class ContractorConsolidator:
         """
         Get final consolidated contractor list
         One entry per unique contractor with all services
+        FILTERED to remove garbage names
         """
         consolidated = []
         
@@ -246,8 +250,16 @@ class ContractorConsolidator:
             
             consolidated.append(contractor)
         
-        # Sort by service count (most services first)
-        consolidated.sort(key=lambda x: -x['service_count'])
+        # FILTER: Remove invalid contractor names (garbage text)
+        before_count = len(consolidated)
+        consolidated = self.contractor_validator.filter_contractors(consolidated)
+        after_count = len(consolidated)
+        
+        if before_count > after_count:
+            print(f"\n   🔍 Filtered {before_count - after_count} invalid contractor names")
+        
+        # Sort by annual value (highest first), then by service count
+        consolidated.sort(key=lambda x: (-x['annual_value'], -x['service_count']))
         
         return consolidated
     

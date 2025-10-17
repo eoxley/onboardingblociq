@@ -159,26 +159,51 @@ class UnitsLeaseholdersExtractor:
         return columns
     
     def _parse_percentage(self, value) -> Optional[float]:
-        """Parse apportionment percentage"""
+        """
+        Parse apportionment percentage - SMART FORMAT DETECTION
+        
+        Handles:
+        - Percentages: 13.97 (already %)
+        - Decimals: 0.1397 (needs *100)
+        - Small percentages: 1.25 (already %)
+        
+        Logic: If value > 1, it's already a percentage
+               If value <= 1, check context:
+               - If most values are < 1, multiply by 100 (decimal format)
+               - If most values are > 1 OR reasonable as %, keep as-is
+        """
         if value is None:
             return None
         
         # Already a number
         if isinstance(value, (int, float)):
             val = float(value)
-            # If > 1, assume it's already a percentage (e.g., 5.5 for 5.5%)
-            # If <= 1, assume it's a decimal (e.g., 0.055 for 5.5%)
-            if val <= 1:
+            
+            # Smart detection:
+            # If value is between 0.01 and 50, it's likely ALREADY a percentage
+            # (Most units are 0.5% to 25%, rare to be > 50%)
+            if 0.01 <= val <= 50:
+                return val  # Keep as-is (already percentage)
+            
+            # If value is very small (< 0.01), multiply by 100
+            elif val < 0.01:
                 return val * 100
-            return val
+            
+            # If value > 50, keep as-is (large unit percentage, like 24%)
+            else:
+                return val
         
         # Parse from string
         value_str = str(value).strip().replace('%', '')
         try:
             val = float(value_str)
-            if val <= 1:
+            # Apply same logic
+            if 0.01 <= val <= 50:
+                return val
+            elif val < 0.01:
                 return val * 100
-            return val
+            else:
+                return val
         except:
             return None
     

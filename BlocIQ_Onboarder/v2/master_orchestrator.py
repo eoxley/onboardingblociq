@@ -28,6 +28,7 @@ from extractors.leaseholder_schedule_extractor import LeaseholderScheduleExtract
 from consolidators.contractor_consolidator import ContractorConsolidator
 from consolidators.data_deduplicator import DataDeduplicator
 from consolidators.asset_register_builder import AssetRegisterBuilder
+from validators.data_quality_validator import DataQualityValidator
 from sql_generator_v2 import SQLGeneratorV2
 from pdf_generator_v2 import PDFGeneratorV2
 
@@ -52,6 +53,7 @@ class MasterOrchestrator:
         self.contractor_consolidator = ContractorConsolidator()
         self.data_deduplicator = DataDeduplicator()
         self.asset_register_builder = AssetRegisterBuilder()
+        self.data_quality_validator = DataQualityValidator()
         
         # Extractors
         self.budget_extractor = BudgetExtractor()
@@ -133,6 +135,10 @@ class MasterOrchestrator:
         print("\n🏢 PHASE 5: BUILD BUILDING PICTURE")
         print("-"*70)
         self._build_building_picture(categorized_docs)
+        
+        # PHASE 5.5: Data Quality Validation
+        issues, warnings = self.data_quality_validator.validate(self.extracted_data)
+        self.data_quality_validator.print_report()
         
         # PHASE 6: Generate Outputs
         print("\n📄 PHASE 6: GENERATE OUTPUTS")
