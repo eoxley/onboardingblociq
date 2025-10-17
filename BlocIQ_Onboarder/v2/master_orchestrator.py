@@ -22,6 +22,7 @@ from extractors.contract_extractor import ContractExtractor
 from extractors.hs_report_analyzer import HSReportAnalyzer
 from extractors.accounts_extractor import AccountsExtractor
 from extractors.lease_analyzer import LeaseAnalyzer
+from extractors.ai_lease_analyzer import AILeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from extractors.leaseholder_contact_extractor import LeaseholderContactExtractor
 from extractors.leaseholder_schedule_extractor import LeaseholderScheduleExtractor
@@ -62,6 +63,15 @@ class MasterOrchestrator:
         self.hs_analyzer = HSReportAnalyzer()
         self.accounts_extractor = AccountsExtractor()
         self.lease_analyzer = LeaseAnalyzer()
+        
+        # AI-Powered Lease Analyzer (Option 2: AI-Only - Best Quality)
+        try:
+            self.ai_lease_analyzer = AILeaseAnalyzer()
+            print("   ✅ AI Lease Analyzer enabled (GPT-4)")
+        except ValueError as e:
+            print(f"   ⚠️  AI Lease Analyzer disabled: {e}")
+            self.ai_lease_analyzer = None
+        
         self.units_extractor = UnitsLeaseholdersExtractor()
         self.leaseholder_extractor = LeaseholderContactExtractor()
         self.leaseholder_schedule_extractor = LeaseholderScheduleExtractor()
@@ -255,9 +265,43 @@ class MasterOrchestrator:
         # Analyze leases (after collecting all)
         if self.extracted_data['leases']:
             print(f"\n   📄 Analyzing {len(self.extracted_data['leases'])} lease documents...")
-            lease_analysis = self.lease_analyzer.analyze_leases(self.extracted_data['leases'], limit=3)
-            self.extracted_data['lease_analysis'] = lease_analysis
-            print(f"   ✅ Deep analysis: {lease_analysis.get('leases_analyzed', 0)} leases")
+            
+            # OPTION 2: AI-ONLY (Best Quality) - Use GPT-4 for comprehensive analysis
+            if self.ai_lease_analyzer:
+                print(f"   🤖 Using AI-powered analysis (LeaseClear quality)...")
+                ai_analyses = []
+                
+                # Analyze up to 3 representative leases with AI
+                selected_leases = self.extracted_data['leases'][:3]
+                
+                for i, lease_doc in enumerate(selected_leases, 1):
+                    text = lease_doc.get('text', '')
+                    filename = lease_doc.get('filename', f'lease_{i}.pdf')
+                    
+                    if not text or len(text) < 500:
+                        print(f"   ⚠️  Lease {i}: Too little text, skipping")
+                        continue
+                    
+                    print(f"   📄 Lease {i}/{len(selected_leases)}: {filename}")
+                    
+                    # Run comprehensive AI analysis
+                    ai_result = self.ai_lease_analyzer.comprehensive_analysis(text, filename)
+                    
+                    # Store AI analysis
+                    ai_analyses.append({
+                        'filename': filename,
+                        'ai_analysis': ai_result,
+                        'text_length': len(text)
+                    })
+                
+                self.extracted_data['lease_ai_analyses'] = ai_analyses
+                print(f"   ✅ AI analysis complete: {len(ai_analyses)} leases analyzed")
+            else:
+                # Fallback to basic regex analysis
+                print(f"   📋 Using basic regex analysis...")
+                lease_analysis = self.lease_analyzer.analyze_leases(self.extracted_data['leases'], limit=3)
+                self.extracted_data['lease_analysis'] = lease_analysis
+                print(f"   ✅ Basic analysis: {lease_analysis.get('leases_analyzed', 0)} leases")
     
     def _consolidate_data(self):
         """Consolidate and cross-check data"""

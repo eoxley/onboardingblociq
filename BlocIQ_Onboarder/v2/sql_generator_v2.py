@@ -31,13 +31,14 @@ class SQLGeneratorV2:
         self.sql_statements.append(f"-- Building: {self.data['building'].get('name', 'Unknown')}")
         self.sql_statements.append("")
         
-        # Generate in dependency order
+        # Generate in dependency order (parent → children)
         self._generate_building()
-        self._generate_units()
-        self._generate_budgets()
+        self._generate_units()  # Creates units + leaseholders
+        self._generate_budgets()  # Creates budgets + line items
         self._generate_compliance_assets()
-        self._generate_asset_register()
+        # self._generate_asset_register()  # DISABLED - Table doesn't exist in Supabase schema
         self._generate_contracts()
+        self._generate_insurance_policies()  # ADDED - Critical for insurance data
         self._generate_accounts()
         self._generate_leases()
         self._generate_contractors()
@@ -45,16 +46,16 @@ class SQLGeneratorV2:
         return '\n'.join(self.sql_statements)
     
     def _generate_building(self):
-        """Generate building INSERT"""
+        """Generate building INSERT - SCHEMA ALIGNED"""
         building = self.data['building']
         
         self.sql_statements.append("-- Building")
         self.sql_statements.append("INSERT INTO buildings (")
-        self.sql_statements.append("    id, name, address, postcode,")
-        self.sql_statements.append("    number_of_units, number_of_floors,")
-        self.sql_statements.append("    building_height_meters, has_basement,")
-        self.sql_statements.append("    is_hrb, bsa_status,")
-        self.sql_statements.append("    construction_type, sc_year_start, sc_year_end")
+        self.sql_statements.append("    id, building_name, building_address, postcode,")
+        self.sql_statements.append("    num_units, num_floors,")
+        self.sql_statements.append("    building_height_meters,")
+        self.sql_statements.append("    bsa_registration_required, bsa_status,")
+        self.sql_statements.append("    construction_type, construction_era")
         self.sql_statements.append(") VALUES (")
         self.sql_statements.append(f"    '{self.building_id}',")
         self.sql_statements.append(f"    {self._quote(building.get('name', 'Unknown'))},")
@@ -63,17 +64,15 @@ class SQLGeneratorV2:
         self.sql_statements.append(f"    {len(self.data.get('units', []))},")
         self.sql_statements.append(f"    {building.get('number_of_floors') or 'NULL'},")
         self.sql_statements.append(f"    {building.get('building_height_meters') or 'NULL'},")
-        self.sql_statements.append(f"    {self._bool(building.get('has_basement', False))},")
         self.sql_statements.append(f"    {self._bool(building.get('is_hrb', False))},")
         self.sql_statements.append(f"    {self._quote(building.get('bsa_status', 'Not HRB'))},")
         self.sql_statements.append(f"    {self._quote(building.get('construction_type'))},")
-        self.sql_statements.append(f"    {self._quote(building.get('sc_year_start'))},")
-        self.sql_statements.append(f"    {self._quote(building.get('sc_year_end'))}")
+        self.sql_statements.append(f"    {self._quote(building.get('construction_era'))}")
         self.sql_statements.append(") ON CONFLICT (id) DO NOTHING;")
         self.sql_statements.append("")
     
     def _generate_units(self):
-        """Generate units INSERTs"""
+        """Generate units INSERTs - SCHEMA ALIGNED"""
         units = self.data.get('units', [])
         
         if not units:
@@ -81,40 +80,62 @@ class SQLGeneratorV2:
         
         self.sql_statements.append(f"-- Units ({len(units)})")
         
+        # Store unit_id mapping for leaseholders
+        self.unit_id_map = {}
+        
         for unit in units:
             unit_id = str(uuid.uuid4())
+            self.unit_id_map[unit['unit_number']] = unit_id
             
             self.sql_statements.append("INSERT INTO units (")
             self.sql_statements.append("    id, building_id, unit_number, floor_number,")
-            self.sql_statements.append("    leaseholder_name, correspondence_address")
+            self.sql_statements.append("    apportionment_percentage, unit_type")
             self.sql_statements.append(") VALUES (")
             self.sql_statements.append(f"    '{unit_id}',")
             self.sql_statements.append(f"    '{self.building_id}',")
             self.sql_statements.append(f"    {self._quote(unit['unit_number'])},")
             self.sql_statements.append(f"    {unit.get('floor') or 'NULL'},")
-            self.sql_statements.append(f"    {self._quote(unit.get('leaseholder_name'))},")
-            self.sql_statements.append(f"    {self._quote(unit.get('correspondence_address'))}")
-            self.sql_statements.append(");")
+            self.sql_statements.append(f"    {unit.get('apportionment') or 'NULL'},")
+            self.sql_statements.append(f"    {self._quote(unit.get('unit_type', 'Flat'))}")
+            self.sql_statements.append(") ON CONFLICT DO NOTHING;")
+        
+        self.sql_statements.append("")
+        
+        # Now generate leaseholders (separate table)
+        self._generate_leaseholders(units)
+    
+    def _generate_leaseholders(self, units: List[Dict]):
+        """Generate leaseholders - SEPARATE TABLE (not in units!)"""
+        leaseholders_to_create = [u for u in units if u.get('leaseholder_name')]
+        
+        if not leaseholders_to_create:
+            return
+        
+        self.sql_statements.append(f"-- Leaseholders ({len(leaseholders_to_create)})")
+        
+        for unit in leaseholders_to_create:
+            leaseholder_id = str(uuid.uuid4())
+            unit_id = self.unit_id_map.get(unit['unit_number'])
             
-            # Generate apportionment if exists
-            if unit.get('apportionment'):
-                apport_id = str(uuid.uuid4())
-                self.sql_statements.append("INSERT INTO apportionments (")
-                self.sql_statements.append("    id, building_id, unit_id, unit_number,")
-                self.sql_statements.append("    percentage, effective_from")
-                self.sql_statements.append(") VALUES (")
-                self.sql_statements.append(f"    '{apport_id}',")
-                self.sql_statements.append(f"    '{self.building_id}',")
-                self.sql_statements.append(f"    '{unit_id}',")
-                self.sql_statements.append(f"    {self._quote(unit['unit_number'])},")
-                self.sql_statements.append(f"    {unit['apportionment']},")
-                self.sql_statements.append(f"    CURRENT_DATE")
-                self.sql_statements.append(");")
+            if not unit_id:
+                continue
+            
+            self.sql_statements.append("INSERT INTO leaseholders (")
+            self.sql_statements.append("    id, unit_id, full_name,")
+            self.sql_statements.append("    correspondence_address, email, phone")
+            self.sql_statements.append(") VALUES (")
+            self.sql_statements.append(f"    '{leaseholder_id}',")
+            self.sql_statements.append(f"    '{unit_id}',")
+            self.sql_statements.append(f"    {self._quote(unit.get('leaseholder_name'))},")
+            self.sql_statements.append(f"    {self._quote(unit.get('correspondence_address'))},")
+            self.sql_statements.append(f"    {self._quote(unit.get('email'))},")
+            self.sql_statements.append(f"    {self._quote(unit.get('phone'))}")
+            self.sql_statements.append(") ON CONFLICT DO NOTHING;")
         
         self.sql_statements.append("")
     
     def _generate_budgets(self):
-        """Generate budgets + line items"""
+        """Generate budgets + line items - SCHEMA ALIGNED"""
         budgets = self.data.get('budgets', [])
         
         if not budgets:
@@ -126,17 +147,17 @@ class SQLGeneratorV2:
             budget_id = str(uuid.uuid4())
             
             self.sql_statements.append("INSERT INTO budgets (")
-            self.sql_statements.append("    id, building_id, budget_year, total_amount,")
-            self.sql_statements.append("    status, sc_year_start, sc_year_end")
+            self.sql_statements.append("    id, building_id, budget_year, total_budget,")
+            self.sql_statements.append("    budget_period_start, budget_period_end, status")
             self.sql_statements.append(") VALUES (")
             self.sql_statements.append(f"    '{budget_id}',")
             self.sql_statements.append(f"    '{self.building_id}',")
             self.sql_statements.append(f"    {budget.get('budget_year') or 'NULL'},")
             self.sql_statements.append(f"    {budget.get('total_budget') or 0},")
-            self.sql_statements.append(f"    {self._quote(budget.get('status', 'draft'))},")
-            self.sql_statements.append(f"    {self._quote(budget.get('sc_year_start'))},")
-            self.sql_statements.append(f"    {self._quote(budget.get('sc_year_end'))}")
-            self.sql_statements.append(");")
+            self.sql_statements.append(f"    {self._quote_date(budget.get('sc_year_start') or budget.get('budget_period_start'))},")
+            self.sql_statements.append(f"    {self._quote_date(budget.get('sc_year_end') or budget.get('budget_period_end'))},")
+            self.sql_statements.append(f"    {self._quote(budget.get('status', 'Draft'))}")
+            self.sql_statements.append(") ON CONFLICT (building_id, budget_year) DO UPDATE SET total_budget = EXCLUDED.total_budget;")
             
             # Generate line items
             for item in budget.get('line_items', []):
@@ -146,10 +167,10 @@ class SQLGeneratorV2:
                 self.sql_statements.append(") VALUES (")
                 self.sql_statements.append(f"    '{item_id}',")
                 self.sql_statements.append(f"    '{budget_id}',")
-                self.sql_statements.append(f"    {self._quote(item.get('category', 'other'))},")
+                self.sql_statements.append(f"    {self._quote(item.get('category', 'Other'))},")
                 self.sql_statements.append(f"    {self._quote(item.get('description', ''))},")
-                self.sql_statements.append(f"    {item.get('annual_amount', 0)}")
-                self.sql_statements.append(");")
+                self.sql_statements.append(f"    {item.get('amount') or item.get('annual_amount', 0)}")
+                self.sql_statements.append(") ON CONFLICT DO NOTHING;")
         
         self.sql_statements.append("")
     
@@ -213,6 +234,33 @@ class SQLGeneratorV2:
             self.sql_statements.append(f"    {self._quote(asset.get('compliance_status'))},")
             self.sql_statements.append(f"    {asset.get('annual_maintenance_cost') or 'NULL'}")
             self.sql_statements.append(");")
+        
+        self.sql_statements.append("")
+    
+    def _generate_insurance_policies(self):
+        """Generate insurance policies - SCHEMA ALIGNED"""
+        policies = self.data.get('insurance_policies', [])
+        
+        if not policies:
+            return
+        
+        self.sql_statements.append(f"-- Insurance Policies ({len(policies)})")
+        
+        for policy in policies:
+            policy_id = str(uuid.uuid4())
+            
+            self.sql_statements.append("INSERT INTO insurance_policies (")
+            self.sql_statements.append("    id, building_id, policy_type, insurer_name,")
+            self.sql_statements.append("    premium_amount, renewal_date, policy_number")
+            self.sql_statements.append(") VALUES (")
+            self.sql_statements.append(f"    '{policy_id}',")
+            self.sql_statements.append(f"    '{self.building_id}',")
+            self.sql_statements.append(f"    {self._quote(policy.get('policy_type', 'Buildings'))},")
+            self.sql_statements.append(f"    {self._quote(policy.get('insurer_name') or policy.get('insurer'))},")
+            self.sql_statements.append(f"    {policy.get('premium_amount') or policy.get('premium', 0)},")
+            self.sql_statements.append(f"    {self._quote_date(policy.get('renewal_date'))},")
+            self.sql_statements.append(f"    {self._quote(policy.get('policy_number'))}")
+            self.sql_statements.append(") ON CONFLICT DO NOTHING;")
         
         self.sql_statements.append("")
     
@@ -335,4 +383,17 @@ class SQLGeneratorV2:
     def _bool(self, value: bool) -> str:
         """SQL boolean"""
         return 'TRUE' if value else 'FALSE'
+    
+    def _quote_date(self, value) -> str:
+        """SQL quote date - returns NULL if None"""
+        if value is None or value == '':
+            return 'NULL'
+        
+        # If already in YYYY-MM-DD format, quote it
+        if isinstance(value, str):
+            # Remove any time portion
+            date_only = value.split('T')[0].split(' ')[0]
+            return f"'{date_only}'"
+        
+        return 'NULL'
 

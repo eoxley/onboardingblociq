@@ -73,6 +73,7 @@ class PDFGeneratorV2:
         self._add_contractors()
         self._add_contracts()
         self._add_accounts()
+        self._add_ai_lease_analysis()  # AI-powered lease analysis (Option 2: AI-Only)
         self._add_asset_register()
         
         # Build PDF
@@ -363,6 +364,145 @@ class PDFGeneratorV2:
         ]))
         self.story.append(table)
         self.story.append(Spacer(1, 0.3*inch))
+    
+    def _add_ai_lease_analysis(self):
+        """
+        AI-Powered Lease Analysis (LeaseClear Quality)
+        Comprehensive section with clause references
+        """
+        ai_analyses = self.data.get('lease_ai_analyses', [])
+        
+        if not ai_analyses:
+            return
+        
+        # Add page break before lease section
+        self.story.append(PageBreak())
+        
+        # Main heading
+        self.story.append(Paragraph("LEASE ANALYSIS - COMPREHENSIVE SUMMARY", self.heading_style))
+        self.story.append(Spacer(1, 0.2*inch))
+        
+        # Analyze each lease
+        for i, lease_data in enumerate(ai_analyses, 1):
+            ai_result = lease_data.get('ai_analysis', {})
+            filename = lease_data.get('filename', f'Lease {i}')
+            
+            # Lease header
+            self.story.append(Paragraph(
+                f"LEASE {i}: {filename}", 
+                ParagraphStyle(
+                    'LeaseHeader',
+                    parent=self.heading_style,
+                    fontSize=12,
+                    textColor=colors.HexColor('#2c5282'),
+                    spaceAfter=10
+                )
+            ))
+            
+            # Executive Summary
+            exec_summary = ai_result.get('executive_summary', 'Analysis unavailable')
+            self.story.append(Paragraph(
+                f"<b>Executive Summary</b>",
+                ParagraphStyle('ExecLabel', fontSize=10, fontName='Helvetica-Bold', spaceAfter=6)
+            ))
+            self.story.append(Paragraph(
+                exec_summary,
+                ParagraphStyle('ExecText', fontSize=9, fontName='Helvetica', spaceAfter=12, leading=12)
+            ))
+            
+            # Basic Property Details
+            basic = ai_result.get('basic_property_details', {})
+            if basic:
+                self.story.append(Paragraph(
+                    f"<b>Basic Property Details</b>",
+                    ParagraphStyle('BasicLabel', fontSize=10, fontName='Helvetica-Bold', spaceAfter=6)
+                ))
+                
+                details_text = f"""<b>Property:</b> {basic.get('property_description', 'N/A')}<br/>
+<b>Lease Term:</b> {basic.get('lease_term', 'N/A')}<br/>
+<b>Title Number:</b> {basic.get('title_number', 'N/A')}<br/>
+<b>Parties:</b><br/>"""
+                
+                for party in basic.get('parties', []):
+                    details_text += f"  • {party}<br/>"
+                
+                if basic.get('referenced_clauses'):
+                    details_text += f"<br/><i>References: {', '.join(basic['referenced_clauses'])}</i>"
+                
+                self.story.append(Paragraph(
+                    details_text,
+                    ParagraphStyle('BasicText', fontSize=8, fontName='Helvetica', spaceAfter=12, leading=11)
+                ))
+            
+            # Detailed Sections (Ground Rent, Pets, Repairs, etc.)
+            detailed_sections = ai_result.get('detailed_sections', [])
+            if detailed_sections:
+                self.story.append(Paragraph(
+                    f"<b>Detailed Provisions</b>",
+                    ParagraphStyle('DetailLabel', fontSize=10, fontName='Helvetica-Bold', spaceAfter=8)
+                ))
+                
+                for section in detailed_sections:
+                    # Section title
+                    section_title = section.get('section_title', 'Provision')
+                    self.story.append(Paragraph(
+                        f"<b>{section_title}</b>",
+                        ParagraphStyle('SectionTitle', fontSize=9, fontName='Helvetica-Bold', 
+                                      textColor=colors.HexColor('#4a5568'), spaceAfter=4)
+                    ))
+                    
+                    # Content
+                    for content_item in section.get('content', []):
+                        self.story.append(Paragraph(
+                            f"• {content_item}",
+                            ParagraphStyle('ContentItem', fontSize=8, fontName='Helvetica',
+                                          leftIndent=10, spaceAfter=3, leading=10)
+                        ))
+                    
+                    # Clause references
+                    if section.get('referenced_clauses'):
+                        refs = ', '.join(section['referenced_clauses'])
+                        self.story.append(Paragraph(
+                            f"<i>References: {refs}</i>",
+                            ParagraphStyle('Refs', fontSize=7, fontName='Helvetica-Oblique',
+                                          leftIndent=10, spaceAfter=10, textColor=colors.grey)
+                        ))
+                    
+                    self.story.append(Spacer(1, 0.1*inch))
+            
+            # Other Provisions
+            other = ai_result.get('other_provisions', [])
+            if other:
+                self.story.append(Paragraph(
+                    f"<b>Other Provisions</b>",
+                    ParagraphStyle('OtherLabel', fontSize=10, fontName='Helvetica-Bold', spaceAfter=6)
+                ))
+                
+                for provision in other:
+                    prov_text = f"<b>{provision['title']}:</b> {provision['description']}"
+                    if provision.get('referenced_clauses'):
+                        refs = ', '.join(provision['referenced_clauses'])
+                        prov_text += f"<br/><i>References: {refs}</i>"
+                    
+                    self.story.append(Paragraph(
+                        prov_text,
+                        ParagraphStyle('ProvText', fontSize=8, fontName='Helvetica', spaceAfter=8, leading=10)
+                    ))
+            
+            # Disclaimer
+            disclaimer = ai_result.get('disclaimer', 'This analysis is for informational purposes only and should not be relied upon as legal advice.')
+            self.story.append(Spacer(1, 0.2*inch))
+            self.story.append(Paragraph(
+                f"<i>{disclaimer}</i>",
+                ParagraphStyle('Disclaimer', fontSize=7, fontName='Helvetica-Oblique',
+                              textColor=colors.grey, alignment=1, spaceAfter=15)
+            ))
+            
+            # Separator between leases
+            if i < len(ai_analyses):
+                self.story.append(Spacer(1, 0.3*inch))
+                self.story.append(Paragraph("─" * 80, ParagraphStyle('Sep', fontSize=8, textColor=colors.grey)))
+                self.story.append(Spacer(1, 0.3*inch))
     
     def _add_asset_register(self):
         """Asset register from H&S reports"""
