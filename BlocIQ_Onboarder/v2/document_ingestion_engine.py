@@ -170,6 +170,7 @@ class DocumentIngestionEngine:
             '.xlsx': 'excel',
             '.xls': 'excel',
             '.xlsm': 'excel',
+            '.xlsb': 'excel',
             '.csv': 'csv',
             '.txt': 'text',
             '.msg': 'email',
@@ -177,7 +178,13 @@ class DocumentIngestionEngine:
             '.jpg': 'image',
             '.jpeg': 'image',
             '.png': 'image',
+            '.gif': 'image',
+            '.bmp': 'image',
+            '.tiff': 'image',
+            '.tif': 'image',
+            '.webp': 'image',
             '.jfif': 'image',
+            '.heic': 'image',
             '.zip': 'archive',
             '.rar': 'archive',
         }
@@ -205,8 +212,8 @@ class DocumentIngestionEngine:
             elif file_type == 'email':
                 return self._extract_from_email(filepath)
             elif file_type == 'image':
-                # OCR optional - skip for now
-                return None, None
+                # Try OCR extraction
+                return self._extract_from_image(filepath)
             else:
                 return None, None
         
@@ -293,6 +300,37 @@ class DocumentIngestionEngine:
         """Extract from MSG/EML files"""
         # For now, mark as email but don't extract (requires extract_msg library)
         return None, 'email_skip'
+    
+    def _extract_from_image(self, filepath: Path) -> tuple[Optional[str], str]:
+        """
+        Extract text from images using OCR
+        Falls back gracefully if pytesseract not available
+        """
+        try:
+            from PIL import Image
+            import pytesseract
+            
+            # Open and process image
+            image = Image.open(filepath)
+            
+            # Convert to RGB if needed
+            if image.mode not in ('RGB', 'L'):
+                image = image.convert('RGB')
+            
+            # Extract text using OCR
+            text = pytesseract.image_to_string(image)
+            
+            if text and text.strip():
+                return text.strip(), 'ocr'
+            else:
+                return None, 'ocr_no_text'
+        
+        except ImportError:
+            # pytesseract or PIL not installed - skip OCR
+            return None, 'ocr_not_available'
+        
+        except Exception as e:
+            return None, f'ocr_error:{str(e)[:30]}'
     
     def _deduplicate(self):
         """
