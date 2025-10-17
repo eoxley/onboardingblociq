@@ -36,6 +36,7 @@ class SQLGeneratorV2:
         self._generate_units()
         self._generate_budgets()
         self._generate_compliance_assets()
+        self._generate_asset_register()
         self._generate_contracts()
         self._generate_accounts()
         self._generate_leases()
@@ -177,6 +178,40 @@ class SQLGeneratorV2:
             self.sql_statements.append(f"    {self._quote(asset.get('next_due_date'))},")
             self.sql_statements.append(f"    {self._quote(asset.get('status', 'Unknown'))},")
             self.sql_statements.append(f"    {self._quote(asset.get('assessor_company'))}")
+            self.sql_statements.append(");")
+        
+        self.sql_statements.append("")
+    
+    def _generate_asset_register(self):
+        """Generate comprehensive asset register"""
+        assets = self.data.get('asset_register', [])
+        
+        if not assets:
+            return
+        
+        self.sql_statements.append(f"-- Asset Register ({len(assets)} assets)")
+        
+        for asset in assets:
+            asset_id = str(uuid.uuid4())
+            
+            self.sql_statements.append("INSERT INTO asset_register (")
+            self.sql_statements.append("    id, building_id, asset_name, asset_type, category,")
+            self.sql_statements.append("    quantity, last_inspection_date, next_inspection_due,")
+            self.sql_statements.append("    maintenance_frequency, responsible_contractor,")
+            self.sql_statements.append("    compliance_status, annual_maintenance_cost")
+            self.sql_statements.append(") VALUES (")
+            self.sql_statements.append(f"    '{asset_id}',")
+            self.sql_statements.append(f"    '{self.building_id}',")
+            self.sql_statements.append(f"    {self._quote(asset.get('asset_name', 'Unknown'))},")
+            self.sql_statements.append(f"    {self._quote(asset.get('asset_type', 'general'))},")
+            self.sql_statements.append(f"    {self._quote(asset.get('category', 'General'))},")
+            self.sql_statements.append(f"    {asset.get('quantity', 1)},")
+            self.sql_statements.append(f"    {self._quote(asset.get('last_inspection_date'))},")
+            self.sql_statements.append(f"    {self._quote(asset.get('next_inspection_due'))},")
+            self.sql_statements.append(f"    {self._quote(asset.get('maintenance_frequency'))},")
+            self.sql_statements.append(f"    {self._quote(asset.get('responsible_contractor'))},")
+            self.sql_statements.append(f"    {self._quote(asset.get('compliance_status'))},")
+            self.sql_statements.append(f"    {asset.get('annual_maintenance_cost') or 'NULL'}")
             self.sql_statements.append(");")
         
         self.sql_statements.append("")

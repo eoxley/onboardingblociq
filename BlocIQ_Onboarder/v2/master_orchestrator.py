@@ -25,6 +25,7 @@ from extractors.lease_analyzer import LeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
 from consolidators.data_deduplicator import DataDeduplicator
+from consolidators.asset_register_builder import AssetRegisterBuilder
 from sql_generator_v2 import SQLGeneratorV2
 from pdf_generator_v2 import PDFGeneratorV2
 
@@ -48,6 +49,7 @@ class MasterOrchestrator:
         self.categorizer = DeterministicCategorizer()
         self.contractor_consolidator = ContractorConsolidator()
         self.data_deduplicator = DataDeduplicator()
+        self.asset_register_builder = AssetRegisterBuilder()
         
         # Extractors
         self.budget_extractor = BudgetExtractor()
@@ -234,6 +236,11 @@ class MasterOrchestrator:
         
         # DEDUPLICATE: Keep only current/most recent data
         self.extracted_data = self.data_deduplicator.deduplicate_all(self.extracted_data)
+        
+        # BUILD COMPREHENSIVE ASSET REGISTER
+        print("\n🏗️  Building comprehensive asset register...")
+        self.extracted_data['asset_register'] = self.asset_register_builder.build_register(self.extracted_data)
+        self.asset_register_builder.print_summary()
     
     def _build_building_picture(self, documents: List[Dict]):
         """
