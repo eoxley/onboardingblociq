@@ -24,6 +24,7 @@ from extractors.accounts_extractor import AccountsExtractor
 from extractors.lease_analyzer import LeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from extractors.leaseholder_contact_extractor import LeaseholderContactExtractor
+from extractors.leaseholder_schedule_extractor import LeaseholderScheduleExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
 from consolidators.data_deduplicator import DataDeduplicator
 from consolidators.asset_register_builder import AssetRegisterBuilder
@@ -61,6 +62,7 @@ class MasterOrchestrator:
         self.lease_analyzer = LeaseAnalyzer()
         self.units_extractor = UnitsLeaseholdersExtractor()
         self.leaseholder_extractor = LeaseholderContactExtractor()
+        self.leaseholder_schedule_extractor = LeaseholderScheduleExtractor()
         
         # Extracted data
         self.extracted_data = {
@@ -224,6 +226,25 @@ class MasterOrchestrator:
                     leaseholder_data = self.leaseholder_extractor.extract_from_contact_form(text, doc)
                     if leaseholder_data:
                         print(f"   ✅ Contact: {leaseholder_data.get('unit_number')} - {leaseholder_data.get('leaseholder_name', '?')}")
+            
+            # INTELLIGENT LEASEHOLDER SCHEDULE DETECTION
+            # Check ANY Excel file (not just named ones) to see if it's a leaseholder schedule
+            if doc.get('file_type') == 'excel' and not any(word in doc['filename'].lower() for word in ['budget', 'account', 'invoice']):
+                try:
+                    import openpyxl
+                    wb = openpyxl.load_workbook(doc.get('absolute_path'), data_only=True, read_only=True)
+                    ws = wb.active
+                    
+                    # Intelligent detection: Is this a leaseholder file?
+                    if self.leaseholder_schedule_extractor.is_leaseholder_file(doc.get('absolute_path'), ws):
+                        leaseholders = self.leaseholder_schedule_extractor.extract(doc.get('absolute_path'), doc)
+                        if leaseholders:
+                            # Add to leaseholder extractor for linking
+                            for lh in leaseholders:
+                                self.leaseholder_extractor.leaseholder_data[lh['unit_number']] = lh
+                            print(f"   ✅ Leaseholder Schedule: {len(leaseholders)} leaseholders from {doc['filename']}")
+                except Exception as e:
+                    pass  # Not a leaseholder file, continue
         
         # Analyze leases (after collecting all)
         if self.extracted_data['leases']:

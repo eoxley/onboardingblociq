@@ -212,34 +212,43 @@ class LeaseholderContactExtractor:
     def enrich_units(self, units: List[Dict]) -> List[Dict]:
         """
         Enrich units with leaseholder contact data
-        Links by flat number matching
+        Links by unit number/reference matching
         """
         enriched = []
         
         for unit in units:
             unit_number = unit.get('unit_number', '')
             
-            # Try to match with collected leaseholder data
-            # Match by flat number (e.g., "219-01-007" contains "Flat 7")
+            # Try multiple matching strategies
             matched_data = None
             
-            for flat_key, leaseholder in self.leaseholder_data.items():
-                # Extract number from flat key and unit number
-                flat_num = re.search(r'\d+', flat_key)
-                unit_num = re.search(r'0*(\d+)$', unit_number)  # Get last digits
-                
-                if flat_num and unit_num:
-                    if flat_num.group(0) == unit_num.group(1):
-                        matched_data = leaseholder
-                        break
+            # Strategy 1: Exact match on unit number (e.g., "219-01-007" == "219-01-007")
+            if unit_number in self.leaseholder_data:
+                matched_data = self.leaseholder_data[unit_number]
             
-            # Enrich unit with leaseholder data
+            # Strategy 2: Match by flat number (e.g., "219-01-007" contains "Flat 7")
+            if not matched_data:
+                for flat_key, leaseholder in self.leaseholder_data.items():
+                    # Extract last digit(s) from unit number
+                    unit_num_match = re.search(r'0*(\d+)$', unit_number)
+                    
+                    # Extract number from flat key
+                    flat_num_match = re.search(r'(?:flat|unit)\s*(\d+)', flat_key, re.IGNORECASE)
+                    
+                    if unit_num_match and flat_num_match:
+                        if unit_num_match.group(1) == flat_num_match.group(1):
+                            matched_data = leaseholder
+                            break
+            
+            # Enrich unit with leaseholder data if found
             if matched_data:
                 unit['leaseholder_name'] = matched_data.get('leaseholder_name')
                 unit['email'] = matched_data.get('email')
                 unit['phone'] = matched_data.get('phone')
                 if not unit.get('correspondence_address'):
                     unit['correspondence_address'] = matched_data.get('correspondence_address')
+                unit['unit_description'] = matched_data.get('unit_description')
+                unit['account_balance'] = matched_data.get('balance')
             
             enriched.append(unit)
         
