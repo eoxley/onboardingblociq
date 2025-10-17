@@ -148,13 +148,17 @@ class MasterOrchestrator:
             if not text:
                 continue
             
-            # Budget extraction
-            if 'budget' in category.lower() and doc.get('file_type') == 'excel':
+            # Budget extraction (check filename OR category)
+            if (('budget' in doc['filename'].lower() or 'budget' in category.lower()) 
+                and doc.get('file_type') == 'excel'):
+                print(f"   📊 Processing budget file: {doc['filename']}")
                 budget_data = self.budget_extractor.extract(doc.get('absolute_path'), doc)
                 if budget_data:
                     self.extracted_data['budgets'].append(budget_data)
                     self.extracted_data['budget_line_items'].extend(budget_data.get('line_items', []))
                     print(f"   ✅ Budget: {doc['filename']} - {len(budget_data.get('line_items', []))} line items, £{budget_data.get('total_budget', 0):,.0f}")
+                else:
+                    print(f"   ⚠️  Budget extraction returned None for {doc['filename']}")
             
             # Compliance extraction
             elif 'health' in category.lower():
@@ -196,9 +200,12 @@ class MasterOrchestrator:
                 self.extracted_data['leases'].append(doc)
             
             # Apportionment/Units extraction
-            elif 'apport' in doc['filename'].lower() and doc.get('file_type') == 'excel':
+            if (('apport' in doc['filename'].lower() or 'leaseholder' in category.lower()) 
+                and doc.get('file_type') == 'excel' 
+                and not 'budget' in doc['filename'].lower()):  # Don't confuse with budgets
                 units = self.units_extractor.extract_from_apportionment(doc.get('absolute_path'), doc)
-                print(f"   ✅ Units: {len(units)} units extracted from {doc['filename']}")
+                if units:
+                    print(f"   ✅ Units: {len(units)} units extracted from {doc['filename']}")
         
         # Analyze leases (after collecting all)
         if self.extracted_data['leases']:
