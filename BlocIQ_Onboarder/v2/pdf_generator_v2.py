@@ -142,6 +142,8 @@ class PDFGeneratorV2:
             ['Number of Floors', str(building.get('number_of_floors', '—'))],
             ['Height', f"{building.get('building_height_meters', '—')}m" if building.get('building_height_meters') else '—'],
             ['Has Basement', 'Yes' if building.get('has_basement') else 'No'],
+            ['BSA Status', building.get('bsa_status', 'Not HRB')],
+            ['Is HRB', 'Yes' if building.get('is_hrb') else 'No'],
             ['Construction Type', building.get('construction_type', '—')],
         ]
         

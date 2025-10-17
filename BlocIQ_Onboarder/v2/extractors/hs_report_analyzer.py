@@ -28,6 +28,8 @@ class HSReportAnalyzer:
                 'year_built': 1880,
                 'has_basement': True,
                 'has_roof_access': True,
+                'is_hrb': True,  # High-Risk Building (over 18m or BSA references)
+                'bsa_status': 'HRB',  # or 'Not HRB'
                 'wall_construction': 'Solid brick',
                 'floor_construction': 'Timber',
                 'roof_construction': 'Pitched slate'
@@ -66,6 +68,11 @@ class HSReportAnalyzer:
         # Extract building features
         description['has_basement'] = self._has_feature(text, ['basement', 'lower ground', 'cellar'])
         description['has_roof_access'] = self._has_feature(text, ['roof access', 'roof space', 'loft'])
+        
+        # DETERMINE HRB STATUS
+        is_hrb, bsa_status = self._determine_hrb_status(text, height)
+        description['is_hrb'] = is_hrb
+        description['bsa_status'] = bsa_status
         
         return description
     
@@ -246,4 +253,52 @@ class HSReportAnalyzer:
             return 'facilities'
         else:
             return 'general'
+    
+    def _determine_hrb_status(self, text: str, height: Optional[float]) -> tuple[bool, str]:
+        """
+        Determine if building is a High-Risk Building (HRB)
+        
+        Criteria:
+        1. Building height over 18 meters, OR
+        2. Any references to Building Safety Act
+        
+        Returns:
+            (is_hrb: bool, bsa_status: str)
+        """
+        is_hrb = False
+        
+        # Check 1: Building height over 18m
+        if height and height > 18.0:
+            is_hrb = True
+        
+        # Check 2: References to Building Safety Act
+        if text:
+            text_lower = text.lower()
+            
+            bsa_keywords = [
+                'building safety act',
+                'bsa',
+                'high-risk building',
+                'higher-risk building',
+                'hrb',
+                'building safety regulator',
+                'accountable person',
+                'principal accountable person',
+                'safety case',
+                'mandatory occurrence reporting',
+                'golden thread',
+            ]
+            
+            for keyword in bsa_keywords:
+                if keyword in text_lower:
+                    is_hrb = True
+                    break
+        
+        # Determine status string
+        if is_hrb:
+            bsa_status = 'HRB'
+        else:
+            bsa_status = 'Not HRB'
+        
+        return is_hrb, bsa_status
 
