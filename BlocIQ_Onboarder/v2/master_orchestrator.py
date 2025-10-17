@@ -24,6 +24,7 @@ from extractors.accounts_extractor import AccountsExtractor
 from extractors.lease_analyzer import LeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
+from sql_generator_v2 import SQLGeneratorV2
 
 
 class MasterOrchestrator:
@@ -271,9 +272,14 @@ class MasterOrchestrator:
         print(f"   ✅ Extracted data: {extracted_file}")
         
         # c) SQL generation
-        # TODO: Call SQL generator
         sql_file = f"{self.output_folder}/migration.sql"
-        print(f"   ⚠️  SQL generation: TODO")
+        sql_generator = SQLGeneratorV2(self.extracted_data)
+        sql_content = sql_generator.generate()
+        
+        with open(sql_file, 'w') as f:
+            f.write(sql_content)
+        
+        print(f"   ✅ SQL migration: {sql_file}")
         
         # d) PDF generation
         # TODO: Call PDF generator
