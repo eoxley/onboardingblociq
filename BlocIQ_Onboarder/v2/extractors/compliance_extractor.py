@@ -133,8 +133,8 @@ class ComplianceExtractor:
         # Answer: YES, now we are!
         content = text
         
-        # EXPANDED patterns for assessment dates (based on real documents)
-        patterns = [
+        # PHASE 1: EXPLICIT patterns (date immediately after keyword)
+        explicit_patterns = [
             # Gas Safety specific - "completed on 18 Apr 2023"
             r'completed\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
             r'safety\s+(?:record|check)\s+(?:was\s+)?completed\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
@@ -144,7 +144,7 @@ class ComplianceExtractor:
             r'assessment\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             
             # Inspection date patterns
-            r'inspection\s+and\s+testing\s+were\s+carried\s+out\s+(\d{1,2}[-/]\d{1,2}[-/]\d{4})',  # EICR specific
+            r'inspection\s+and\s+testing\s+were\s+carried\s+out.*?(\d{1,2}[-/]\d{1,2}[-/]\d{4})',  # EICR specific
             r'date\s+of\s+inspection:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             r'inspection\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             
@@ -155,27 +155,54 @@ class ComplianceExtractor:
             # Generic patterns
             r'carried\s+out\s+on:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             r'dated:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
-            r'date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
             
             # Test date patterns
             r'test\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             r'tested\s+on:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
         ]
         
-        for pattern in patterns:
-            match = re.search(pattern, content, re.IGNORECASE)
+        for pattern in explicit_patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
             if match:
                 date_str = match.group(1)
                 normalized = self._normalize_date(date_str)
                 if normalized:
-                    return normalized  # Prefer document date over filename
+                    return normalized
         
-        # Fallback: look for any date in YYYY-MM-DD format
+        # PHASE 2: PROXIMITY patterns (date NEAR keywords - within first 5000 chars)
+        # Catches dates that appear on same page as keywords but not directly after
+        # Increased to 5000 to handle long first pages (typical page = 3000-4000 chars)
+        first_page = content[:5000]  # Focus on first page where dates usually are
+        
+        proximity_keywords = [
+            'landlord safety report',
+            'inspection and testing',
+            'electrical installation',
+            'condition report',
+            'certificate',
+            'qualified supervisor'
+        ]
+        
+        # Check if any proximity keywords exist
+        has_relevant_content = any(kw in first_page.lower() for kw in proximity_keywords)
+        
+        if has_relevant_content:
+            # Extract ALL dates in DD/MM/YYYY format from first page
+            date_matches = re.findall(r'\b(\d{1,2}[-/]\d{1,2}[-/]\d{4})\b', first_page)
+            for date_str in date_matches:
+                normalized = self._normalize_date(date_str)
+                if normalized and self._is_reasonable_compliance_date(normalized):
+                    return normalized  # Return first reasonable date found
+        
+        # PHASE 3: Fallback patterns
+        # Look for any date in YYYY-MM-DD format
         match = re.search(r'(\d{4}-\d{2}-\d{2})', content)
         if match:
-            return match.group(1)
+            date_str = match.group(1)
+            if self._is_reasonable_compliance_date(date_str):
+                return date_str
         
-        # Final fallback: use filename date if found
+        # PHASE 4: Final fallback - use filename date if found
         return filename_date
     
     def _extract_date_from_filename(self, filename: str) -> Optional[str]:
@@ -216,6 +243,27 @@ class ComplianceExtractor:
             return f"20{year}-{month}-{day}"
         
         return None
+    
+    def _is_reasonable_compliance_date(self, date_str: str) -> bool:
+        """
+        Check if date is reasonable for a compliance document
+        (Not too old, not in far future)
+        """
+        try:
+            from datetime import datetime, timedelta
+            
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            today = datetime.now()
+            
+            # Compliance documents typically:
+            # - Not older than 15 years
+            # - Not more than 2 years in future
+            min_date = today - timedelta(days=365*15)
+            max_date = today + timedelta(days=365*2)
+            
+            return min_date <= date_obj <= max_date
+        except:
+            return False
     
     def _normalize_date(self, date_str: str) -> Optional[str]:
         """Normalize date string to YYYY-MM-DD - ENHANCED to handle text dates"""
