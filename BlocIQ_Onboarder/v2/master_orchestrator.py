@@ -23,6 +23,7 @@ from extractors.hs_report_analyzer import HSReportAnalyzer
 from extractors.accounts_extractor import AccountsExtractor
 from extractors.lease_analyzer import LeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
+from extractors.leaseholder_contact_extractor import LeaseholderContactExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
 from consolidators.data_deduplicator import DataDeduplicator
 from consolidators.asset_register_builder import AssetRegisterBuilder
@@ -59,6 +60,7 @@ class MasterOrchestrator:
         self.accounts_extractor = AccountsExtractor()
         self.lease_analyzer = LeaseAnalyzer()
         self.units_extractor = UnitsLeaseholdersExtractor()
+        self.leaseholder_extractor = LeaseholderContactExtractor()
         
         # Extracted data
         self.extracted_data = {
@@ -202,6 +204,11 @@ class MasterOrchestrator:
             elif 'lease' in category.lower() and 'lease' in doc['filename'].lower():
                 # Collect lease documents for analysis
                 self.extracted_data['leases'].append(doc)
+                
+                # Also extract leaseholder contact from lease
+                leaseholder_data = self.leaseholder_extractor.extract_from_lease(text, doc)
+                if leaseholder_data:
+                    print(f"   ✅ Leaseholder: {leaseholder_data.get('unit_number')} - {leaseholder_data.get('leaseholder_name', '?')}")
             
             # Apportionment/Units extraction
             if (('apport' in doc['filename'].lower() or 'leaseholder' in category.lower()) 
@@ -210,6 +217,13 @@ class MasterOrchestrator:
                 units = self.units_extractor.extract_from_apportionment(doc.get('absolute_path'), doc)
                 if units:
                     print(f"   ✅ Units: {len(units)} units extracted from {doc['filename']}")
+            
+            # Contact form extraction (including from OCR images)
+            if 'contact' in doc['filename'].lower() and ('form' in doc['filename'].lower() or doc.get('file_type') == 'image'):
+                if text:  # If OCR extracted text
+                    leaseholder_data = self.leaseholder_extractor.extract_from_contact_form(text, doc)
+                    if leaseholder_data:
+                        print(f"   ✅ Contact: {leaseholder_data.get('unit_number')} - {leaseholder_data.get('leaseholder_name', '?')}")
         
         # Analyze leases (after collecting all)
         if self.extracted_data['leases']:
@@ -231,8 +245,12 @@ class MasterOrchestrator:
         
         # Get consolidated units list
         self.extracted_data['units'] = self.units_extractor.get_all_units()
+        
+        # Enrich units with leaseholder contact data
         if self.extracted_data['units']:
+            self.extracted_data['units'] = self.leaseholder_extractor.enrich_units(self.extracted_data['units'])
             self.units_extractor.print_summary()
+            self.leaseholder_extractor.print_summary()
         
         # DEDUPLICATE: Keep only current/most recent data
         self.extracted_data = self.data_deduplicator.deduplicate_all(self.extracted_data)
