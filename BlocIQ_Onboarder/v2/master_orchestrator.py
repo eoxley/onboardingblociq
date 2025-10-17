@@ -24,6 +24,7 @@ from extractors.accounts_extractor import AccountsExtractor
 from extractors.lease_analyzer import LeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
+from consolidators.data_deduplicator import DataDeduplicator
 from sql_generator_v2 import SQLGeneratorV2
 from pdf_generator_v2 import PDFGeneratorV2
 
@@ -46,6 +47,7 @@ class MasterOrchestrator:
         self.ingestion_engine = DocumentIngestionEngine(building_folder)
         self.categorizer = DeterministicCategorizer()
         self.contractor_consolidator = ContractorConsolidator()
+        self.data_deduplicator = DataDeduplicator()
         
         # Extractors
         self.budget_extractor = BudgetExtractor()
@@ -229,6 +231,9 @@ class MasterOrchestrator:
         self.extracted_data['units'] = self.units_extractor.get_all_units()
         if self.extracted_data['units']:
             self.units_extractor.print_summary()
+        
+        # DEDUPLICATE: Keep only current/most recent data
+        self.extracted_data = self.data_deduplicator.deduplicate_all(self.extracted_data)
     
     def _build_building_picture(self, documents: List[Dict]):
         """
