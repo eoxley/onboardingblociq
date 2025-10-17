@@ -119,28 +119,45 @@ class ComplianceExtractor:
         return None, None
     
     def _extract_assessment_date(self, text: str, filename: str) -> Optional[str]:
-        """Extract assessment/inspection date"""
+        """Extract assessment/inspection date - ENHANCED for better accuracy"""
         if not text:
             return None
         
-        # Look for common date patterns in first 2000 chars (cover page)
-        content_start = text[:2000]
+        # Look for dates in MUCH MORE text (first 10000 chars to catch multiple pages)
+        content_start = text[:10000]
         
-        # Patterns for assessment dates
+        # EXPANDED patterns for assessment dates (based on real documents)
         patterns = [
+            # Date of assessment patterns
+            r'date\s+of\s+assessment:?\s*(\d{1,2}\s+\w+\s+\d{4})',  # "22 July 2025"
             r'assessment\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
-            r'inspection\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            
+            # Inspection date patterns
+            r'inspection\s+and\s+testing\s+were\s+carried\s+out\s+(\d{1,2}[-/]\d{1,2}[-/]\d{4})',  # EICR specific
             r'date\s+of\s+inspection:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            r'inspection\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            
+            # Issue/report date patterns
+            r'issue\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',  # "5 August 2025"
+            r'report\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            
+            # Generic patterns
             r'carried\s+out\s+on:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             r'dated:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            r'date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
+            
+            # Test date patterns
+            r'test\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            r'tested\s+on:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
         ]
         
         for pattern in patterns:
             match = re.search(pattern, content_start, re.IGNORECASE)
             if match:
                 date_str = match.group(1)
-                # TODO: Parse to YYYY-MM-DD format
-                return self._normalize_date(date_str)
+                normalized = self._normalize_date(date_str)
+                if normalized:
+                    return normalized
         
         # Fallback: look for any date in YYYY-MM-DD format
         match = re.search(r'(\d{4}-\d{2}-\d{2})', content_start)
@@ -150,28 +167,63 @@ class ComplianceExtractor:
         return None
     
     def _normalize_date(self, date_str: str) -> Optional[str]:
-        """Normalize date string to YYYY-MM-DD"""
-        # Handle DD/MM/YYYY, DD-MM-YYYY, etc.
-        patterns = [
-            (r'(\d{1,2})[-/](\d{1,2})[-/](\d{4})', 'dmy'),  # 15/03/2024
-            (r'(\d{4})[-/](\d{1,2})[-/](\d{1,2})', 'ymd'),  # 2024-03-15
-        ]
+        """Normalize date string to YYYY-MM-DD - ENHANCED to handle text dates"""
         
-        for pattern, format_type in patterns:
-            match = re.match(pattern, date_str)
-            if match:
-                if format_type == 'dmy':
-                    day, month, year = match.groups()
-                    return f"{year}-{int(month):02d}-{int(day):02d}"
-                elif format_type == 'ymd':
-                    year, month, day = match.groups()
-                    return f"{year}-{int(month):02d}-{int(day):02d}"
+        # Month name to number mapping
+        months = {
+            'january': 1, 'jan': 1,
+            'february': 2, 'feb': 2,
+            'march': 3, 'mar': 3,
+            'april': 4, 'apr': 4,
+            'may': 5,
+            'june': 6, 'jun': 6,
+            'july': 7, 'jul': 7,
+            'august': 8, 'aug': 8,
+            'september': 9, 'sep': 9, 'sept': 9,
+            'october': 10, 'oct': 10,
+            'november': 11, 'nov': 11,
+            'december': 12, 'dec': 12
+        }
+        
+        # Pattern 1: "22 July 2025" or "5 August 2025"
+        match = re.match(r'(\d{1,2})\s+(\w+)\s+(\d{4})', date_str, re.IGNORECASE)
+        if match:
+            day, month_name, year = match.groups()
+            month_num = months.get(month_name.lower())
+            if month_num:
+                return f"{year}-{month_num:02d}-{int(day):02d}"
+        
+        # Pattern 2: DD/MM/YYYY (UK format - most common)
+        match = re.match(r'(\d{1,2})[-/](\d{1,2})[-/](\d{4})', date_str)
+        if match:
+            day, month, year = match.groups()
+            return f"{year}-{int(month):02d}-{int(day):02d}"
+        
+        # Pattern 3: DD/MM/YY (2-digit year)
+        match = re.match(r'(\d{1,2})[-/](\d{1,2})[-/](\d{2})$', date_str)
+        if match:
+            day, month, year = match.groups()
+            full_year = f"20{year}"  # Assume 20xx
+            return f"{full_year}-{int(month):02d}-{int(day):02d}"
+        
+        # Pattern 4: YYYY-MM-DD (already normalized)
+        match = re.match(r'(\d{4})[-/](\d{1,2})[-/](\d{1,2})', date_str)
+        if match:
+            year, month, day = match.groups()
+            return f"{year}-{int(month):02d}-{int(day):02d}"
         
         return None
     
     def _calculate_next_due(self, assessment_date: Optional[str], 
                            compliance_key: str, text: str) -> Optional[str]:
-        """Calculate next due date based on cycle"""
+        """Calculate next due date based on cycle OR extract from document"""
+        
+        # FIRST: Try to find explicitly stated review/due date in document
+        explicit_due = self._extract_next_due_from_text(text)
+        if explicit_due:
+            return explicit_due
+        
+        # FALLBACK: Calculate based on standard cycles
         if not assessment_date:
             return None
         
@@ -188,6 +240,33 @@ class ComplianceExtractor:
         next_due = date_obj + relativedelta(months=months)
         
         return next_due.strftime('%Y-%m-%d')
+    
+    def _extract_next_due_from_text(self, text: str) -> Optional[str]:
+        """Extract explicitly stated next due/review date from document"""
+        if not text:
+            return None
+        
+        # Look in first 10000 chars
+        content = text[:10000]
+        
+        # Patterns for next due/review dates
+        patterns = [
+            r'recommended\s+review\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',  # "22 July 2026"
+            r'next\s+(?:review|due)\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',
+            r'review\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',
+            r'next\s+(?:review|due):?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
+            r'due\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{4})',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                date_str = match.group(1)
+                normalized = self._normalize_date(date_str)
+                if normalized:
+                    return normalized
+        
+        return None
     
     def _extract_assessor(self, text: str, asset_type: str) -> Optional[str]:
         """Extract assessor/company name"""
