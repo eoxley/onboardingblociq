@@ -103,7 +103,7 @@ class UnitsLeaseholdersExtractor:
             return []
     
     def _find_apportionment_header(self, ws) -> Optional[int]:
-        """Find header row in apportionment file"""
+        """Find header row in apportionment file - ENHANCED for various formats"""
         for row_idx in range(1, min(30, ws.max_row + 1)):
             row_text = ' '.join(
                 str(ws.cell(row=row_idx, column=col).value or '').lower()
@@ -112,7 +112,7 @@ class UnitsLeaseholdersExtractor:
             
             # Look for typical headers
             has_unit = any(term in row_text for term in ['unit', 'flat', 'property'])
-            has_percentage = any(term in row_text for term in ['%', 'percent', 'apport', 'share'])
+            has_percentage = any(term in row_text for term in ['%', 'percent', 'apport', 'share', 'rate'])  # Added 'rate'!
             
             if has_unit and has_percentage:
                 return row_idx
@@ -120,28 +120,39 @@ class UnitsLeaseholdersExtractor:
         return None
     
     def _identify_apportionment_columns(self, ws, header_row: int) -> Dict[str, int]:
-        """Identify column positions"""
+        """Identify column positions - ENHANCED for various formats"""
         columns = {}
         
         for col in range(1, min(20, ws.max_column + 1)):
             header = str(ws.cell(row=header_row, column=col).value or '').lower().strip()
             
-            if any(term in header for term in ['unit', 'flat', 'property']):
+            # Unit reference/number column
+            if any(term in header for term in ['unit ref', 'unit', 'flat', 'property']) and 'description' not in header:
                 if 'unit' not in columns:
                     columns['unit'] = col
             
+            # Unit description (may contain flat number too)
+            elif 'description' in header:
+                columns['description'] = col
+            
+            # Leaseholder name
             elif any(term in header for term in ['name', 'leaseholder', 'owner', 'tenant']):
                 columns['leaseholder'] = col
             
-            elif any(term in header for term in ['%', 'percent', 'apport', 'share']):
-                columns['apportionment'] = col
+            # Apportionment percentage - ADDED 'rate'!
+            elif any(term in header for term in ['%', 'percent', 'apport', 'share', 'rate']):
+                if 'apportionment' not in columns:  # Take first percentage column
+                    columns['apportionment'] = col
             
+            # Address
             elif any(term in header for term in ['address', 'correspondence']):
                 columns['address'] = col
             
+            # Email
             elif any(term in header for term in ['email', 'e-mail']):
                 columns['email'] = col
             
+            # Phone
             elif any(term in header for term in ['phone', 'tel', 'mobile']):
                 columns['phone'] = col
         
