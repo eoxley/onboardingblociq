@@ -8,7 +8,7 @@ Uses exact taxonomy mapping with regex patterns
 """
 
 import re
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
 
 
 class FilingTaxonomy:

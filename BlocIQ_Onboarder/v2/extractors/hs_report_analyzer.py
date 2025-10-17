@@ -6,7 +6,7 @@ Floors, height, construction, systems
 """
 
 import re
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Any
 
 
 class HSReportAnalyzer:
@@ -217,7 +217,7 @@ class HSReportAnalyzer:
                 # Try to extract quantity
                 qty_pattern = rf'(\d+)\s+{pattern}'
                 qty_match = re.search(qty_pattern, text_lower)
-                quantity = int(qty_match.group(1)) if qty_match else 1
+                quantity = int(qty_match.group(1)) if (qty_match and qty_match.group(1)) else 1
                 
                 assets.append({
                     'asset_name': asset_name,
