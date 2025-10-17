@@ -22,6 +22,7 @@ from extractors.contract_extractor import ContractExtractor
 from extractors.hs_report_analyzer import HSReportAnalyzer
 from extractors.accounts_extractor import AccountsExtractor
 from extractors.lease_analyzer import LeaseAnalyzer
+from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
 
 
@@ -51,6 +52,7 @@ class MasterOrchestrator:
         self.hs_analyzer = HSReportAnalyzer()
         self.accounts_extractor = AccountsExtractor()
         self.lease_analyzer = LeaseAnalyzer()
+        self.units_extractor = UnitsLeaseholdersExtractor()
         
         # Extracted data
         self.extracted_data = {
@@ -190,6 +192,11 @@ class MasterOrchestrator:
             elif 'lease' in category.lower() and 'lease' in doc['filename'].lower():
                 # Collect lease documents for analysis
                 self.extracted_data['leases'].append(doc)
+            
+            # Apportionment/Units extraction
+            elif 'apport' in doc['filename'].lower() and doc.get('file_type') == 'excel':
+                units = self.units_extractor.extract_from_apportionment(doc.get('absolute_path'), doc)
+                print(f"   ✅ Units: {len(units)} units extracted from {doc['filename']}")
         
         # Analyze leases (after collecting all)
         if self.extracted_data['leases']:
@@ -208,6 +215,11 @@ class MasterOrchestrator:
         # Get consolidated contractor list
         self.extracted_data['contractors'] = self.contractor_consolidator.get_consolidated_contractors()
         self.contractor_consolidator.print_summary()
+        
+        # Get consolidated units list
+        self.extracted_data['units'] = self.units_extractor.get_all_units()
+        if self.extracted_data['units']:
+            self.units_extractor.print_summary()
     
     def _build_building_picture(self, documents: List[Dict]):
         """
@@ -289,6 +301,7 @@ class MasterOrchestrator:
         """Print extraction summary"""
         print("\n📊 EXTRACTION SUMMARY:")
         print(f"   Building: {self.extracted_data['building'].get('name', 'Unknown')}")
+        print(f"   Units: {len(self.extracted_data['units'])}")
         print(f"   Budgets: {len(self.extracted_data['budgets'])}")
         print(f"   Budget Line Items: {len(self.extracted_data['budget_line_items'])}")
         print(f"   Compliance Assets: {len(self.extracted_data['compliance_assets'])}")
