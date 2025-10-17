@@ -1,0 +1,653 @@
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Data Validation extension is not supported and will be removed
+  warn(msg)
+Multiple definitions in dictionary at byte 0x40e40 for key /PageMode
+Multiple definitions in dictionary at byte 0xd4c1a for key /Info
+Multiple definitions in dictionary at byte 0xd4c27 for key /Info
+Multiple definitions in dictionary at byte 0xd4c34 for key /Info
+incorrect startxref pointer(1)
+incorrect startxref pointer(1)
+incorrect startxref pointer(1)
+incorrect startxref pointer(1)
+Multiple definitions in dictionary at byte 0x12df07 for key /PageMode
+Multiple definitions in dictionary at byte 0x4d058 for key /Info
+Multiple definitions in dictionary at byte 0x4d064 for key /Info
+Multiple definitions in dictionary at byte 0x4d070 for key /Info
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Data Validation extension is not supported and will be removed
+  warn(msg)
+/Prev=0 in the trailer - assuming there is no previous xref table
+Multiple definitions in dictionary at byte 0x1d9f67 for key /PageMode
+unknown widths : 
+[0, IndirectObject(595, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(590, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(585, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(580, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(575, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(570, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(565, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(557, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(552, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(547, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(542, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(535, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(530, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(525, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(518, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(513, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(508, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(503, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(491, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(486, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(481, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(476, 0, 4477950224)]
+unknown widths : 
+[0, IndirectObject(471, 0, 4477950224)]
+Multiple definitions in dictionary at byte 0x1f22e for key /PageMode
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Unknown extension is not supported and will be removed
+  warn(msg)
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/workbook.py:118: UserWarning: Print area cannot be set to Defined name: 'Final salaries (2)'!$A:$J.
+  warn(f"Print area cannot be set to Defined name: {defn.value}.")
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/workbook.py:118: UserWarning: Print area cannot be set to Defined name: 'Salaries 22.23'!$A:$Q.
+  warn(f"Print area cannot be set to Defined name: {defn.value}.")
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/workbook.py:118: UserWarning: Print area cannot be set to Defined name: Sheet1!$A:$F.
+  warn(f"Print area cannot be set to Defined name: {defn.value}.")
+Multiple definitions in dictionary at byte 0x1f96e for key /PageMode
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Unknown extension is not supported and will be removed
+  warn(msg)
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/workbook.py:118: UserWarning: Print area cannot be set to Defined name: 'Final salaries (2)'!$A:$J.
+  warn(f"Print area cannot be set to Defined name: {defn.value}.")
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/workbook.py:118: UserWarning: Print area cannot be set to Defined name: 'Salaries 22.23'!$A:$Q.
+  warn(f"Print area cannot be set to Defined name: {defn.value}.")
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/reader/workbook.py:118: UserWarning: Print area cannot be set to Defined name: Sheet1!$A:$F.
+  warn(f"Print area cannot be set to Defined name: {defn.value}.")
+======================================================================
+🚀 BLOCIQ V2 COMPREHENSIVE EXTRACTION
+======================================================================
+Building: 144.01 PIMLICO PLACE
+Source: /Users/ellie/Downloads/144.01 PIMLICO PLACE
+Output: output
+
+📁 PHASE 1: INGEST & NORMALIZE
+----------------------------------------------------------------------
+📁 Phase 1: Ingesting all files...
+   Processed 50 files...
+   Processed 100 files...
+   Processed 150 files...
+   Processed 200 files...
+   Processed 250 files...
+   Processed 300 files...
+   Processed 350 files...
+   Processed 400 files...
+   Processed 450 files...
+   Processed 500 files...
+   Processed 550 files...
+   Processed 600 files...
+   Processed 650 files...
+   Processed 700 files...
+   Processed 750 files...
+   Processed 800 files...
+   Processed 850 files...
+   Processed 900 files...
+   Processed 950 files...
+   Processed 1000 files...
+   Processed 1050 files...
+   Processed 1100 files...
+   Processed 1150 files...
+   Processed 1200 files...
+   Processed 1250 files...
+   Processed 1300 files...
+   Processed 1350 files...
+   Processed 1400 files...
+   Processed 1450 files...
+   ✅ Ingested 1491 files
+
+🔍 Phase 2: De-duplicating files...
+   ✅ Found 181 exact duplicates
+   ✅ Found 0 near-duplicates
+   ✅ Manifest saved: output/manifest.jsonl
+      Total files: 1491
+      Unique files: 1310
+      Duplicates: 181
+
+🏷️  PHASE 2: CATEGORIZE
+----------------------------------------------------------------------
+
+🏷️  Phase 3: Categorizing documents...
+   ✅ Categorized 1310 documents
+   ⚠️  Low confidence (< 0.60): 1286 files
+
+   Low confidence files (may need AI or manual review):
+      • Lift Quotes.zip                                    confidence: 0.30
+      • Pimlico Pl Fire Prevention Notice.docx             confidence: 0.20
+      • Pimlico Pl Emergency Steps to Take in the Event of confidence: 0.20
+      • apportionment.xlsx                                 confidence: 0.30
+      • Units, Leaseholders List.xlsx                      confidence: 0.20
+      • Pimlico Place Tracker 20.9.2024.xlsx               confidence: 0.10
+      • Gym bathroom Quotes.zip                            confidence: 0.30
+      • Quote QU2958.pdf                                   confidence: 0.30
+      • Pimlico Place Tracker 2.7.2024.xlsx                confidence: 0.15
+      • Pimlico Place Lift Quotes.xlsx                     confidence: 0.10
+
+📊 PHASE 3: DOMAIN EXTRACTION
+----------------------------------------------------------------------
+   ✅ Compliance: Fire Door Inspection - None
+   ✅ Building desc: ? floors, ?m
+      Apportionment: 82 units extracted
+   ✅ Units: 82 units extracted from apportionment.xlsx
+      Leaseholder schedule: 82 leaseholders extracted
+   ✅ Leaseholder Schedule: 82 leaseholders from Units, Leaseholders List.xlsx
+   ✅ Contract: s or consultants are used to carry out work which we 
+are required to sign off prior to the completion of the Services - cleaning
+      Apportionment: 87 units extracted
+   ✅ Units: 87 units extracted from 1079-MIH-PimlicoPlace,SW1-SoW-Rev 5.xlsx
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 4 floors, 18.0m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ✅ Compliance: Fire Risk Assessment - 2023-01-25
+   ✅ Building desc: 1 floors, 18.0m
+   ✅ Contract: must consult Polyroof Technical Services - lifts
+   ✅ Contract: should take the necessary steps to identify the location of each of these 
+services - gardening
+   ✅ Contract: asked voestalpine Metsec plc - lifts
+   ✅ Contract: Iden tification  Thermoguard Limited - cleaning
+   ✅ Contract: has installed and applied 
+PermaRock materials in accordance with the specification prepared or agreed in writing by PermaRock     
+Products Ltd - cleaning
+   ✅ Compliance: Fire Risk Assessment - 2025-01-07
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Fire Risk Assessment - 2024-01-16
+   ✅ Building desc: 1 floors, ?m
+   ✅ Accounts: FY 2020 - Draft
+   ✅ Accounts: FY 2021 - Draft
+   ✅ Accounts: FY 2020 - Draft
+   ✅ Accounts: FY 2022 - Draft
+   ✅ Accounts: FY 2020 - Draft
+   ✅ Accounts: FY 2023 - Draft
+   ✅ Accounts: FY 2023 - Draft
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 FINAL.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 FINAL.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ✅ Contract: s and each 
+contractor engaged to provide services - cleaning
+   ✅ Contract: s and each contractor engaged to provide services - security
+   ✅ Contract: s and each contractor engaged to provide services - cleaning
+   ✅ Contract: s and each 
+contractor engaged to provide services - cleaning
+   ✅ Contract: s and each contractor engaged to provide services - security
+   ✅ Contract: s and each contractor engaged to provide services - security
+   ✅ Compliance: Legionella Risk Assessment - 1900-01-02
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Contract: to whom 
+Urban Rope Access Ltd  is to provide  services - security
+   ✅ Contract: will provide the services - pest_control
+   ✅ Contract: will provide the services - pest_control
+   ✅ Contract: for all purposes relating to the performance of the contract of
+
+employment including but not limited - security
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Contract: shall provide in respect of the S ystem the additional services - mne
+   ✅ Contract: shall provide in res pect of the System the additional services - mne
+   ✅ Contract: shall provide in res pect of the System the additional services - mne
+   ✅ Contract: shall provide in respect of the S ystem the additional services - mne
+   ✅ Contract: is agreeable to providing such services - cleaning
+   ✅ Contract: Ltd
+Grainger Pimlico Management 
+Limited - fire
+   ✅ Contract: Ltd
+Grainger Pimlico Management Limited - general
+   ✅ Contract: s must NOT be used without the prior consent of MIH Property Management  Ltd - fire
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Contract: Ltd
+Grainger Pimlico Management 
+Limited - fire
+   ✅ Contract: Ltd
+Grainger Pimlico Management 
+Limited - general
+   ✅ Contract: Target Lifts Ltd - cleaning
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Contract: NAME  Grainger Pimlico Management Company Ltd - security
+   ✅ Compliance: Legionella Risk Assessment - 2020-08-11
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2022-08-12
+   ✅ Compliance: Legionella Risk Assessment - 2022-08-12
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2023-01-03
+   ✅ Compliance: Legionella Risk Assessment - 2023-01-04
+   ✅ Compliance: Legionella Risk Assessment - 2025-07-31
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-04-30
+   ✅ Compliance: Legionella Risk Assessment - 2025-03-11
+   ✅ Compliance: Legionella Risk Assessment - 2025-04-30
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-04-15
+   ✅ Compliance: Legionella Risk Assessment - 2025-03-05
+   ✅ Compliance: Legionella Risk Assessment - 2022-05-24
+   ✅ Compliance: Legionella Risk Assessment - 2022-05-23
+   ✅ Compliance: Legionella Risk Assessment - 2022-06-06
+   ✅ Compliance: Legionella Risk Assessment - 2022-06-06
+   ✅ Compliance: Legionella Risk Assessment - 2021-09-15
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2021-09-16
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   📊 Processing budget file: May 2020 Budget Variance Report.xlsx
+   ⚠️  Budget extraction returned None for May 2020 Budget Variance Report.xlsx
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2020-01-13
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2020-01-13
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2020-01-13
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: EICR - 2022-11-30
+   📊 Processing budget file: Budget Year End 2021.xlsx
+   ⚠️  Budget extraction returned None for Budget Year End 2021.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE26 Ver1 4.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE26 Ver1 4.xlsx
+   📊 Processing budget file: FINAL Budget 2025-2026 (002).xlsx
+   ✅ Budget: FINAL Budget 2025-2026 (002).xlsx - 54 line items, £1,105,576
+   📊 Processing budget file: FINAL Budget 2025-2026 3.xlsx
+   ✅ Budget: FINAL Budget 2025-2026 3.xlsx - 55 line items, £563,235
+   📊 Processing budget file: Pimlico Place Budget YE26.xlsx
+   ✅ Budget: Pimlico Place Budget YE26.xlsx - 54 line items, £1,105,576
+   📊 Processing budget file: Copy of 2025-26 PP Budget Preparation 2.xlsx
+   ✅ Budget: Copy of 2025-26 PP Budget Preparation 2.xlsx - 54 line items, £563,235
+   📊 Processing budget file: Pimlico Place Budget YE25.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE25.xlsx
+   ✅ Compliance: Legionella Risk Assessment - None
+   📊 Processing budget file: Pimlico Place Budget YE25 Ver4.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE25 Ver4.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE25 Ver3.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE25 Ver3.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE25 FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE25 FINAL.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE25 Ver2.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE25 Ver2.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE2022 ACTUAL FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE2022 ACTUAL FINAL.xlsx
+   📊 Processing budget file: Century Apartments Budget 2022.xlsx
+   ⚠️  Budget extraction returned None for Century Apartments Budget 2022.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE2022 DRAFT.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE2022 DRAFT.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE2022 DRAFT 2nd.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE2022 DRAFT 2nd.xlsx
+   📊 Processing budget file: Pimlico Place Budget YE2022  FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE2022  FINAL.xlsx
+   📊 Processing budget file: Copy of Pimlico Place Budget YE2022 DRAFT AMENDED.xlsx
+   ⚠️  Budget extraction returned None for Copy of Pimlico Place Budget YE2022 DRAFT AMENDED.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE23.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 FINAL.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 FINAL.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 Ver2.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 Ver2.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE23 Ver3.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE23 Ver3.xlsx
+   ✅ Compliance: Legionella Risk Assessment - None
+   📊 Processing budget file: Pimlico Place Budget YE24.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Budget YE24.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE24.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE24.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE24 ver4.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE24 ver4.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE24 ver3.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE24 ver3.xlsx
+   📊 Processing budget file: Pimlico Place Draft Budget YE24 ver2.xlsx
+   ⚠️  Budget extraction returned None for Pimlico Place Draft Budget YE24 ver2.xlsx
+   ✅ Accounts: FY 2020 - Draft
+   ✅ Accounts: FY 2023 - Draft
+   ✅ Accounts: FY 2023 - Draft
+   ✅ Accounts: FY 2024 - Draft
+   ✅ Accounts: FY 2024 - Draft
+   ✅ Accounts: FY 2020 - Draft
+   ✅ Compliance: Legionella Risk Assessment - 2020-08-14
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 7 floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 7 floors, ?m
+   ✅ Compliance: Fire Risk Assessment - 2019-02-21
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Door Inspection - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Door Inspection - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - 2022-12-01
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 2 floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - 2025-08-13
+   ✅ Compliance: Legionella Risk Assessment - 2025-06-26
+   ✅ Compliance: Legionella Risk Assessment - 2025-07-04
+   ✅ Compliance: Legionella Risk Assessment - 2025-05-12
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-07-14
+   ✅ Compliance: Legionella Risk Assessment - 2025-05-12
+   ✅ Compliance: Legionella Risk Assessment - 2025-08-13
+   ✅ Compliance: Legionella Risk Assessment - 2025-08-18
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - 2025-06-24
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Door Inspection - None
+   ✅ Building desc: 7 floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - 1900-01-02
+   ✅ Compliance: Legionella Risk Assessment - 1900-01-02
+   ✅ Compliance: Legionella Risk Assessment - 1900-01-02
+   ✅ Compliance: Legionella Risk Assessment - 1900-01-02
+
+   📄 Analyzing 1 lease documents...
+   ✅ Deep analysis: 1 leases
+
+🔄 PHASE 4: CONSOLIDATION & CROSS-CHECKS
+----------------------------------------------------------------------
+
+👷 CONTRACTOR CONSOLIDATION SUMMARY:
+   Total unique contractors: 17
+   Total aliases resolved: 3
+
+   • s and each 
+contractor engaged to provide services
+     Services: cleaning, security
+     Aliases: s and each contractor engaged to provide services
+   • Ltd
+Grainger Pimlico Management 
+Limited
+     Services: fire, general
+     Aliases: Ltd
+Grainger Pimlico Management Limited
+   • s or consultants are used to carry out work which we 
+are required to sign off prior to the completion of the Services
+     Services: cleaning
+   • must consult Polyroof Technical Services
+     Services: lifts
+   • should take the necessary steps to identify the location of each of these 
+services
+     Services: gardening
+   • asked voestalpine Metsec plc
+     Services: lifts
+   • Iden tification  Thermoguard Limited
+     Services: cleaning
+   • has installed and applied 
+PermaRock materials in accordance with the specification prepared or agreed in writing by PermaRock     
+Products Ltd
+     Services: cleaning
+   • to whom 
+Urban Rope Access Ltd  is to provide  services
+     Services: security
+   • will provide the services
+     Services: pest_control
+   ... and 7 more contractors
+
+🏠 UNITS & LEASEHOLDERS SUMMARY:
+   Total units: 89
+   With leaseholder names: 82
+   With apportionment: 79
+
+   • item.: None - None%
+   • weeks: None - None%
+   • nr: None - None%
+   • Lm: None - None%
+   • .: None - None%
+   • m2: None - None%
+   • Labgour included in 3.3.1: None - None%
+   • 144-01-001: Derek Mason & Peter Hayward, acting as - 1.25%
+   • 144-01-002: Jasmine Chan - 1.306%
+   • 144-01-003: Ms S Brown - 1.354%
+   ... and 79 more units
+
+👥 LEASEHOLDER DATA SUMMARY:
+   Contact details found for: 82 units
+   • 144-01-001: Derek Mason & Peter Hayward, acting as
+     Phone: 07836 284269 (Derek)
+   • 144-01-002: Jasmine Chan
+   • 144-01-003: Ms S Brown
+     Phone: 07449 938 888
+   • 144-01-004: Nicholas Ingram, Mark Ingram & Elaine Ingram
+     Phone: 07814155215
+   • 144-01-005: The Roman Catholic Diocese of Westminster
+     Phone: 02077989169
+   • 144-01-006: Elena Margaret Eu
+   • 144-01-007: Mr AJ and Mrs AM Hampson
+     Phone: 077889966118
+   • 144-01-008: Mr B Kinane
+   • 144-01-009: Christopher & Clare Roberts
+   • 144-01-010: Jessica Louise Brady
+   • 144-01-011: D McCormick
+     Phone: 0353872482013
+   • 144-01-012: Ms Rachael Noble
+   • 144-01-013: Dr A G Ward
+   • 144-01-014: Mr Gary & Mrs Kim Risley
+   • 144-01-015: Mr J & Mrs D P Reidy
+     Phone: 02078343021
+   • 144-01-016: Christopher P Ennals and Elizaveta Taubes
+   • 144-01-017: Vincenzo Catanese & Manola De Vincentis
+   • 144-01-018: Shenwei Zhu
+   • 144-01-019: Mr Bernd Freier
+   • 144-01-020: Mr T Izmaylov
+   • 144-01-021: Dr Simon Ostlere
+   • 144-01-022: Ms Catherine Ercilla
+   • 144-01-023: H E Tortoishell
+   • 144-01-024: Mr Dario Striano
+   • 144-01-025: The Estate of the Late Rogdre Juer
+     Phone: +441392685216
+   • 144-01-026: A Protasova, T Protasova, V Damaskinskiy
+   • 144-01-027: Mr R Markham
+   • 144-01-028: Mr N Stone, Mr K Stone & Mr Stone
+     Phone: 02077319820
+   • 144-01-029: T E Hohler
+     Phone: 020 7622 6914
+   • 144-01-030: T E Hohler
+     Phone: 020 7622 6914
+   • 144-01-031: Aquitania Investment Ltd
+   • 144-01-032: Dr B K Vekaria
+     Phone: 02076300782
+   • 144-01-033: Mr F A Iannello
+     Phone: 02078349148 (rarely a
+   • 144-01-034: Kwok Hing Lam & Choi Joecy Lee
+     Phone: 85226280077
+   • 144-01-035: Shashank Chahar & Monica Lalwani
+   • 144-01-036: Mr B J A Hutt
+   • 144-01-037: Silversands Resources LLC
+     Phone: 02304278343
+   • 144-01-038: Thracia Investment Ltd
+   • 144-01-039: T C Hill & L Hill
+     Phone: 02077319820
+   • 144-01-040: V, J, A, & Apipu Phataraprasit
+   • 144-01-041: C S Shaftesley
+   • 144-01-042: M Kohli
+   • 144-01-043: Mr Deepak Sabnani
+     Phone: 07768 997 276-Soni
+   • 144-01-044: Qu Wang
+   • 144-01-045: Mr Mikhel Chandra Pipariya & Ms Sonam Lalwani Lalwani
+   • 144-01-046: Peter Sten Bertelsen
+   • 144-01-047: Peter Sten Bertelsen
+   • 144-01-048: Andrew Brown
+     Phone: 07464 093011
+   • 144-01-049: Mr S Nassiri-Shahroudi
+   • 144-01-050: Chawki Karam
+   • 144-01-051: Dalmatia Investment Ltd
+   • 144-01-052: Miss Elizaveta Kolesnikova
+   • 144-01-053: Julia Sz-Hing Hunt Chan
+     Phone: 02077319820
+   • 144-01-054: F Steadman
+   • 144-01-055: Shen Xiangjun
+     Phone: +86 183 7679 8776
+   • 144-01-056: Mr Andrew D Archibald
+     Phone: 02078524582 - agent
+   • 144-01-057: A S Bailey
+     Phone: 02077319820
+   • 144-01-058: T Steadman
+     Phone: 02077319820
+   • 144-01-059: Mr & Mrs P Cleary
+     Phone: 07590 010 555(Sally)
+   • 144-01-060: G & L Property Partnership LLP
+     Phone: 02077319820
+   • 144-01-061: Mr Hugo & Mrs Emma Brown
+     Phone: 01869345293
+   • 144-01-062: Mr Andrew Peter Dent
+     Phone: 07901513559
+   • 144-01-063: D & M T O'Brien
+   • 144-01-064: Aquitania Investment Ltd
+   • 144-01-065: H E Tortoishell
+   • 144-01-066: Mr P E Morris
+   • 144-01-067: J S & M P Ogilve
+     Phone: 020 7357 6911
+   • 144-01-068: Kristina Stowasserova
+   • 144-01-069: J Harries & E Choi hung Lee
+   • 144-01-070: Mr N Sapuric
+   • 144-01-071: Mrs F Meneghel, Mr M and Mr L Frattini
+     Phone: 02076308227
+   • 144-01-072: David Chi Leung Tong
+     Phone: 02077319820
+   • 144-01-073: Dalmatia Investments Ltd
+     Phone: 02077319820
+   • 144-01-074: Mr S & Mrs G Evans
+   • 144-01-075: James Luke Holdsworth
+     Phone: 0208 6754349
+   • 144-01-076: Hibiscus Investment Holding Ltd
+     Phone: 02077319820
+   • 144-01-077: Hibiscus Investment Holding Ltd
+     Phone: 02077319820
+   • 144-01-078: Mr & Mrs A Aglionby
+     Phone: 020 8012 7965 (JMW)
+   • 144-01-079: Karen Alexandra Hamilton Hobson
+     Phone: 02077319820
+   • 144-01-080: Yaroslav Kukharev & Kateryna Potapova
+   • 144-01-081: A Protasova, T Protasova, V Damaskinskiy
+   • 144-01-082: Network Homes
+
+🔍 PHASE 4.5: DEDUPLICATING DATA
+----------------------------------------------------------------------
+   Compliance: 86 → 4 (removed 82 historical)
+   Budgets: 4 → 1 (kept most recent)
+   Accounts: 13 → 1 (kept most recent approved)
+   Contracts: 28 → 28 (removed 0 expired)
+
+   ✅ Total records: 103 → 6 (removed 97 duplicates)
+
+🏗️  Building comprehensive asset register...
+
+🏗️  ASSET REGISTER SUMMARY:
+   Total assets: 28
+
+   Electrical: 2 assets
+      • Electrical Panel: —/year, —
+      • Emergency Lighting: —/year, —
+   Fire Safety: 5 assets
+      • Fire Alarm System: —/year, —
+      • Fire Door Inspection: —/year, —
+      • Fire Doors: —/year, —
+      ... and 2 more
+   General: 7 assets
+      • Bin Store: —/year, —
+      • Car Park: —/year, —
+      • Dry Riser: —/year, —
+      ... and 4 more
+   Mechanical - Plant: 2 assets
+      • Boiler: —/year, —
+      • Water Tank: —/year, —
+   Security: 2 assets
+      • CCTV System: —/year, —
+      • Door Entry System: —/year, —
+   Service: 5 assets
+      • Cleaning Service: £1,500/year, Target Lifts Ltd
+      • Fire Safety Systems: £3,000/year, Ltd
+Grainger Pimlico Management 
+Limited
+      • M&E Systems: —/year, shall provide in respect of the S ystem the additional services
+      ... and 2 more
+   Water Systems: 1 assets
+      • Legionella Risk Assessment: —/year, —
+   gardening: 1 assets
+      • Gardening/Landscaping: £5,075/year, —
+   other: 2 assets
+      • Lighting System: £324/year, —
+      • Pest Control: £1,760/year, —
+   utilities: 1 assets
+      • Water Systems: £27,000/year, —
+
+🏢 PHASE 5: BUILD BUILDING PICTURE
+----------------------------------------------------------------------
+   Building picture built: 144.01 PIMLICO PLACE
+   Floors: 7
+   Height: 18.0m
+   SC Year: 2025-04-01 to 2026-03-31
+
+📄 PHASE 6: GENERATE OUTPUTS
+----------------------------------------------------------------------
+   ✅ Extracted data: output/extracted_data.json
+   ✅ SQL migration: output/migration.sql
+      PDF generated: output/144.01 PIMLICO PLACE_Report.pdf
+   ✅ PDF report: output/144.01 PIMLICO PLACE_Report.pdf
+   ⚠️  Cleanup: TODO
+
+======================================================================
+✅ EXTRACTION COMPLETE
+======================================================================
+
+📊 EXTRACTION SUMMARY:
+   Building: 144.01 PIMLICO PLACE
+   Units: 89
+   Budgets: 1
+   Budget Line Items: 217
+   Compliance Assets: 4
+   Contracts: 28
+   Contractors (unique): 17
+   Accounts: 1
+   Leases Analyzed: 1
+   Asset Register: 28
+
+✅ Complete!
+   Outputs in: output
