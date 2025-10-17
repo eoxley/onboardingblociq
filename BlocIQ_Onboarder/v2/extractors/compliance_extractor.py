@@ -135,16 +135,21 @@ class ComplianceExtractor:
         
         # PHASE 1: EXPLICIT patterns (date immediately after keyword)
         explicit_patterns = [
+            # Survey date patterns (Legionella, Asbestos)
+            r'date\s+of\s+survey:?\s*(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})',  # "27th July 2011"
+            r'survey\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
+            
             # Gas Safety specific - "completed on 18 Apr 2023"
             r'completed\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
             r'safety\s+(?:record|check)\s+(?:was\s+)?completed\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
             
             # Date of assessment patterns
-            r'date\s+of\s+assessment:?\s*(\d{1,2}\s+\w+\s+\d{4})',  # "22 July 2025"
+            r'date\s+of\s+assessment:?\s*(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})',  # "22 July 2025" or "22nd July 2025"
             r'assessment\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             
             # Inspection date patterns
             r'inspection\s+and\s+testing\s+were\s+carried\s+out.*?(\d{1,2}[-/]\d{1,2}[-/]\d{4})',  # EICR specific
+            r'date\s+of\s+inspection:?\s*(\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4})',
             r'date\s+of\s+inspection:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             r'inspection\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
             
@@ -284,8 +289,11 @@ class ComplianceExtractor:
             'december': 12, 'dec': 12
         }
         
-        # Pattern 1: "22 July 2025" or "5 August 2025"
-        match = re.match(r'(\d{1,2})\s+(\w+)\s+(\d{4})', date_str, re.IGNORECASE)
+        # Pattern 1: "22 July 2025" or "5 August 2025" or "27th July 2011"
+        # Strip ordinal suffixes (st, nd, rd, th)
+        date_str_clean = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', date_str, flags=re.IGNORECASE)
+        
+        match = re.match(r'(\d{1,2})\s+(\w+)\s+(\d{4})', date_str_clean, re.IGNORECASE)
         if match:
             day, month_name, year = match.groups()
             month_num = months.get(month_name.lower())
