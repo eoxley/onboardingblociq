@@ -127,42 +127,64 @@ class BudgetExtractor:
         return None
     
     def _find_budget_header(self, ws) -> Optional[int]:
-        """Find row with budget table headers"""
+        """Find row with budget table headers - ENHANCED for varied formats"""
         for row_idx in range(1, min(50, ws.max_row + 1)):
             row_text = ' '.join(
                 str(ws.cell(row=row_idx, column=col).value or '').lower()
                 for col in range(1, min(15, ws.max_column + 1))
             )
             
-            # Look for typical budget headers
+            # Look for budget year patterns
+            has_budget_year = any(term in row_text for term in ['budget ye', 'ye 20', 'budget year', 'ye mar', 'ye 31'])
+            
+            # Look for traditional budget headers
             has_description = any(term in row_text for term in ['description', 'item', 'expense', 'head', 'category'])
             has_amount = any(term in row_text for term in ['amount', 'budget', 'annual', '£', 'cost', 'total'])
             
-            if has_description and has_amount:
+            # Accept if either format found
+            if (has_description and has_amount) or has_budget_year:
                 return row_idx
         
         return None
     
     def _identify_columns(self, ws, header_row: int) -> Dict[str, int]:
-        """Identify which columns contain what data"""
+        """Identify which columns contain what data - ENHANCED for multi-column budgets"""
         columns = {}
+        amount_columns = []  # Track all amount columns to pick the right one
         
         for col in range(1, min(20, ws.max_column + 1)):
             header = str(ws.cell(row=header_row, column=col).value or '').lower().strip()
             
+            # Code/reference column
             if any(term in header for term in ['code', 'ref', 'account']):
                 if 'code' not in columns:
                     columns['code'] = col
             
-            elif any(term in header for term in ['description', 'item', 'expense', 'head', 'detail']):
-                columns['description'] = col
+            # Amount columns - track all of them
+            if any(term in header for term in ['amount', 'budget', 'annual', '£', 'cost', 'ye']):
+                amount_columns.append((col, header))
             
-            elif any(term in header for term in ['amount', 'budget', 'annual', '£', 'total', 'cost']):
-                if 'amount' not in columns:  # Take first amount column
-                    columns['amount'] = col
-            
-            elif any(term in header for term in ['note', 'comment', 'detail']):
+            # Notes/comments column
+            if any(term in header for term in ['note', 'comment', 'pm comment']):
                 columns['notes'] = col
+        
+        # Description column - assume column 1 if not explicitly found
+        # Most budgets have description in first column
+        if 'description' not in columns:
+            columns['description'] = 1
+        
+        # Pick the BEST amount column (prefer most recent year or "budget")
+        if amount_columns:
+            # Look for column with current year (2025, 2026) or "budget"
+            best_col = amount_columns[0][0]  # Default to first
+            
+            for col, header in amount_columns:
+                # Prefer columns with 2025, 2026, or "budget" in header
+                if any(year in header for year in ['2025', '2026', 'budget ye 31']):
+                    best_col = col
+                    break
+            
+            columns['amount'] = best_col
         
         return columns
     
@@ -192,10 +214,15 @@ class BudgetExtractor:
             if not desc_str or len(desc_str) < 2:
                 continue
             
+            # Skip total rows
             if any(word in desc_str.lower() for word in [
                 'total', 'grand total', 'sub-total', 'subtotal', 
                 'budget total', 'sum', '====', '----'
             ]):
+                continue
+            
+            # Skip section headers (ALL CAPS headings with no amounts)
+            if desc_str.isupper() and not amount_cell:
                 continue
             
             # Extract amount
