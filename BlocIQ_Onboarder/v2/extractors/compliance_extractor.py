@@ -119,9 +119,14 @@ class ComplianceExtractor:
         return None, None
     
     def _extract_assessment_date(self, text: str, filename: str) -> Optional[str]:
-        """Extract assessment/inspection date - SEARCHES ENTIRE DOCUMENT"""
+        """Extract assessment/inspection date - SEARCHES ENTIRE DOCUMENT + FILENAME"""
+        
+        # FIRST: Try to extract date from filename
+        # Many compliance documents have dates in filenames: "Fire Door 2024-01-24T120743.pdf"
+        filename_date = self._extract_date_from_filename(filename)
+        
         if not text:
-            return None
+            return filename_date  # Use filename date if no text
         
         # SEARCH THE ENTIRE DOCUMENT - no char limit!
         # User feedback: "Are you going through every page of a document?"
@@ -163,12 +168,52 @@ class ComplianceExtractor:
                 date_str = match.group(1)
                 normalized = self._normalize_date(date_str)
                 if normalized:
-                    return normalized
+                    return normalized  # Prefer document date over filename
         
         # Fallback: look for any date in YYYY-MM-DD format
         match = re.search(r'(\d{4}-\d{2}-\d{2})', content)
         if match:
             return match.group(1)
+        
+        # Final fallback: use filename date if found
+        return filename_date
+    
+    def _extract_date_from_filename(self, filename: str) -> Optional[str]:
+        """
+        Extract date from filename
+        Handles formats like:
+        - Fire Door 2024-01-24T120743.pdf
+        - FA7817 SERVICE 08042025.pdf
+        - Report 25-07-2024.pdf
+        """
+        # Pattern 1: YYYY-MM-DD or YYYY-MM-DDT...
+        match = re.search(r'(\d{4}-\d{2}-\d{2})', filename)
+        if match:
+            return match.group(1)
+        
+        # Pattern 2: DDMMYYYY (08042025)
+        match = re.search(r'(\d{2})(\d{2})(\d{4})', filename)
+        if match:
+            day, month, year = match.groups()
+            try:
+                # Validate it's a reasonable date
+                d, m = int(day), int(month)
+                if 1 <= d <= 31 and 1 <= m <= 12:
+                    return f"{year}-{m:02d}-{d:02d}"
+            except:
+                pass
+        
+        # Pattern 3: DD-MM-YYYY or DD/MM/YYYY
+        match = re.search(r'(\d{2})[-/](\d{2})[-/](\d{4})', filename)
+        if match:
+            day, month, year = match.groups()
+            return f"{year}-{month}-{day}"
+        
+        # Pattern 4: DD-MM-YY
+        match = re.search(r'(\d{2})[-/](\d{2})[-/](\d{2})(?![/\d])', filename)
+        if match:
+            day, month, year = match.groups()
+            return f"20{year}-{month}-{day}"
         
         return None
     
