@@ -130,6 +130,10 @@ class ComplianceExtractor:
         
         # EXPANDED patterns for assessment dates (based on real documents)
         patterns = [
+            # Gas Safety specific - "completed on 18 Apr 2023"
+            r'completed\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
+            r'safety\s+(?:record|check)\s+(?:was\s+)?completed\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
+            
             # Date of assessment patterns
             r'date\s+of\s+assessment:?\s*(\d{1,2}\s+\w+\s+\d{4})',  # "22 July 2025"
             r'assessment\s+date:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
@@ -253,6 +257,11 @@ class ComplianceExtractor:
         
         # Patterns for next due/review dates
         patterns = [
+            # Gas Safety specific - "next Gas Safety Check is due on 18 Apr 2024"
+            r'next\s+gas\s+safety\s+check\s+is\s+due\s+on\s+(\d{1,2}\s+\w+\s+\d{4})',
+            r'next\s+(?:check|inspection)\s+(?:is\s+)?due\s+(?:on\s+)?(\d{1,2}\s+\w+\s+\d{4})',
+            
+            # Asbestos/general review dates
             r'recommended\s+review\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',  # "22 July 2026"
             r'next\s+(?:review|due)\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',
             r'review\s+date:?\s*(\d{1,2}\s+\w+\s+\d{4})',
