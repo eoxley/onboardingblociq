@@ -1,0 +1,228 @@
+/Users/ellie/Library/Python/3.9/lib/python/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Data Validation extension is not supported and will be removed
+  warn(msg)
+======================================================================
+🚀 BLOCIQ V2 COMPREHENSIVE EXTRACTION
+======================================================================
+Building: CONNAUGHT SQUARE
+Source: /Users/ellie/Downloads/CONNAUGHT SQUARE
+Output: output
+
+📁 PHASE 1: INGEST & NORMALIZE
+----------------------------------------------------------------------
+📁 Phase 1: Ingesting all files...
+   Processed 50 files...
+   Processed 100 files...
+   Processed 150 files...
+   Processed 200 files...
+   Processed 250 files...
+   Processed 300 files...
+   Processed 350 files...
+   ✅ Ingested 367 files
+
+🔍 Phase 2: De-duplicating files...
+   ✅ Found 74 exact duplicates
+   ✅ Found 0 near-duplicates
+   ✅ Manifest saved: output/manifest.jsonl
+      Total files: 367
+      Unique files: 293
+      Duplicates: 74
+
+🏷️  PHASE 2: CATEGORIZE
+----------------------------------------------------------------------
+
+🏷️  Phase 3: Categorizing documents...
+   ✅ Categorized 293 documents
+   ⚠️  Low confidence (< 0.60): 282 files
+
+   Low confidence files (may need AI or manual review):
+      • Connaught Square New property information.xlsx     confidence: 0.27
+      • Connaught Square Meeting Minutes 2.docx            confidence: 0.14
+      • connaught apportionment.xlsx                       confidence: 0.30
+      • 4. HEALTH & SAFETY.zip                             confidence: 0.20
+      • 2024 Directors Meeting-Notes.docx                  confidence: 0.30
+      • connaught.xlsx                                     confidence: 0.30
+      • Boiler Room.jfif                                   confidence: 0.20
+      • Fire Alarm.jfif                                    confidence: 0.20
+      • Roof.jfif                                          confidence: 0.20
+      • Basement Coded Door.jfif                           confidence: 0.20
+
+📊 PHASE 3: DOMAIN EXTRACTION
+----------------------------------------------------------------------
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: EICR - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Accounts: FY 2031 - Draft
+   ✅ Accounts: FY 2031 - Approved
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Contract: Connaught Square Management - security
+   ✅ Contract: Signed Connaught Square Management - cleaning
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Contract: Gas - cleaning
+   ✅ Contract: Gas - cleaning
+   ✅ Compliance: Legionella Risk Assessment - 2025-03-11
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-03-12
+   ✅ Compliance: Legionella Risk Assessment - 2025-07-21
+   ✅ Compliance: Legionella Risk Assessment - 2025-04-30
+   ✅ Compliance: Legionella Risk Assessment - 2025-03-11
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-04-03
+   ✅ Compliance: Legionella Risk Assessment - 2024-09-30
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2024-06-26
+   ✅ Compliance: Legionella Risk Assessment - 2024-10-02
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2024-03-28
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   📊 Processing budget file: Connaught Square Budget 2025-6 Draft.xlsx
+   ⚠️  Budget extraction returned None for Connaught Square Budget 2025-6 Draft.xlsx
+   ✅ Compliance: Legionella Risk Assessment - None
+   📊 Processing budget file: Connaught Square Budget 2025-Final.xlsx
+   ⚠️  Budget extraction returned None for Connaught Square Budget 2025-Final.xlsx
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Accounts: FY 2031 - Draft
+   ✅ Accounts: FY 2020 - Draft
+   ✅ Compliance: Fire Risk Assessment - 2024-04-01
+   ✅ Accounts: FY 2024 - Draft
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 3 floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Fire Door Inspection - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - 2023-11-15
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 2 floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - 2023-11-15
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 2 floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Gas Safety Certificate - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Gas Safety Certificate - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Asbestos Survey - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Fire Risk Assessment - None
+   ✅ Building desc: 1 floors, ?m
+   ✅ Building desc: 1 floors, ?m
+   ✅ Compliance: Emergency Lighting Test - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-05-29
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-01-27
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2024-11-22
+   ✅ Compliance: Legionella Risk Assessment - 2025-05-29
+   ✅ Compliance: Legionella Risk Assessment - 2024-05-14
+   ✅ Compliance: Legionella Risk Assessment - 2025-05-29
+   ✅ Compliance: Legionella Risk Assessment - 2025-08-21
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - 2025-06-17
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Compliance: Legionella Risk Assessment - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Emergency Lighting Test - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Emergency Lighting Test - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Emergency Lighting Test - None
+   ✅ Building desc: ? floors, ?m
+   ✅ Compliance: Asbestos Survey - None
+   ✅ Building desc: ? floors, ?m
+
+🔄 PHASE 4: CONSOLIDATION & CROSS-CHECKS
+----------------------------------------------------------------------
+
+👷 CONTRACTOR CONSOLIDATION SUMMARY:
+   Total unique contractors: 2
+   Total aliases resolved: 1
+
+   • Connaught Square Management
+     Services: cleaning, security
+     Aliases: Signed Connaught Square Management
+   • Gas
+     Services: cleaning
+
+🔍 PHASE 4.5: DEDUPLICATING DATA
+----------------------------------------------------------------------
+   Compliance: 76 → 7 (removed 69 historical)
+   Accounts: 5 → 1 (kept most recent approved)
+   Contracts: 4 → 4 (removed 0 expired)
+
+   ✅ Total records: 81 → 8 (removed 73 duplicates)
+
+🏢 PHASE 5: BUILD BUILDING PICTURE
+----------------------------------------------------------------------
+   Building picture built: CONNAUGHT SQUARE
+   Floors: 1
+   Height: ?m
+   SC Year: ? to ?
+
+📄 PHASE 6: GENERATE OUTPUTS
+----------------------------------------------------------------------
+   ✅ Extracted data: output/extracted_data.json
+   ✅ SQL migration: output/migration.sql
+      PDF generated: output/CONNAUGHT SQUARE_Report.pdf
+   ✅ PDF report: output/CONNAUGHT SQUARE_Report.pdf
+   ⚠️  Cleanup: TODO
+
+======================================================================
+✅ EXTRACTION COMPLETE
+======================================================================
+
+📊 EXTRACTION SUMMARY:
+   Building: CONNAUGHT SQUARE
+   Units: 0
+   Budgets: 0
+   Budget Line Items: 0
+   Compliance Assets: 7
+   Contracts: 4
+   Contractors (unique): 2
+   Accounts: 1
+   Leases Analyzed: 0
+   Asset Register: 115
+
+✅ Complete!
+   Outputs in: output
