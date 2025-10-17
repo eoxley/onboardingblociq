@@ -25,6 +25,7 @@ from extractors.lease_analyzer import LeaseAnalyzer
 from extractors.units_leaseholders_extractor import UnitsLeaseholdersExtractor
 from consolidators.contractor_consolidator import ContractorConsolidator
 from sql_generator_v2 import SQLGeneratorV2
+from pdf_generator_v2 import PDFGeneratorV2
 
 
 class MasterOrchestrator:
@@ -282,9 +283,13 @@ class MasterOrchestrator:
         print(f"   ✅ SQL migration: {sql_file}")
         
         # d) PDF generation
-        # TODO: Call PDF generator
         pdf_file = f"{self.output_folder}/{self.building_name}_Report.pdf"
-        print(f"   ⚠️  PDF generation: TODO")
+        try:
+            pdf_generator = PDFGeneratorV2(self.extracted_data, pdf_file)
+            pdf_generator.generate()
+            print(f"   ✅ PDF report: {pdf_file}")
+        except Exception as e:
+            print(f"   ⚠️  PDF generation error: {str(e)[:100]}")
         
         # e) Clean up output folder (remove old files)
         self._cleanup_output_folder()
