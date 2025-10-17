@@ -221,15 +221,18 @@ class DocumentIngestionEngine:
             return None, f"error:{str(e)[:50]}"
     
     def _extract_from_pdf(self, filepath: Path) -> tuple[Optional[str], str]:
-        """Extract text from PDF"""
+        """Extract text from PDF - READS ALL PAGES"""
         try:
             import PyPDF2
             
             text_parts = []
             with open(filepath, 'rb') as f:
                 reader = PyPDF2.PdfReader(f)
-                for page in reader.pages[:100]:  # Limit to first 100 pages
-                    text_parts.append(page.extract_text())
+                # READ ALL PAGES - no limit!
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text_parts.append(page_text)
             
             text = '\n'.join(text_parts)
             return text if text.strip() else None, 'pypdf2'
@@ -252,15 +255,17 @@ class DocumentIngestionEngine:
             return None, f'docx_error:{str(e)[:30]}'
     
     def _extract_from_excel(self, filepath: Path) -> tuple[Optional[str], str]:
-        """Extract text from Excel"""
+        """Extract text from Excel - READS ALL SHEETS AND ROWS"""
         try:
             import openpyxl
             
             wb = openpyxl.load_workbook(filepath, data_only=True, read_only=True)
             text_parts = []
             
-            for sheet in wb.worksheets[:10]:  # Limit sheets
-                for row in sheet.iter_rows(max_row=500, values_only=True):
+            # READ ALL SHEETS - no limit!
+            for sheet in wb.worksheets:
+                # READ ALL ROWS - no limit!
+                for row in sheet.iter_rows(values_only=True):
                     row_text = ' | '.join(str(cell) for cell in row if cell)
                     if row_text.strip():
                         text_parts.append(row_text)

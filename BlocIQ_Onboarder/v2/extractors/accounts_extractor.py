@@ -101,7 +101,7 @@ class AccountsExtractor:
                     year = '20' + year
                 return year
         
-        # Check text content
+        # Check text content - SEARCH ENTIRE DOCUMENT
         text_patterns = [
             r'year\s+ended?\s+(\d{1,2}\s+\w+\s+\d{4})',
             r'financial\s+year:?\s*(\d{4})',
@@ -109,7 +109,7 @@ class AccountsExtractor:
         ]
         
         for pattern in text_patterns:
-            match = re.search(pattern, text[:1000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 # Extract year from date or period
                 year_match = re.search(r'\d{4}', match.group(0))
@@ -119,7 +119,7 @@ class AccountsExtractor:
         return None
     
     def _extract_year_end_date(self, text: str) -> Optional[str]:
-        """Extract year end date"""
+        """Extract year end date - ENTIRE DOCUMENT"""
         patterns = [
             r'year\s+ended?\s+(\d{1,2})\s+(\w+)\s+(\d{4})',
             r'year\s+end:?\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
@@ -127,7 +127,7 @@ class AccountsExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:1000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 # TODO: Parse to YYYY-MM-DD
                 return match.group(0)
@@ -156,7 +156,7 @@ class AccountsExtractor:
         if 'final' in filename_lower:
             return True
         
-        if 'draft' in filename_lower or 'draft' in text[:500]:
+        if 'draft' in filename_lower or 'draft' in text_lower:  # ENTIRE TEXT
             return False
         
         # If approved, likely final
@@ -166,7 +166,7 @@ class AccountsExtractor:
         return False
     
     def _extract_approval_date(self, text: str) -> Optional[str]:
-        """Extract date when accounts were approved"""
+        """Extract date when accounts were approved - ENTIRE DOCUMENT"""
         patterns = [
             r'approved\s+(?:by\s+the\s+board\s+)?on:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})',
             r'approved:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})',
@@ -174,7 +174,7 @@ class AccountsExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 # TODO: Normalize date
                 return match.group(1)
@@ -182,25 +182,25 @@ class AccountsExtractor:
         return None
     
     def _extract_approved_by(self, text: str) -> Optional[str]:
-        """Extract who approved the accounts"""
+        """Extract who approved the accounts - ENTIRE DOCUMENT"""
         patterns = [
             r'approved\s+by:?\s*([A-Z][A-Za-z\s]{5,50})',
             r'signed\s+on\s+behalf\s+of:?\s*([A-Z][A-Za-z\s]{5,50})',
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000])
+            match = re.search(pattern, text)  # ENTIRE TEXT
             if match:
                 return match.group(1).strip()
         
         # Default
-        if 'board' in text.lower()[:2000]:
+        if 'board' in text.lower():  # ENTIRE TEXT
             return 'Board of Directors'
         
         return None
     
     def _extract_accountant(self, text: str) -> Optional[str]:
-        """Extract accountant/auditor name"""
+        """Extract accountant/auditor name - ENTIRE DOCUMENT"""
         patterns = [
             r'accountants?:?\s*([A-Z][A-Za-z\s&]+(?:LLP|Ltd|Limited))',
             r'prepared\s+by:?\s*([A-Z][A-Za-z\s&]+(?:LLP|Ltd|Limited))',
@@ -208,14 +208,14 @@ class AccountsExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000])
+            match = re.search(pattern, text)  # ENTIRE TEXT
             if match:
                 return match.group(1).strip()
         
         return None
     
     def _extract_total_expenditure(self, text: str) -> Optional[float]:
-        """Extract total expenditure from accounts"""
+        """Extract total expenditure from accounts - ENTIRE DOCUMENT"""
         patterns = [
             r'total\s+expenditure:?\s*£?\s*([\d,]+\.?\d*)',
             r'total\s+outgoings:?\s*£?\s*([\d,]+\.?\d*)',
@@ -223,7 +223,7 @@ class AccountsExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:5000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 amount_str = match.group(1).replace(',', '')
                 try:

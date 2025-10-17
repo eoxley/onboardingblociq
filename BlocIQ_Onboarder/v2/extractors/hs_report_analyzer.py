@@ -77,7 +77,7 @@ class HSReportAnalyzer:
         return description
     
     def _extract_floors(self, text: str) -> Optional[int]:
-        """Extract number of floors from text"""
+        """Extract number of floors from text - ENTIRE DOCUMENT"""
         patterns = [
             r'(\d+)\s*(?:storey|story|storied|floor)',
             r'building\s+of\s+(\d+)\s+floors',
@@ -86,7 +86,7 @@ class HSReportAnalyzer:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 try:
                     floors = int(match.group(1))
@@ -100,7 +100,7 @@ class HSReportAnalyzer:
         found_floors = set()
         
         for idx, floor_name in enumerate(floor_names):
-            if re.search(rf'\b{floor_name}\s+floor\b', text[:3000], re.IGNORECASE):
+            if re.search(rf'\b{floor_name}\s+floor\b', text, re.IGNORECASE):  # ENTIRE TEXT
                 found_floors.add(idx)
         
         if found_floors:
@@ -109,7 +109,7 @@ class HSReportAnalyzer:
         return None
     
     def _extract_height(self, text: str) -> Optional[float]:
-        """Extract building height in meters"""
+        """Extract building height in meters - ENTIRE DOCUMENT"""
         patterns = [
             r'height:?\s*([\d.]+)\s*m(?:eter|eters|etres|tre)?',
             r'([\d.]+)\s*m(?:eter|etre)?s?\s*(?:high|tall)',
@@ -117,7 +117,7 @@ class HSReportAnalyzer:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 try:
                     height = float(match.group(1))
@@ -129,7 +129,7 @@ class HSReportAnalyzer:
         return None
     
     def _extract_construction_type(self, text: str) -> Optional[str]:
-        """Extract construction type description"""
+        """Extract construction type description - ENTIRE DOCUMENT"""
         patterns = [
             r'construction:?\s*([^.\n]{10,100})',
             r'building\s+type:?\s*([^.\n]{10,100})',
@@ -137,7 +137,7 @@ class HSReportAnalyzer:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:3000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 desc = match.group(1).strip()
                 if len(desc) > 10:
@@ -146,7 +146,7 @@ class HSReportAnalyzer:
         return None
     
     def _extract_construction_era(self, text: str) -> Optional[str]:
-        """Extract construction era (Victorian, Georgian, Modern, etc.)"""
+        """Extract construction era (Victorian, Georgian, Modern, etc.) - ENTIRE DOCUMENT"""
         eras = {
             'Victorian': r'\bvictorian\b',
             'Georgian': r'\bgeorgian\b',
@@ -159,13 +159,13 @@ class HSReportAnalyzer:
         }
         
         for era, pattern in eras.items():
-            if re.search(pattern, text[:2000], re.IGNORECASE):
+            if re.search(pattern, text, re.IGNORECASE):  # ENTIRE TEXT
                 return era
         
         return None
     
     def _extract_year_built(self, text: str) -> Optional[int]:
-        """Extract year built"""
+        """Extract year built - ENTIRE DOCUMENT"""
         patterns = [
             r'built:?\s*in\s*(\d{4})',
             r'constructed:?\s*in\s*(\d{4})',
@@ -174,7 +174,7 @@ class HSReportAnalyzer:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 try:
                     year = int(match.group(1))

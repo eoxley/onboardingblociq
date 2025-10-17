@@ -119,12 +119,14 @@ class ComplianceExtractor:
         return None, None
     
     def _extract_assessment_date(self, text: str, filename: str) -> Optional[str]:
-        """Extract assessment/inspection date - ENHANCED for better accuracy"""
+        """Extract assessment/inspection date - SEARCHES ENTIRE DOCUMENT"""
         if not text:
             return None
         
-        # Look for dates in MUCH MORE text (first 10000 chars to catch multiple pages)
-        content_start = text[:10000]
+        # SEARCH THE ENTIRE DOCUMENT - no char limit!
+        # User feedback: "Are you going through every page of a document?"
+        # Answer: YES, now we are!
+        content = text
         
         # EXPANDED patterns for assessment dates (based on real documents)
         patterns = [
@@ -152,7 +154,7 @@ class ComplianceExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, content_start, re.IGNORECASE)
+            match = re.search(pattern, content, re.IGNORECASE)
             if match:
                 date_str = match.group(1)
                 normalized = self._normalize_date(date_str)
@@ -160,7 +162,7 @@ class ComplianceExtractor:
                     return normalized
         
         # Fallback: look for any date in YYYY-MM-DD format
-        match = re.search(r'(\d{4}-\d{2}-\d{2})', content_start)
+        match = re.search(r'(\d{4}-\d{2}-\d{2})', content)
         if match:
             return match.group(1)
         
@@ -242,12 +244,12 @@ class ComplianceExtractor:
         return next_due.strftime('%Y-%m-%d')
     
     def _extract_next_due_from_text(self, text: str) -> Optional[str]:
-        """Extract explicitly stated next due/review date from document"""
+        """Extract explicitly stated next due/review date from document - ENTIRE DOCUMENT"""
         if not text:
             return None
         
-        # Look in first 10000 chars
-        content = text[:10000]
+        # SEARCH ENTIRE DOCUMENT
+        content = text
         
         # Patterns for next due/review dates
         patterns = [

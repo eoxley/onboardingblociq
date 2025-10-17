@@ -84,25 +84,26 @@ class ContractExtractor:
         }
     
     def _extract_contractor_name(self, text: str, filename: str) -> Optional[str]:
-        """Extract contractor/company name from contract"""
-        # Look for company name patterns
+        """Extract contractor/company name from contract - SEARCHES ENTIRE DOCUMENT"""
+        # Look for company name patterns - SEARCH ENTIRE TEXT, NOT JUST FIRST 2000 CHARS
         patterns = [
             r'contractor:?\s*([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|PLC|Services))',
             r'company:?\s*([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|PLC|Services))',
             r'supplier:?\s*([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|PLC|Services))',
             r'between.*and\s+([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|PLC))',  # "between X and Y Ltd"
+            r'signed\s+by:?\s*([A-Z][A-Za-z\s&]+(?:Ltd|Limited|LLP|PLC))',  # Signatory section
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:2000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT NOW
             if match:
-                return match.group(1).strip()
+                contractor_name = match.group(1).strip()
+                # Validate it's not a generic word
+                if contractor_name.lower() not in ['gas', 'cleaning', 'lift', 'the']:
+                    return contractor_name
         
-        # Fallback: extract from filename
-        # "ISS Contract.pdf" -> "ISS"
-        match = re.search(r'^([A-Z][A-Za-z\s&]+)(?:\s+Contract|\s+Agreement)', filename, re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
+        # DO NOT use filename as fallback - it's often wrong!
+        # "Gas Contract.pdf" should not extract "Gas" as contractor name
         
         return None
     
@@ -137,7 +138,7 @@ class ContractExtractor:
         return 'general'
     
     def _extract_start_date(self, text: str) -> Optional[str]:
-        """Extract contract start/commencement date"""
+        """Extract contract start/commencement date - ENTIRE DOCUMENT"""
         patterns = [
             r'commencement\s+date:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})',
             r'start\s+date:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})',
@@ -146,14 +147,14 @@ class ContractExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:3000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 return self._normalize_date(match.group(1))
         
         return None
     
     def _extract_end_date(self, text: str) -> Optional[str]:
-        """Extract contract end/expiry date"""
+        """Extract contract end/expiry date - ENTIRE DOCUMENT"""
         patterns = [
             r'expiry\s+date:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})',
             r'end\s+date:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})',
@@ -162,22 +163,22 @@ class ContractExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:3000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 return self._normalize_date(match.group(1))
         
         return None
     
     def _extract_renewal_date(self, text: str) -> Optional[str]:
-        """Extract renewal date"""
+        """Extract renewal date - ENTIRE DOCUMENT"""
         pattern = r'renewal:?\s*(\d{1,2}[-/]\w+[-/]\d{2,4})'
-        match = re.search(pattern, text[:3000], re.IGNORECASE)
+        match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
         if match:
             return self._normalize_date(match.group(1))
         return None
     
     def _extract_contract_value(self, text: str) -> Optional[float]:
-        """Extract annual contract value"""
+        """Extract annual contract value - ENTIRE DOCUMENT"""
         # Look for annual cost
         patterns = [
             r'annual\s+(?:cost|fee|charge):?\s*£?\s*([\d,]+\.?\d*)',
@@ -186,7 +187,7 @@ class ContractExtractor:
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text[:5000], re.IGNORECASE)
+            match = re.search(pattern, text, re.IGNORECASE)  # ENTIRE TEXT
             if match:
                 amount_str = match.group(1).replace(',', '')
                 try:
