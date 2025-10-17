@@ -221,7 +221,10 @@ class DocumentIngestionEngine:
             return None, f"error:{str(e)[:50]}"
     
     def _extract_from_pdf(self, filepath: Path) -> tuple[Optional[str], str]:
-        """Extract text from PDF - READS ALL PAGES"""
+        """
+        Extract text from PDF - READS ALL PAGES
+        ENHANCED: Falls back to OCR if PDF is scanned (no embedded text)
+        """
         try:
             import PyPDF2
             
@@ -235,6 +238,20 @@ class DocumentIngestionEngine:
                         text_parts.append(page_text)
             
             text = '\n'.join(text_parts)
+            
+            # Check if we got meaningful text
+            if text.strip() and len(text.strip()) > 100:
+                return text, 'pypdf2'
+            
+            # FALLBACK: If very little text, this might be a SCANNED PDF
+            # Try OCR extraction
+            print(f"      ⚠️  PDF has little text ({len(text.strip())} chars) - trying OCR...")
+            ocr_text, ocr_method = self._extract_scanned_pdf_with_ocr(filepath)
+            
+            if ocr_text and len(ocr_text.strip()) > len(text.strip()):
+                return ocr_text, f'pdf_ocr:{ocr_method}'
+            
+            # Return whatever we have
             return text if text.strip() else None, 'pypdf2'
         
         except Exception as e:
@@ -305,6 +322,67 @@ class DocumentIngestionEngine:
         """Extract from MSG/EML files"""
         # For now, mark as email but don't extract (requires extract_msg library)
         return None, 'email_skip'
+    
+    def _extract_scanned_pdf_with_ocr(self, filepath: Path) -> tuple[Optional[str], str]:
+        """
+        Extract text from SCANNED PDF using OCR
+        Converts PDF pages to images, then applies OCR
+        """
+        try:
+            from PIL import Image
+            import pytesseract
+            import pdf2image
+            
+            # Convert PDF to images
+            images = pdf2image.convert_from_path(str(filepath))
+            
+            text_parts = []
+            for page_num, image in enumerate(images, 1):
+                # Extract text from each page image
+                page_text = pytesseract.image_to_string(image)
+                if page_text and page_text.strip():
+                    text_parts.append(page_text.strip())
+                
+                # Limit to first 20 pages for performance
+                if page_num >= 20:
+                    break
+            
+            combined_text = '\n\n'.join(text_parts)
+            return combined_text if combined_text.strip() else None, 'pdf2image_ocr'
+        
+        except ImportError:
+            # pdf2image or pytesseract not available - try simpler method
+            return self._extract_scanned_pdf_simple(filepath)
+        
+        except Exception as e:
+            return None, f'pdf_ocr_error:{str(e)[:30]}'
+    
+    def _extract_scanned_pdf_simple(self, filepath: Path) -> tuple[Optional[str], str]:
+        """
+        Simpler fallback for scanned PDFs when pdf2image not available
+        Note: This won't work as well but provides graceful degradation
+        """
+        try:
+            import fitz  # PyMuPDF
+            
+            text_parts = []
+            pdf = fitz.open(str(filepath))
+            
+            for page_num, page in enumerate(pdf):
+                # Try to extract images and OCR them
+                text = page.get_text()
+                if text.strip():
+                    text_parts.append(text.strip())
+                
+                if page_num >= 20:
+                    break
+            
+            pdf.close()
+            combined_text = '\n\n'.join(text_parts)
+            return combined_text if combined_text.strip() else None, 'pymupdf'
+        
+        except:
+            return None, 'pdf_ocr_unavailable'
     
     def _extract_from_image(self, filepath: Path) -> tuple[Optional[str], str]:
         """
