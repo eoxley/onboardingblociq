@@ -249,12 +249,22 @@ class DeterministicCategorizer:
                 'weight': 0.7
             },
             
-            # Leases
+            # Leases - Enhanced detection
             'Client Information/Leases (Master)': {
                 'filename': [
                     r'\blease\b',
                     r'\btitle\s+number\b',
-                    r'\bofficial\s+copy\b'
+                    r'\bofficial\s+copy\b',
+                    r'\btitle\s+plan\b',
+                    r'\bland\s+registry\b',
+                    r'\bngl\d+',  # Title numbers like NGL708041
+                    r'\bflat\s+\d+.*lease\b',
+                    r'\bunit\s+\d+.*lease\b'
+                ],
+                'folder_path': [
+                    r'[/\\]leases?[/\\]',  # /LEASES/ or /Leases/ folder
+                    r'[/\\]1\.02\s+leases[/\\]',  # Specific folder naming
+                    r'[/\\]client\s+information[/\\].*leases?[/\\]'
                 ],
                 'content': [
                     r'\bthis\s+lease\b',
@@ -262,9 +272,12 @@ class DeterministicCategorizer:
                     r'\btitle\s+plan\b',
                     r'\bschedule\s+of\s+apportionment\b',
                     r'\bground\s+rent\b',
-                    r'\bservice\s+charge\b'
+                    r'\bservice\s+charge\b',
+                    r'\bland\s+registry\b',
+                    r'\bthis\s+official\s+copy\b',
+                    r'\btitle\s+number\s*:?\s*ngl\d+'
                 ],
-                'weight': 0.9
+                'weight': 0.95
             },
             
             # Apportionments
@@ -285,31 +298,39 @@ class DeterministicCategorizer:
     def categorize(self, document: Dict[str, Any]) -> Tuple[str, str, float]:
         """
         Categorize document using deterministic rules
-        
+
         Args:
             document: Document dict with filename, content, etc.
-        
+
         Returns:
             (primary_category, subcategory, confidence_score)
         """
         filename = document.get('filename', '').lower()
         content = (document.get('extracted_text') or '').lower()
         primary_folder = document.get('primary_folder', '')
-        
+        full_path = document.get('full_path', '').lower()
+
         # Score all patterns
         scores = {}
-        
+
         for category, pattern_set in self.patterns.items():
             score = 0.0
             matches = []
-            
+
             # Filename patterns
             filename_patterns = pattern_set.get('filename', [])
             for pattern in filename_patterns:
                 if re.search(pattern, filename, re.IGNORECASE):
                     score += 0.3
                     matches.append(f"filename:{pattern}")
-            
+
+            # Folder path patterns (STRONG signal for leases)
+            folder_path_patterns = pattern_set.get('folder_path', [])
+            for pattern in folder_path_patterns:
+                if full_path and re.search(pattern, full_path, re.IGNORECASE):
+                    score += 0.5  # Strong signal
+                    matches.append(f"folder_path:{pattern}")
+
             # Content patterns (if text available)
             if content:
                 content_patterns = pattern_set.get('content', [])
@@ -317,15 +338,15 @@ class DeterministicCategorizer:
                     if re.search(pattern, content, re.IGNORECASE):
                         score += 0.15
                         matches.append(f"content:{pattern}")
-            
+
             # Location bonus (if file is in matching folder)
             if primary_folder and any(part in category for part in primary_folder.split()):
                 score += 0.2
                 matches.append(f"location:{primary_folder}")
-            
+
             # Apply weight
             score *= pattern_set.get('weight', 1.0)
-            
+
             if score > 0:
                 scores[category] = {
                     'score': min(score, 1.0),  # Cap at 1.0

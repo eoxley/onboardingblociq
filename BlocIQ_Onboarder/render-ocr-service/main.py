@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
+import pandas as pd
+import openpyxl
 import uvicorn
 
 # Try importing Supabase (for storage integration)
@@ -143,17 +145,17 @@ def process_pdf(file_path: str, use_google_vision: bool = False) -> tuple[str, s
         # Convert PDF to images (reduced DPI for faster processing)
         images = convert_from_path(file_path, dpi=150)
         extracted_texts = []
-        
+
         # Limit to first 100 pages for very large documents
         max_pages = min(len(images), 100)
         if len(images) > 100:
             print(f"Large document detected ({len(images)} pages), processing first 100 pages only")
-        
+
         for i, image in enumerate(images[:max_pages]):
             # Save image temporarily
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_img:
                 image.save(temp_img.name, 'PNG')
-                
+
                 # Extract text from this page
                 if use_google_vision and vision_client:
                     page_text = extract_text_with_google_vision(temp_img.name)
@@ -161,18 +163,47 @@ def process_pdf(file_path: str, use_google_vision: bool = False) -> tuple[str, s
                 else:
                     page_text = extract_text_with_tesseract(temp_img.name)
                     source = "tesseract"
-                
+
                 if page_text.strip():
                     extracted_texts.append(f"--- Page {i+1} ---\n{page_text}")
-                
+
                 # Clean up temporary image
                 os.unlink(temp_img.name)
-        
+
         combined_text = "\n\n".join(extracted_texts)
         return combined_text, source
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PDF processing failed: {str(e)}")
+
+def process_excel(file_path: str) -> tuple[dict, str]:
+    """Process Excel file and extract data as JSON"""
+    try:
+        # Read all sheets from Excel file
+        excel_file = pd.ExcelFile(file_path, engine='openpyxl')
+        result = {
+            'sheets': {},
+            'sheet_names': excel_file.sheet_names
+        }
+
+        for sheet_name in excel_file.sheet_names:
+            # Read sheet into DataFrame
+            df = pd.read_excel(file_path, sheet_name=sheet_name, engine='openpyxl')
+
+            # Convert DataFrame to list of dictionaries (rows)
+            # Replace NaN with None for JSON serialization
+            sheet_data = df.where(pd.notnull(df), None).to_dict('records')
+
+            result['sheets'][sheet_name] = {
+                'columns': list(df.columns),
+                'row_count': len(df),
+                'data': sheet_data
+            }
+
+        return result, "excel-parser"
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Excel processing failed: {str(e)}")
 
 @app.get("/")
 async def root():
@@ -276,12 +307,14 @@ async def upload_file(
             'image/jpeg': ['.jpg', '.jpeg'],
             'image/png': ['.png'],
             'image/tiff': ['.tiff', '.tif'],
-            'image/bmp': ['.bmp']
+            'image/bmp': ['.bmp'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+            'application/vnd.ms-excel': ['.xls']
         }
-        
+
         if file.content_type not in allowed_types:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Unsupported file type: {file.content_type}. Supported types: {list(allowed_types.keys())}"
             )
         
@@ -309,6 +342,30 @@ async def upload_file(
         # Process based on file type
         if mime == 'application/pdf':
             extracted_text, source = process_pdf(temp_file_path, use_google_vision)
+            print(f"OCR completed: {len(extracted_text)} characters extracted using {source}")
+
+            return {
+                "success": True,
+                "text": extracted_text,
+                "source": source,
+                "filename": filename,
+                "content_type": mime,
+                "text_length": len(extracted_text),
+                "processing_mode": "storage_key" if storage_key else "direct_upload"
+            }
+        elif mime in ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']:
+            # Process Excel file
+            excel_data, source = process_excel(temp_file_path)
+            print(f"Excel processed: {len(excel_data['sheet_names'])} sheets extracted using {source}")
+
+            return {
+                "success": True,
+                "excel_data": excel_data,
+                "source": source,
+                "filename": filename,
+                "content_type": mime,
+                "processing_mode": "storage_key" if storage_key else "direct_upload"
+            }
         else:
             # Process image file
             if use_google_vision and vision_client:
@@ -317,18 +374,18 @@ async def upload_file(
             else:
                 extracted_text = extract_text_with_tesseract(temp_file_path)
                 source = "tesseract"
-        
-        print(f"OCR completed: {len(extracted_text)} characters extracted using {source}")
-        
-        return {
-            "success": True,
-            "text": extracted_text,
-            "source": source,
-            "filename": filename,
-            "content_type": mime,
-            "text_length": len(extracted_text),
-            "processing_mode": "storage_key" if storage_key else "direct_upload"
-        }
+
+            print(f"OCR completed: {len(extracted_text)} characters extracted using {source}")
+
+            return {
+                "success": True,
+                "text": extracted_text,
+                "source": source,
+                "filename": filename,
+                "content_type": mime,
+                "text_length": len(extracted_text),
+                "processing_mode": "storage_key" if storage_key else "direct_upload"
+            }
         
     except Exception as e:
         print(f"OCR processing failed: {e}")

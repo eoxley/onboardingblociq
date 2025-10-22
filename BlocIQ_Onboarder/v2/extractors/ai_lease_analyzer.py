@@ -29,15 +29,15 @@ class AILeaseAnalyzer:
     def __init__(self, api_key: Optional[str] = None):
         """
         Initialize AI lease analyzer
-        
+
         Args:
             api_key: OpenAI API key (or uses OPENAI_API_KEY env var)
         """
-        self.api_key = api_key or os.getenv('OPENAI_API_KEY')
-        
+        self.api_key = (api_key or os.getenv('OPENAI_API_KEY', '')).strip()
+
         if not self.api_key:
             raise ValueError("OpenAI API key required. Set OPENAI_API_KEY environment variable.")
-        
+
         self.client = OpenAI(api_key=self.api_key)
     
     def quick_analysis(

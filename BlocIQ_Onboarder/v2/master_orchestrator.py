@@ -218,10 +218,11 @@ class MasterOrchestrator:
                     self.extracted_data['accounts'].append(accounts_data)
                     print(f"   ✅ Accounts: FY {accounts_data.get('financial_year', '?')} - {'Approved' if accounts_data.get('is_approved') else 'Draft'}")
             
-            # Lease extraction
-            elif 'lease' in category.lower() and 'lease' in doc['filename'].lower():
-                # Collect lease documents for analysis
+            # Lease extraction - collect ANY document categorized as lease
+            elif 'lease' in category.lower() or 'leases (master)' in subcategory.lower():
+                # Collect lease documents for analysis (includes Title Plans, Official Copies, etc.)
                 self.extracted_data['leases'].append(doc)
+                print(f"   📄 Lease document: {doc['filename']}")
                 
                 # Also extract leaseholder contact from lease
                 leaseholder_data = self.leaseholder_extractor.extract_from_lease(text, doc)
@@ -271,15 +272,26 @@ class MasterOrchestrator:
                 print(f"   🤖 Using AI-powered analysis (LeaseClear quality)...")
                 ai_analyses = []
                 
-                # Analyze up to 3 representative leases with AI
-                selected_leases = self.extracted_data['leases'][:3]
-                
+                # Filter and select up to 5 ACTUAL lease documents (not apportionments, letters, etc.)
+                # Prioritize files with "lease", "official copy", "title", "NGL" in filename
+                actual_leases = []
+                for lease_doc in self.extracted_data['leases']:
+                    filename_lower = lease_doc.get('filename', '').lower()
+                    # Strong indicators of actual lease documents
+                    if any(keyword in filename_lower for keyword in ['lease', 'official copy', 'ngl', 'title plan', 'register']):
+                        # Exclude false positives
+                        if not any(exclude in filename_lower for exclude in ['apportionment', 'letter', 'scheme', 'mews']):
+                            actual_leases.append(lease_doc)
+
+                selected_leases = actual_leases[:5]
+
                 for i, lease_doc in enumerate(selected_leases, 1):
-                    text = lease_doc.get('text', '')
+                    # Use extracted_text (from OCR) not text
+                    text = lease_doc.get('extracted_text', '') or lease_doc.get('text', '')
                     filename = lease_doc.get('filename', f'lease_{i}.pdf')
-                    
+
                     if not text or len(text) < 500:
-                        print(f"   ⚠️  Lease {i}: Too little text, skipping")
+                        print(f"   ⚠️  Lease {i}: Too little text ({len(text)} chars), skipping")
                         continue
                     
                     print(f"   📄 Lease {i}/{len(selected_leases)}: {filename}")
@@ -337,21 +349,27 @@ class MasterOrchestrator:
         Consolidate building-level information
         """
         building = self.extracted_data['building']
-        
+
         # Set building name
         building['name'] = self.building_name
-        
+
+        # Extract building address from all available sources
+        address_info = self._extract_building_address(documents)
+        if address_info:
+            building['address'] = address_info.get('full_address')
+            building['postcode'] = address_info.get('postcode')
+
         # Count units from various sources
         # TODO: Extract from apportionment files, leases, etc.
-        
+
         # Set service charge year from budget
         if self.extracted_data['budgets']:
-            latest_budget = max(self.extracted_data['budgets'], 
+            latest_budget = max(self.extracted_data['budgets'],
                               key=lambda b: b.get('budget_year', 0))
             building['sc_year_start'] = latest_budget.get('sc_year_start')
             building['sc_year_end'] = latest_budget.get('sc_year_end')
             building['budget_year'] = latest_budget.get('budget_year')
-        
+
         # Set accounts info
         if self.extracted_data['accounts']:
             latest_accounts = max(
@@ -367,7 +385,77 @@ class MasterOrchestrator:
         print(f"   Floors: {building.get('number_of_floors', '?')}")
         print(f"   Height: {building.get('building_height_meters', '?')}m")
         print(f"   SC Year: {building.get('sc_year_start', '?')} to {building.get('sc_year_end', '?')}")
-    
+
+    def _extract_building_address(self, documents: List[Dict]) -> Dict:
+        """
+        Extract building address from management agreements, FRAs, accounts, leases
+        Looks for patterns like: "32-34 Connaught Square, St George's Fields, London, W2 2HL"
+        """
+        import re
+
+        # UK postcode pattern
+        postcode_pattern = r'\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b'
+
+        best_address = None
+        best_score = 0
+
+        for doc in documents:
+            text = doc.get('extracted_text', '') or doc.get('text', '')
+            filename = doc.get('filename', '').lower()
+
+            # Prioritize certain document types
+            priority = 0
+            if 'management agreement' in filename:
+                priority = 10
+            elif 'fire risk' in filename or 'fra' in filename:
+                priority = 8
+            elif 'account' in filename:
+                priority = 6
+            elif 'lease' in filename:
+                priority = 5
+
+            if not text or priority == 0:
+                continue
+
+            # Find postcodes in text
+            postcodes = re.findall(postcode_pattern, text, re.IGNORECASE)
+
+            for postcode in postcodes:
+                # Extract context around postcode (200 chars before)
+                match = re.search(rf'(.{{0,200}}){re.escape(postcode)}', text, re.DOTALL | re.IGNORECASE)
+                if not match:
+                    continue
+
+                context = match.group(1)
+
+                # Look for building number + name pattern
+                # Pattern: "number-number Name, Street, Area, City, Postcode"
+                # Example: "32-34 Connaught Square, St George's Fields, London, W2 2HL"
+                address_pattern = r'(\d+[-/]\d+\s+[A-Z][a-zA-Z\s]+(?:,\s*[A-Z][a-zA-Z\'\s]+){0,3}),?\s*' + re.escape(postcode)
+                address_match = re.search(address_pattern, context + ' ' + postcode, re.IGNORECASE)
+
+                if address_match:
+                    full_address = address_match.group(1).strip() + ', ' + postcode
+                    # Clean up extra spaces and commas
+                    full_address = re.sub(r'\s+', ' ', full_address)
+                    full_address = re.sub(r',\s*,', ',', full_address)
+
+                    score = priority + len(full_address.split(','))
+
+                    if score > best_score:
+                        best_score = score
+                        best_address = {
+                            'full_address': full_address,
+                            'postcode': postcode.upper(),
+                            'source': filename
+                        }
+
+        if best_address:
+            print(f"   📍 Address found: {best_address['full_address']}")
+            print(f"      Source: {best_address['source']}")
+
+        return best_address
+
     def _generate_outputs(self) -> Dict:
         """Generate all output files"""
         

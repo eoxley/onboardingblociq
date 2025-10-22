@@ -1,6 +1,6 @@
 -- BlocIQ V2 Complete Building Migration
--- Generated: 2025-10-18T10:04:07.317755
--- Building: CONNAUGHT SQUARE
+-- Generated: 2025-10-17T16:02:30.611541
+-- Building: 219.01 CONNAUGHT SQUARE
 
 -- Building
 INSERT INTO buildings (
@@ -8,210 +8,28 @@ INSERT INTO buildings (
     num_units, num_floors,
     building_height_meters,
     bsa_registration_required, bsa_status,
-    construction_type, construction_era,
-    service_charge_year_end
+    construction_type, construction_era
 ) VALUES (
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    'CONNAUGHT SQUARE',
-    '32-34 Connaught Square, St George''s Fields, London, W2 2HL',
-    'W2 2HL',
-    8,
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
+    '219.01 CONNAUGHT SQUARE',
+    NULL,
+    NULL,
+    0,
     1,
     NULL,
     FALSE,
     'Not HRB',
     'and use of the premises',
-    'Modern',
-    '2000-03-31'
+    'Modern'
 ) ON CONFLICT (id) DO NOTHING;
-
--- Units (8)
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    '94d1805c-f211-41a6-9b6d-d079a5cbd533',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-001',
-    21,
-    13.97,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    'c5def126-46d0-4c44-9dbd-3727d244ef36',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-002',
-    21,
-    11.51,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    '1b0fc579-8fe8-467a-919b-765388d25693',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-003',
-    21,
-    12.18,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    '14417e86-2443-4b22-8a8f-771c6c709fdb',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-004',
-    21,
-    11.21,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    '3fe11c51-8a06-4427-b968-9052029a50b3',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-005',
-    21,
-    11.75,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    '5c06e3ae-2749-4ee5-adc9-ee5abec05621',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-006',
-    21,
-    24.13,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    'b89c7c8e-b051-452c-82d9-0801971c6528',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-007',
-    21,
-    9.25,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-INSERT INTO units (
-    id, building_id, unit_number, floor_number,
-    apportionment_percentage, unit_type
-) VALUES (
-    '9ec58b8e-d099-427c-987d-306ac29e21fd',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
-    '219-01-008',
-    21,
-    6.0,
-    'Flat'
-) ON CONFLICT DO NOTHING;
-
--- Leaseholders (8)
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '215316a1-5636-4f41-a81f-dee435c971ab',
-    '94d1805c-f211-41a6-9b6d-d079a5cbd533',
-    'Marmotte Holdings Limited',
-    'Flat 1, 32-34 Connaught Square, St George''s Fields, London, W2 2HL',
-    NULL,
-    NULL
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '6df01620-8c75-4113-b297-ee5df48abe39',
-    'c5def126-46d0-4c44-9dbd-3727d244ef36',
-    'Ms V Rebulla',
-    'Flat 2/3, 32 Connaught Square, St Georges Fields, London',
-    NULL,
-    NULL
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '59959128-7ab4-4345-8dec-9f31c193be38',
-    '1b0fc579-8fe8-467a-919b-765388d25693',
-    'Ms V Rebulla',
-    'Flat 2/3, 32 Connaught Square, St Georges Fields, London',
-    NULL,
-    NULL
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '9af66be7-dddd-4b61-ae64-e2b576a50a13',
-    '14417e86-2443-4b22-8a8f-771c6c709fdb',
-    'Mr P J J Reynish & Ms C A O''Loughlin',
-    'Flat 4, 32-34 Connaught Square, St George''s Fields, London, W2 2HL',
-    NULL,
-    NULL
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '21bc4bb2-5199-4243-8ace-5e71fabdd071',
-    '3fe11c51-8a06-4427-b968-9052029a50b3',
-    'Mr & Mrs M D Samworth',
-    'Glemscot House, Brawlings Lane, SL9 0RE',
-    NULL,
-    '07768 803 607'
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    'd69b0a94-fc07-4cd8-87b1-3da534dac0dd',
-    '5c06e3ae-2749-4ee5-adc9-ee5abec05621',
-    'Mr M D & Mrs C P Samworth',
-    'Glemscot House, Brawlings Lane, SL9 0RE',
-    NULL,
-    '07768803607'
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '8ba7b4e3-83e9-4a56-8ec5-6de2ae052a0e',
-    'b89c7c8e-b051-452c-82d9-0801971c6528',
-    'Ms J Gomm',
-    'Flat 7/No 34, 32-34 Connaught Square, London, W2 2HL',
-    NULL,
-    '07912758299'
-) ON CONFLICT DO NOTHING;
-INSERT INTO leaseholders (
-    id, unit_id, leaseholder_name,
-    correspondence_address, email, telephone
-) VALUES (
-    '75d11691-0e31-47ea-ac46-60f9bb2a3d0e',
-    '9ec58b8e-d099-427c-987d-306ac29e21fd',
-    'Miss T V Samwoth & Miss G E Samworth',
-    'Glemscot House, Brawlings Lane, SL9 0RE',
-    NULL,
-    NULL
-) ON CONFLICT DO NOTHING;
 
 -- Budgets (1)
 INSERT INTO budgets (
     id, building_id, budget_year, total_budget,
     budget_period_start, budget_period_end, status
 ) VALUES (
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     2025,
     124650.0,
     '2024-04-01',
@@ -221,8 +39,8 @@ INSERT INTO budgets (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'fc499985-ac7f-4989-bfb9-fd8487c23b9f',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'f6bb2fdc-e956-428a-95c7-d981b4c099fd',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'utilities',
     'Utilities - Electricity - power and lighting internal',
     4000.0
@@ -230,8 +48,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '514c042f-5c52-46cc-8842-882b21357bec',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '486dec41-4826-44f8-8e58-7d08878c43bc',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'utilities',
     'Utilities - Gas - heating/hot water',
     15000.0
@@ -239,8 +57,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '851b0f63-81ed-445a-bea7-6962b4436154',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '9ea36f1a-9f28-47f3-846a-81fe086a7dbc',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'cleaning',
     'Cleaning - Communal',
     27000.0
@@ -248,8 +66,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '440bcfb1-5615-4332-8635-3148981004b5',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '5e56ff92-58ae-418d-a7d5-74179f4a8cf1',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'repairs_maintenance',
     'Repairs - General',
     5000.0
@@ -257,8 +75,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'b1460c11-d87f-4bd6-8b92-f3dcdd4a409c',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'a1e3db1a-1894-40aa-ae90-fbdb46d42676',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'repairs_maintenance',
     'Maintenance - Drain/Gutter',
     2000.0
@@ -266,8 +84,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '23b9bdb1-e2e7-475f-b993-1bdf1c73d2a4',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'f0fd5a86-5362-4b1c-9116-e8e542f41c80',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'repairs_maintenance',
     'Maintenance - Fire Equipment',
     1500.0
@@ -275,8 +93,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '1ded1e20-46bb-49e4-94c6-2d9d2cdc120e',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '0cac86e9-dcf2-4336-bf8e-626f61177a6e',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'utilities',
     'Maintenance - Lighting',
     0.0
@@ -284,8 +102,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a2398768-cfd3-43bc-a39b-07660fe1fc5d',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '37d229f3-3c02-4b64-8123-a52a04fdedca',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'utilities',
     'Maintenance - Communal Heating',
     4000.0
@@ -293,8 +111,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '1985cead-6c7f-4597-bf7a-5787924fd421',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'c27f4064-b740-4e18-8fd4-3970986384f9',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'lifts',
     'Maintenance - Lift',
     3500.0
@@ -302,8 +120,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '150acfdd-5eb4-4d7c-beea-955ecf65aa0c',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'ef495239-3ad0-4ac5-b077-5b0f3c4f9c65',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'other',
     'Pest Control',
     700.0
@@ -311,8 +129,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a1698f5c-8160-4c54-b9b6-33414842c60a',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '274feb98-3aeb-4dc5-a682-db60a73a2fb8',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'other',
     'Asbestos Reinspection',
     570.0
@@ -320,8 +138,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '883bdaff-997c-47d6-a762-6dc19b2e6013',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '21d9c377-b023-45ee-a479-51c1fc94051b',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'utilities',
     'Water Hygiene',
     2200.0
@@ -329,8 +147,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'fea62484-19a7-476c-93db-c8a7465839ed',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'ec081632-9007-4247-b58e-d42e3222485b',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'insurance',
     'Insurance - Buildings',
     17000.0
@@ -338,8 +156,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '2203aca4-aa4f-4d07-8853-14e21b090916',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'baa0ffac-a9b2-4073-8efd-2de678aea3d8',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'insurance',
     'Insurance - Terrorism',
     2000.0
@@ -347,8 +165,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '52e86bac-680f-4ab2-bb37-64a19289b2e5',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '9474f390-eb84-42e2-99e3-0ac4ec8b0ac7',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'insurance',
     'Insurance - Directors & Officers',
     290.0
@@ -356,8 +174,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '0720144a-cd28-478b-b158-ff04e3f8df95',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'addf5e43-9a3d-4749-a750-3b071ec91a4c',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'insurance',
     'Insurance - Engineering',
     560.0
@@ -365,8 +183,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'f3c1b2b4-6e06-4ec6-9ead-014032408224',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'ec129524-428a-42ca-87ad-aecd65fbd97c',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'professional_fees',
     'Accountancy',
     1200.0
@@ -374,8 +192,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '45c1cbe5-7704-47ca-b456-172aa4a10fe3',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '1d90ad45-cafe-404a-998c-afbedc471161',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'professional_fees',
     'Professional Fees incl Co Sec Admin',
     0.0
@@ -383,8 +201,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '41666c6f-1fc7-4794-8955-4f08b58a6e99',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '02df8a03-4cab-45fc-b684-0c3067830b8c',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'professional_fees',
     'Company Secretary',
     480.0
@@ -392,8 +210,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '93eb2a83-daba-41b2-bbd5-5530de9afeed',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '7f1db269-5e8a-4e8a-9b27-f83e086e66a1',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'other',
     'Bank Charges',
     100.0
@@ -401,8 +219,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '10fdb6a4-8bdb-41bc-8ee7-4b7d7a4b0b35',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '64f4a53d-3c56-47e7-9ca5-f5a1aa7aa79a',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'compliance',
     'Health & Safety',
     950.0
@@ -410,8 +228,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '01244529-f849-4400-a717-4f544e563f89',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'bc88943c-a293-469d-95bf-74d79d38f7c7',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'management',
     'Estate Management Charges - Connaught Sq',
     1000.0
@@ -419,8 +237,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '310aa0de-db66-4315-87fd-44ac8ccdea30',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '87edf5f0-af1c-450c-b27a-fe6f227fec44',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'gardening',
     'Maintenance - Garden Charge',
     4000.0
@@ -428,8 +246,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'ab960329-99e5-41d2-8599-b4c3992804b1',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'd6470a8a-02fd-4f6f-a224-234998b901e2',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'insurance',
     'Insurance Valuation',
     0.0
@@ -437,8 +255,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'dd591a91-7a39-4832-b0e7-2feae62ffcd6',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '6e5311ad-fc65-4e2e-80a5-53d9e74cd6f7',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'management',
     'Management Fees incl VAT',
     5500.0
@@ -446,8 +264,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '33e24479-572a-43a2-ab0f-4f2bbf02ebf9',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '127aac92-e992-464f-b062-e85f78e87df5',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'management',
     'VAT on Management Fees',
     1100.0
@@ -455,8 +273,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a6639bf5-df1e-48f0-80c1-f09d4ab98477',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    'd32581c2-147d-48d8-af35-2dc4d2680f33',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'other',
     'Out of Hours Fee',
     0.0
@@ -464,8 +282,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a2129b4f-4a22-4e5b-b13f-3c9b893b04be',
-    '60f01d58-dac6-4f19-90d1-7474d5e18452',
+    '50ee92e3-d315-4748-a709-acc82ac9d4f1',
+    'dd060a12-fdea-436b-bcd1-99b06bc127de',
     'reserve_fund',
     'Reserve Fund',
     25000.0
@@ -478,22 +296,22 @@ INSERT INTO compliance_assets (
     status, inspection_company
 ) 
 SELECT
-    '36d9ccff-b76b-46f2-a244-3aa1923a455b',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    '18c6ccd9-529d-4af9-a677-67ce8bf1bc1b',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2025-08-26',
     '2027-08-26',
     'Unknown',
     NULL
-FROM compliance_asset_types WHERE asset_type_code = 'LEGIONELLA';
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
     id, building_id, asset_type_id,
     inspection_date, next_due_date,
     status, inspection_company
 ) 
 SELECT
-    'c515d250-9655-4546-a49a-0c75dc51c3fd',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'addf7f29-5308-4c46-9c0d-012f5465226d',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2023-05-05',
     '2028-05-05',
@@ -506,8 +324,8 @@ INSERT INTO compliance_assets (
     status, inspection_company
 ) 
 SELECT
-    '4a507336-e9cf-4791-9713-4d042dc8b3cf',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'e8eb3273-9d15-48eb-9e55-7877d94e0c52',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2025-02-21',
     '2026-02-21',
@@ -520,56 +338,56 @@ INSERT INTO compliance_assets (
     status, inspection_company
 ) 
 SELECT
-    '1ee45f3c-2f17-4822-9d96-7d4db39cd478',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    '36e4bd4b-a494-46d6-875b-82f7ca5da20b',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2024-01-24',
     '2025-01-24',
     'Pass',
     NULL
-FROM compliance_asset_types WHERE asset_type_code = 'FIRE_DOOR';
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
     id, building_id, asset_type_id,
     inspection_date, next_due_date,
     status, inspection_company
 ) 
 SELECT
-    'f12928d7-a526-41b1-9737-3bc8b3859f93',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    '784e78d2-19b3-41a3-ac4e-4fd5793b7f64',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2025-07-25',
     '2026-07-25',
     'Pass',
     NULL
-FROM compliance_asset_types WHERE asset_type_code = 'GAS_SAFETY';
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
     id, building_id, asset_type_id,
     inspection_date, next_due_date,
     status, inspection_company
 ) 
 SELECT
-    '3d82072e-c829-4e7c-846e-d8428487e406',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'c8d74b4f-8313-4dba-b5c7-181806fea220',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2025-07-22',
     '2026-07-22',
     'Pass',
     NULL
-FROM compliance_asset_types WHERE asset_type_code = 'ASBESTOS';
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
     id, building_id, asset_type_id,
     inspection_date, next_due_date,
     status, inspection_company
 ) 
 SELECT
-    '9036167d-65ca-4b2a-addc-a655ba70a0c4',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'daeb7ff6-a1d6-4650-acaf-db987fea6829',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     '2025-07-03',
     '2026-07-03',
     'Pass',
     NULL
-FROM compliance_asset_types WHERE asset_type_code = 'EMERGENCY_LIGHTING';
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 
 -- Maintenance Contracts (5)
 INSERT INTO maintenance_contracts (
@@ -577,8 +395,8 @@ INSERT INTO maintenance_contracts (
     contract_start_date, contract_end_date, contract_value_annual
 ) 
 SELECT
-    '67a0f153-cd00-4b5b-9199-854ef21ec24d',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'd962826f-83fb-483c-8004-4182081d45d2',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     's and each 
 contractor engaged to provide services',
@@ -591,8 +409,8 @@ INSERT INTO maintenance_contracts (
     contract_start_date, contract_end_date, contract_value_annual
 ) 
 SELECT
-    '46509053-42ca-49c0-b9dd-a6e2b88341b4',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'cdd7c2ca-0e3c-4766-8e05-a4b19e5136cd',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     's and each contractor engaged to provide services',
     NULL,
@@ -604,8 +422,8 @@ INSERT INTO maintenance_contracts (
     contract_start_date, contract_end_date, contract_value_annual
 ) 
 SELECT
-    '8a80d0fd-9b09-45b5-bd74-bdf9a40c1253',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    '46347209-0457-4d3f-81b1-e79884c49f47',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     's and each contractor engaged to provide services',
     '01/04/2025',
@@ -617,8 +435,8 @@ INSERT INTO maintenance_contracts (
     contract_start_date, contract_end_date, contract_value_annual
 ) 
 SELECT
-    'f81667e5-8708-4bec-ac5b-b3e7b0b0bee5',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    '1b713d46-eda4-4ef6-a789-f7060d1725d3',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     's and each 
 contractor engaged to provide services',
@@ -631,8 +449,8 @@ INSERT INTO maintenance_contracts (
     contract_start_date, contract_end_date, contract_value_annual
 ) 
 SELECT
-    '9b7f649b-56cf-4306-896c-f4238eb1fdeb',
-    'b4564c43-ff9b-4329-b871-11bbec1e6b56',
+    'c453554e-1e45-49f9-969b-2fdb1a8486d5',
+    'e3652671-36b9-4df8-bba2-a39236d32ba1',
     id,
     'is undertaking works to the services',
     NULL,
@@ -645,62 +463,62 @@ INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    '2f24944c-2fa3-4b8c-bd34-782e635c61d7',
+    '92a59095-2a47-4192-983f-7db4b2c67f6c',
     'New Step',
-    ARRAY['cleaning'],
+    {"cleaning"},
     TRUE
 ) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    '79d71f2f-1107-48d6-aa08-61c04885059d',
+    'bbf23636-ae01-46bf-946a-b1a0d4f59df8',
     'Crown Gas And Power',
-    ARRAY['utilities'],
+    {"utilities"},
     TRUE
 ) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    '11d2fb33-fadd-4b1d-b7c8-89dece9df1d4',
+    '54d2bcb6-89b6-404d-90b1-ce1e9e19d951',
     'Positive Energy',
-    ARRAY['utilities'],
+    {"utilities"},
     TRUE
 ) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    'e0c10047-8fbd-48ab-bfef-0c3664c5a1de',
+    '6a42db00-f15b-4a76-a2d6-4ba50f26d944',
     'Jacksons Lift',
-    ARRAY['lifts'],
+    {"lifts"},
     TRUE
 ) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    '00e86822-021c-4dc1-8494-add11e5661dd',
+    'd159d37f-7402-4dcf-aa81-50cfa0b7153f',
     'Water Hygiene Maintenance',
-    ARRAY['utilities'],
+    {"utilities"},
     TRUE
 ) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    'a8f47f72-b77c-4a29-938c-0179f19e8792',
+    '8d8d276b-aa32-4fa7-8e0c-391097ad1b84',
     'City Maintenance',
-    ARRAY['repairs_maintenance'],
+    {"repairs_maintenance"},
     TRUE
 ) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
     id, company_name, services_offered,
     is_active
 ) VALUES (
-    'cf29e939-0089-40ab-889e-cf72575ae742',
+    'ac5139ee-9e20-4611-be2f-3f7d2561a7b1',
     'City Spec',
-    ARRAY['other'],
+    {"other"},
     TRUE
 ) ON CONFLICT DO NOTHING;

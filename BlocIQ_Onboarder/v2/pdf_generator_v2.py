@@ -134,6 +134,17 @@ class PDFGeneratorV2:
         
         self.story.append(Paragraph("BUILDING PROFILE & CHARACTERISTICS", self.heading_style))
         
+        # Format SC year end as recurring date (e.g., "31st March")
+        sc_year_end = building.get('sc_year_end') or (self.data.get('budgets', [{}])[0].get('sc_year_end') if self.data.get('budgets') else None)
+        sc_year_display = '—'
+        if sc_year_end:
+            try:
+                from datetime import datetime
+                date_obj = datetime.strptime(str(sc_year_end).split('T')[0], '%Y-%m-%d')
+                sc_year_display = date_obj.strftime('%-d %B')  # e.g., "31 March"
+            except:
+                sc_year_display = str(sc_year_end)
+
         # Basic info
         data = [
             ['Building Name', building.get('name', '—')],
@@ -143,6 +154,7 @@ class PDFGeneratorV2:
             ['Number of Floors', str(building.get('number_of_floors', '—'))],
             ['Height', f"{building.get('building_height_meters', '—')}m" if building.get('building_height_meters') else '—'],
             ['Has Basement', 'Yes' if building.get('has_basement') else 'No'],
+            ['Service Charge Year End', sc_year_display],
             ['BSA Status', building.get('bsa_status', 'Not HRB')],
             ['Is HRB', 'Yes' if building.get('is_hrb') else 'No'],
             ['Construction Type', building.get('construction_type', '—')],
@@ -163,19 +175,32 @@ class PDFGeneratorV2:
     def _add_units_leaseholders(self):
         """Units and leaseholders table"""
         units = self.data.get('units', [])
-        
+
         if not units:
             return
-        
+
         self.story.append(Paragraph("UNITS & LEASEHOLDERS", self.heading_style))
-        
+
         # Header
         data = [['Unit', 'Leaseholder', 'Floor', 'Apportionment %']]
-        
+
         # Rows
         for unit in units:
+            # Extract flat/unit name from unit_description (e.g., "Flat 1 32-34 Connaught Square" -> "Flat 1")
+            # Look for "Flat X", "Unit X", "Apartment X" pattern at start of description
+            unit_description = unit.get('unit_description', '')
+            if unit_description:
+                # Extract first 1-2 words that form the unit name (e.g., "Flat 1", "Unit 12A", "Apartment 3B")
+                import re
+                match = re.match(r'^((?:Flat|Unit|Apartment|Penthouse)\s+\S+)', unit_description, re.IGNORECASE)
+                unit_name = match.group(1) if match else unit_description.split()[0:2]
+                if isinstance(unit_name, list):
+                    unit_name = ' '.join(unit_name)
+            else:
+                unit_name = unit.get('unit_number', '—')
+
             data.append([
-                unit.get('unit_number', '—'),
+                unit_name,
                 unit.get('leaseholder_name', '—'),
                 str(unit.get('floor', '—')),
                 f"{unit.get('apportionment', 0):.2f}%" if unit.get('apportionment') else '—'

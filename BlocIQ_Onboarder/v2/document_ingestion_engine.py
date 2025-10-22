@@ -333,18 +333,18 @@ class DocumentIngestionEngine:
             import pytesseract
             import pdf2image
             
-            # Convert PDF to images
-            images = pdf2image.convert_from_path(str(filepath))
-            
+            # Convert PDF to images with HIGH DPI for scanned leases
+            images = pdf2image.convert_from_path(str(filepath), dpi=300)
+
             text_parts = []
             for page_num, image in enumerate(images, 1):
-                # Extract text from each page image
-                page_text = pytesseract.image_to_string(image)
+                # Extract text from each page image with Tesseract
+                page_text = pytesseract.image_to_string(image, config='--psm 1')
                 if page_text and page_text.strip():
                     text_parts.append(page_text.strip())
-                
-                # Limit to first 20 pages for performance
-                if page_num >= 20:
+
+                # Limit to first 50 pages for performance
+                if page_num >= 50:
                     break
             
             combined_text = '\n\n'.join(text_parts)

@@ -1,5 +1,5 @@
 -- BlocIQ V2 Complete Building Migration
--- Generated: 2025-10-17T14:01:04.776319
+-- Generated: 2025-10-17T16:11:58.949422
 -- Building: 144.01 PIMLICO PLACE
 
 -- Building
@@ -10,7 +10,7 @@ INSERT INTO buildings (
     bsa_registration_required, bsa_status,
     construction_type, construction_era
 ) VALUES (
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144.01 PIMLICO PLACE',
     NULL,
     NULL,
@@ -28,8 +28,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '38970b69-6269-448e-96f0-1bb663821604',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '4f745ea6-c1b3-44dd-90cb-c02b62f76bde',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     'item.',
     NULL,
     NULL,
@@ -39,8 +39,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7c07df21-31e2-4051-8061-db27eaa87285',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '370cad48-8789-4d97-be7f-08b171e3a892',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     'weeks',
     NULL,
     NULL,
@@ -50,8 +50,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ade011b3-0ded-49bb-b5fe-751a621deb2e',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '5ff3946a-4647-4452-8784-c8b827177a5c',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     'nr',
     NULL,
     NULL,
@@ -61,8 +61,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1464871f-d0d7-4540-923e-f5ab493a2692',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ab4c386b-0fea-4484-8fb1-6c5d7b196e0f',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     'Lm',
     NULL,
     NULL,
@@ -72,8 +72,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'd4cd0b56-93ff-405d-8587-7a2318adb7fb',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '705c636d-764e-42b5-a19c-a7565bab6081',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '.',
     NULL,
     NULL,
@@ -83,8 +83,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f8d5e559-0c4f-47f3-ba41-a027206ea471',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '09f2adb3-f1bb-475f-a325-dad17a28a59d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     'm2',
     NULL,
     NULL,
@@ -94,8 +94,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'e43a402b-57bb-4a95-8e4e-be192ae352ad',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '01a29344-8aef-4b5e-8d18-5e671cb26cfb',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     'Labgour included in 3.3.1',
     NULL,
     NULL,
@@ -105,8 +105,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '0d3afd56-bcce-4f2d-a5f8-f3d37ccdc9ac',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'cccc26b8-c8f2-459f-b947-dfe5fd859cb6',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-001',
     14,
     1.25,
@@ -116,8 +116,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '6e0e33ad-9adf-4dda-a071-637f2ca60b03',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'd22a7c35-e185-4a89-8ac2-d99c0bdfffd1',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-002',
     14,
     1.306,
@@ -127,8 +127,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3dfdcd63-c45d-480b-899c-557e26b9647d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '8185a702-6183-4785-a50d-517feb03a62a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-003',
     14,
     1.354,
@@ -138,8 +138,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7895ded6-4e0c-4a33-82d9-44550c1e0a67',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'aac483a6-06ab-441f-8c1f-3967f8c610e9',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-004',
     14,
     1.288,
@@ -149,8 +149,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '445ff9a6-883f-48eb-b17f-1ecf330f97e5',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '242de532-bb3d-4e68-8d5b-5d94a77237d4',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-005',
     14,
     1.25,
@@ -160,8 +160,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '9b916d3c-a56c-4716-8755-b5b7141dc00f',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '245e003c-a5ef-43d8-89ec-c0d8d226e845',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-006',
     14,
     1.306,
@@ -171,8 +171,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'eae29a27-b7a2-4aeb-91a5-0a705a5636a0',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '1a6a3006-0210-4831-8336-b29a1e1b960d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-007',
     14,
     1.354,
@@ -182,8 +182,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1114e8aa-a6f6-4754-ab34-cb850eef748d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'bc1f080b-a273-424a-8e30-6f2de0ff02a5',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-008',
     14,
     1.288,
@@ -193,8 +193,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '857bee22-fc09-4a31-8b53-8df1cccc2abe',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'e7cbb69e-8cb7-4368-8181-08d9cfba1681',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-009',
     14,
     1.25,
@@ -204,8 +204,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1ab9d7d3-ef96-4eef-91e1-4b5cfb55f60f',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '3c642bfe-7cbb-491b-90e4-cdb4957ef6d5',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-010',
     14,
     0.942,
@@ -215,8 +215,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '39a4a436-1074-4107-8e38-3ff82ae5d50c',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'f606a141-abd9-47d9-9644-e9614c549434',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-011',
     14,
     1.354,
@@ -226,8 +226,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '6832054d-5a2b-4f90-a154-4aa4e8debed4',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '0d709bcc-c21d-4b1b-8f39-bd3ae526836b',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-012',
     14,
     1.288,
@@ -237,8 +237,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '794bc0c3-6f44-428f-8e25-788608d552ba',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '2b2950c7-dba9-462f-87d0-72c4a647224f',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-013',
     14,
     1.25,
@@ -248,8 +248,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '0ee4fead-4959-4782-83c9-eb54a7c7ab10',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '5fdecd14-7824-4da8-864d-bf9b32af6d64',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-014',
     14,
     0.942,
@@ -259,8 +259,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '677dfee3-9e94-4ac3-9240-4c2f62a564d8',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '51786cce-8fc6-4e7f-82be-e26fc26c39a5',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-015',
     14,
     1.354,
@@ -270,8 +270,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'bbd73d4f-9631-4474-8940-c4d4faf860ae',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '9c712f87-3b92-4a39-96b5-5b2d63133033',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-016',
     14,
     1.288,
@@ -281,8 +281,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '297fb75f-7ab9-47e4-ac9f-1a49e57f5353',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '45d4ecbe-e4f8-43fd-9f4d-d1bf0afc38a7',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-017',
     14,
     1.814,
@@ -292,8 +292,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '21cf4f10-f932-422c-a442-6b375791c7d9',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '7e1fb224-b204-4dfd-881b-dbf347c8fcc7',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-018',
     14,
     0.826,
@@ -303,8 +303,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ff8310d1-9502-48a7-bcfd-cca9dd493357',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'b4653529-24aa-4e0c-8c1b-4d77011b3e37',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-019',
     14,
     1.969,
@@ -314,8 +314,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ab1eedb4-b7ee-4d4d-884c-02f786c3c20b',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ebc6a31f-fbd8-41e3-9a7c-d9709de646da',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-020',
     14,
     2.028,
@@ -325,8 +325,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'fe9ea9c4-0883-4440-97ba-1f5d80b5602b',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '28bd21d7-6fa0-4666-905f-2585bc53fa96',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-021',
     14,
     1.853,
@@ -336,8 +336,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '8eabea75-23db-4067-a780-a8b5dccfbe38',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'b01ae928-2c6d-4876-8bb7-62df81297fdb',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-022',
     14,
     1.31,
@@ -347,8 +347,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '9600f8b6-8e0a-4355-b844-8f6ee181092d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '911e77e0-092f-4362-a092-bac710ee9d93',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-023',
     14,
     0.82,
@@ -358,8 +358,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'abefb552-46d9-4e79-b763-2dcf79166d48',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'de3956e6-99f9-4a89-bc2f-86c0a6f2f3f5',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-024',
     14,
     1.549,
@@ -369,8 +369,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '25ec06ba-228e-4af0-b4b1-7246d7bc8ca4',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '603ef270-fbe7-4f72-9285-4d0629333172',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-025',
     14,
     1.426,
@@ -380,8 +380,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '89676932-95f5-4022-b916-a789f44365b8',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '8266b411-61b0-4e89-ad52-12f1627113b9',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-026',
     14,
     0.82,
@@ -391,8 +391,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '2feb248a-0759-470a-b939-eb65ba9b57db',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '1e7b1b3f-c149-40e5-9e3d-0b85b90eca6e',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-027',
     14,
     1.549,
@@ -402,8 +402,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f60f4a61-fa1b-424a-bd28-a3aa8ec2e2dc',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'effd1332-7630-4f9d-a09a-b1d091c62d0a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-028',
     14,
     0.82,
@@ -413,8 +413,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1b789eb4-0394-4587-a55c-58d4c305d3b9',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '31fe8cc6-fb42-4fef-89c4-cf7ae4cc7a4d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-029',
     14,
     1.548,
@@ -424,8 +424,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'be726516-19f3-4eb2-a574-0d254583c993',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '7c9487be-58d7-43fd-85fe-21df809e4503',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-030',
     14,
     1.555,
@@ -435,8 +435,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'd7b0b1b1-4efd-466e-b7e5-747f98872e18',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '4d31e91e-456d-42f1-8d3d-a38ea605b799',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-031',
     14,
     1.64,
@@ -446,8 +446,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'cc393f81-62d8-4b78-a2c1-8c49564abc1a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '2da287b8-9635-40e0-8e3c-6a32fe0eab6e',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-032',
     14,
     1.614,
@@ -457,8 +457,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '30237d2b-dd30-41f1-bea5-db43a2d19d39',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '68ca2207-9531-4d9e-addb-24d081b7d2b9',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-033',
     14,
     1.593,
@@ -468,8 +468,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '366ec8ff-cb7b-4a3f-b5d7-c0e986e8ab60',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ec646585-336a-43a4-9020-f767664b99cd',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-034',
     14,
     1.241,
@@ -479,8 +479,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3494b435-5cde-41a2-98b5-9fa035a684ec',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '7688a5ac-b9be-4f06-ae5b-8d62d46131aa',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-035',
     14,
     1.593,
@@ -490,8 +490,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ae110b76-300d-403c-9458-825caf3f9c03',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'faed24ad-7e9b-4802-8e61-cb74928f40ad',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-036',
     14,
     1.616,
@@ -501,8 +501,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7d518b9e-bd23-42b4-8f19-ca7485b3d500',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '3c4eae3a-b67c-4486-8c37-914575dbeb2f',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-037',
     14,
     1.241,
@@ -512,8 +512,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ffa6a4a0-3e13-4f2c-849c-7cc396644771',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '2c4dc7ff-3f7b-44b4-8e3f-e446a7a756c7',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-038',
     14,
     1.593,
@@ -523,8 +523,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '84c31d1d-5c53-4071-a2d6-7189ec270d73',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ffd0c546-7dd4-4d4d-b794-abb7537895be',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-039',
     14,
     1.241,
@@ -534,8 +534,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3c2aef46-aadc-487a-aeab-634fe2684d4d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'e20e2460-08c8-4027-b4b1-b05adf60e3d4',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-040',
     14,
     1.62,
@@ -545,8 +545,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '165837c6-5736-4781-9d99-cd2a32460989',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'a41d1d4f-1baa-4656-9ec4-1553de9a7112',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-041',
     14,
     1.241,
@@ -556,8 +556,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'e72b1fad-e0a9-4219-a283-2314535b7054',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'a4c6cb79-1838-4343-86ac-9d9b2be363e6',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-042',
     14,
     1.241,
@@ -567,8 +567,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '65bb3193-05bc-40fe-8d8c-b034f51ea4bd',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '45fa9523-e355-4162-b1ee-6e50013c077c',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-043',
     14,
     1.241,
@@ -578,8 +578,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'b2d5a899-afff-4003-b6e2-3dc2fb7cf6e4',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '04470d49-420b-44b6-a228-c6572118e726',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-044',
     14,
     1.54,
@@ -589,8 +589,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ff2d2057-f2b7-415d-ac98-184cc7e16bb3',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'b036457f-4631-4b95-a3fb-4bdf73f912d3',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-045',
     14,
     1.301,
@@ -600,8 +600,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5826ac71-cdf3-4a29-b885-ed344ca95db2',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '0f767c54-707f-4ba7-b508-c3ccdc286c73',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-046',
     14,
     1.301,
@@ -611,8 +611,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '79ff58a0-7b85-4432-ace2-f0a3b7bea10d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '30a23e4b-d230-4b79-a73d-de112a07b97c',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-047',
     14,
     1.497,
@@ -622,8 +622,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '85c81f19-93b0-4690-a61c-70cef7dd57fb',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '01ea6816-6638-4cbe-88d0-666aa70d1c21',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-048',
     14,
     1.399,
@@ -633,8 +633,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '60f20608-7a1c-4ef3-8336-0920628bb054',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '623602e9-37ba-4ddb-93fb-8992ce9781d7',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-049',
     14,
     0.853,
@@ -644,8 +644,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '23dede6c-d625-473c-b271-73b1f89e3612',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '58808cd4-8468-4d05-a8cf-1513fbd4d51a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-050',
     14,
     0.715,
@@ -655,8 +655,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '93d71930-6e44-4faa-960b-40c432279d38',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '055d81f2-5147-44d0-92ee-34ec05ff675d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-051',
     14,
     0.715,
@@ -666,8 +666,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '706b12fc-a30d-4e26-b9b2-47a8ae771568',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ec09a59e-b94a-4c8f-8ab2-a54020c01f7a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-052',
     14,
     0.919,
@@ -677,8 +677,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '65b8d79e-099b-495c-981a-563c01b1ab87',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '450dace9-a4b1-4c90-b67c-935ea531912b',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-053',
     14,
     1.325,
@@ -688,8 +688,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7cca5b3f-cd96-4aef-a3cf-459da54fad29',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'eed1b0b3-b713-4a94-bd2b-f46f5284db4a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-054',
     14,
     0.842,
@@ -699,8 +699,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '15ab8231-cca5-433d-8702-1710aadc594a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'd5f08c50-c73a-40dc-a2b3-8fc8e71ed5a5',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-055',
     14,
     1.399,
@@ -710,8 +710,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3177fc7f-4baa-4338-a4af-027093fd498a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '5fac633d-729b-458a-968d-2cbd7dbfdfef',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-056',
     14,
     0.853,
@@ -721,8 +721,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7c67148e-7a18-426e-91bb-ecbba0fa2cee',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'aef466c8-b2a6-41a4-8b76-1ff0ce5b1b6d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-057',
     14,
     1.064,
@@ -732,8 +732,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'd9738f79-d2e3-4f0a-9de1-269db9721ea4',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ebeed557-bd5e-40fc-8a2a-64a633c2b468',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-058',
     14,
     1.22,
@@ -743,8 +743,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '9ee31444-b364-4470-9369-d7dcadc9069c',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '975ea509-7fc1-4a5a-8160-4418ee66bbec',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-059',
     14,
     1.357,
@@ -754,8 +754,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '14e1526d-291b-43ae-af7a-fb930287cec6',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '1435de2b-35a8-453e-b2eb-facdea5be10a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-060',
     14,
     0.842,
@@ -765,8 +765,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '82a399f7-dce7-4de6-8cd1-e904d5227b9f',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '43dea602-8531-4ea2-953e-f00ef7a590d1',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-061',
     14,
     1.399,
@@ -776,8 +776,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '8fd51667-e35f-4102-85ab-b77ee4831f03',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '77892e99-8788-4a06-8000-9d6b14c7f802',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-062',
     14,
     0.853,
@@ -787,8 +787,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'df2cf251-f5e3-42bf-8e91-fc301ca0c117',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'e968d099-7d06-4708-ba5e-a05008d54d14',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-063',
     14,
     0.707,
@@ -798,8 +798,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3cd54728-bc6c-488e-9ecb-f0c6fb04ab18',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '3022ee23-b78b-428c-b8fd-d267081f679d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-064',
     14,
     1.935,
@@ -809,8 +809,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '8fc0783f-6b48-402f-909a-2e8fd29c40ea',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'fd3bf276-31f3-44bd-8f0f-c97101f92932',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-065',
     14,
     0.842,
@@ -820,8 +820,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '97459dc3-22aa-4473-86f9-12d1ea020165',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '506526bc-db6b-48df-8569-8149670364b7',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-066',
     14,
     1.399,
@@ -831,8 +831,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ef309a9f-43dd-4bf4-a165-08143b28014f',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '22c64ad4-8bfb-48fb-ac77-6383950ebbd8',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-067',
     14,
     0.853,
@@ -842,8 +842,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '326a29c5-0257-40f2-885e-e1156a5adc17',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '71ef69d5-e4c5-414c-a1ef-0c6e4ff321e8',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-068',
     14,
     0.707,
@@ -853,8 +853,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '0da7e97c-8a8e-4558-be6b-32a60ccea98f',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ad38ae69-d81c-4953-98ff-b1cbdf57aea4',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-069',
     14,
     1.935,
@@ -864,8 +864,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5d9b552a-7d2b-40f3-a251-8fbc800c228c',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '39ebcbc0-a2fc-4541-b3b8-c51b42bd844d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-070',
     14,
     0.842,
@@ -875,8 +875,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '54e5c75e-5636-419a-8b4b-4b5cae7f079e',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'b7cd4c72-e584-4fb0-a503-0e3a277a1672',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-071',
     14,
     1.399,
@@ -886,8 +886,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3bf2617b-2145-4acc-a658-652717ba059a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '4ac24ebe-3ac6-4e5c-b3c5-a2294d9669f1',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-072',
     14,
     0.853,
@@ -897,8 +897,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'de57b7fe-7f66-44e5-9206-1670acd5efa5',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '478c7061-9094-49af-9130-2698645863d8',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-073',
     14,
     2.174,
@@ -908,8 +908,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ba3e722d-adc8-483b-aa41-23b8c3e156f3',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'e21cca98-abb3-4601-a1f5-4f77bc7ab030',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-074',
     14,
     1.399,
@@ -919,8 +919,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '8fc0f3cc-8f24-47a1-bf33-2c2357771e78',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '46cd3ea0-af30-4fc8-a73e-24d57143607c',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-075',
     14,
     0.979,
@@ -930,8 +930,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f71e8c96-d0f5-4a23-baa5-6b1af50f8eb7',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '4d185389-cd70-4f46-b58b-828f560237e1',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-076',
     14,
     0.979,
@@ -941,8 +941,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'cd9a56c5-b182-468a-846d-f863b3c02790',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '6853fa14-9b87-48f5-b507-d5bea0eb0194',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-077',
     14,
     0.979,
@@ -952,8 +952,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '334a7977-7cbb-4e9e-ad68-01e8c104597a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '781515e2-4996-49e8-b28f-d8fbd5c676cf',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-078',
     14,
     0.979,
@@ -963,8 +963,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4b7c04a4-487f-46f5-8015-942f0b221151',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '9d08a983-38b1-4222-a918-f48a82d6816f',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-079',
     14,
     0.979,
@@ -974,8 +974,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1e9d9a04-38df-41fd-ac3a-20b7ad9c9b7d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '72216c0d-a687-4b35-a477-79ae112bc2e1',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-080',
     14,
     NULL,
@@ -985,8 +985,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1e3124c0-e7ed-43cd-ae38-eecc3c29bd0a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'c8f4a7e0-8f4a-4316-84ca-12b3d8788847',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-081',
     14,
     NULL,
@@ -996,8 +996,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4cd0f7b2-4cee-43eb-8ec4-f584e9dd9f0b',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '65012b45-fc4a-4081-a27b-b1c46c66fa8a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     '144-01-082',
     14,
     NULL,
@@ -1006,902 +1006,902 @@ INSERT INTO units (
 
 -- Leaseholders (82)
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '38d846e0-1afc-4ca6-b19f-368b325bf124',
-    '0d3afd56-bcce-4f2d-a5f8-f3d37ccdc9ac',
+    '5144dd2b-812f-4bfe-99f2-30ddd4393eb7',
+    'cccc26b8-c8f2-459f-b947-dfe5fd859cb6',
     'Derek Mason & Peter Hayward, acting as',
     'Ethlope Property Ltd Acting by his, LPA Fixed Charge Receivers, C/O MDT Property Consultants, 5 Coppice Drive, Putney, London, SW15 5BW',
     NULL,
     '07836 284269 (Derek)'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '28961ec8-f55a-4e91-988a-000a06c3f1a3',
-    '6e0e33ad-9adf-4dda-a071-637f2ca60b03',
+    '3a7fd6b1-98a0-42be-bfca-a73f8e7832c7',
+    'd22a7c35-e185-4a89-8ac2-d99c0bdfffd1',
     'Jasmine Chan',
     'Pimlico Place - Flat A2, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c99b73ce-6599-4819-b244-d69106d81734',
-    '3dfdcd63-c45d-480b-899c-557e26b9647d',
+    'b5202c13-85a3-4d28-952c-7858d06b8f72',
+    '8185a702-6183-4785-a50d-517feb03a62a',
     'Ms S Brown',
     'C/O Hoffen West Ltd, 16 Lower Belgrave Street, London, SW1W 0LN',
     NULL,
     '07449 938 888'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '3827a43c-f900-4e6d-b3c0-84170ff58174',
-    '7895ded6-4e0c-4a33-82d9-44550c1e0a67',
+    '47a98973-7c87-43e5-a178-8f0a0165ec42',
+    'aac483a6-06ab-441f-8c1f-3967f8c610e9',
     'Nicholas Ingram, Mark Ingram & Elaine Ingram',
     'Pimlico Place - Flat A4, 28 Guildhouse Street, London, SW1V 1JJ',
     NULL,
     '07814155215'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'dd7f4366-d464-4cb2-8a33-a5e0d412b7ce',
-    '445ff9a6-883f-48eb-b17f-1ecf330f97e5',
+    '36bbfccb-405f-4c7b-a548-5e4a83dc9381',
+    '242de532-bb3d-4e68-8d5b-5d94a77237d4',
     'The Roman Catholic Diocese of Westminster',
     'Finance Office, 46 Francis Street, London, SW1P 1QN',
     NULL,
     '02077989169'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'dfeb869e-b447-45e8-b6c7-76630ec0c31d',
-    '9b916d3c-a56c-4716-8755-b5b7141dc00f',
+    '963d3844-d916-480d-877f-7737ac734640',
+    '245e003c-a5ef-43d8-89ec-c0d8d226e845',
     'Elena Margaret Eu',
     '46 E Peninsula Centre, DR APT 259, Rllng Hls Est, California 90274, USA',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '0627a547-d21d-4a8d-9a2e-05b717fed81b',
-    'eae29a27-b7a2-4aeb-91a5-0a705a5636a0',
+    '96aa90c8-49f0-41f0-8c92-31f33e7ac3aa',
+    '1a6a3006-0210-4831-8336-b29a1e1b960d',
     'Mr AJ and Mrs AM Hampson',
     'Crossbow House, Hillhouse Lane, Rudgwick, West Sussex, RH12 3BD',
     NULL,
     '077889966118'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'd245cbe1-e673-410c-a167-093426d13024',
-    '1114e8aa-a6f6-4754-ab34-cb850eef748d',
+    '25e49580-53f9-4b03-893e-28d1d040b33c',
+    'bc1f080b-a273-424a-8e30-6f2de0ff02a5',
     'Mr B Kinane',
     'Pimlico Place - Flat A8, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'e60bc68b-13f1-4d66-b5a2-967b5be556d2',
-    '857bee22-fc09-4a31-8b53-8df1cccc2abe',
+    'a716ed07-3710-4ebb-a345-6a6b1e58f787',
+    'e7cbb69e-8cb7-4368-8181-08d9cfba1681',
     'Christopher & Clare Roberts',
     'Pimlico Place - Flat A9, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '198693cd-685c-4401-90eb-e4651b34a5b2',
-    '1ab9d7d3-ef96-4eef-91e1-4b5cfb55f60f',
+    '01a53b12-510d-4367-9399-2263b26e674b',
+    '3c642bfe-7cbb-491b-90e4-cdb4957ef6d5',
     'Jessica Louise Brady',
     'Pimlico Place - Flat A10, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '640c254b-723b-4462-9988-6db650cb8bb9',
-    '39a4a436-1074-4107-8e38-3ff82ae5d50c',
+    '68944dc6-9bfd-4460-af90-63417c4d16b1',
+    'f606a141-abd9-47d9-9644-e9614c549434',
     'D McCormick',
     '2 Rathfarnham Wood, Dublin 14, EIRE',
     NULL,
     '0353872482013'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '324a1751-099f-4d65-adf8-4b2b49a32af8',
-    '6832054d-5a2b-4f90-a154-4aa4e8debed4',
+    '1918c0a2-0e86-492a-8869-7a9f9859e280',
+    '0d709bcc-c21d-4b1b-8f39-bd3ae526836b',
     'Ms Rachael Noble',
     'Pimlico Place - Flat A12, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '39713b6c-f34a-4be0-88ff-e1018e522468',
-    '794bc0c3-6f44-428f-8e25-788608d552ba',
+    '7c8aa55e-2a7e-4e3f-aeeb-49cfae189e2e',
+    '2b2950c7-dba9-462f-87d0-72c4a647224f',
     'Dr A G Ward',
     'Pimlico Place - Flat A13, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'ab86454a-e040-4021-8148-06183d4bf198',
-    '0ee4fead-4959-4782-83c9-eb54a7c7ab10',
+    '18a98c04-8275-46cd-a2e3-528220b721ea',
+    '5fdecd14-7824-4da8-864d-bf9b32af6d64',
     'Mr Gary & Mrs Kim Risley',
     '5 Popes Wood, Thurnham, Kent, ME14 3PW',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7d8f9deb-04ef-4d15-8055-9dcfe6e5dab0',
-    '677dfee3-9e94-4ac3-9240-4c2f62a564d8',
+    '13adbb26-f2f4-4b0f-a998-1399860d1c35',
+    '51786cce-8fc6-4e7f-82be-e26fc26c39a5',
     'Mr J & Mrs D P Reidy',
     '19 Cumberland Street, London, SW1V 4LS',
     NULL,
     '02078343021'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b8fe5f82-955e-411c-8996-71d7014cdc6e',
-    'bbd73d4f-9631-4474-8940-c4d4faf860ae',
+    'c9e2c108-98a1-4205-baec-b7da451e05f5',
+    '9c712f87-3b92-4a39-96b5-5b2d63133033',
     'Christopher P Ennals and Elizaveta Taubes',
     'Pimlico Place - Flat A16, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '3c4bfc08-2e53-42aa-b8f2-921580241180',
-    '297fb75f-7ab9-47e4-ac9f-1a49e57f5353',
+    'a9388328-1767-4edd-a500-acabba5b2ab6',
+    '45d4ecbe-e4f8-43fd-9f4d-d1bf0afc38a7',
     'Vincenzo Catanese & Manola De Vincentis',
     'Pimlico Place - Flat A17, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2a9ad753-c2ed-4e1a-915c-d331fd66adc7',
-    '21cf4f10-f932-422c-a442-6b375791c7d9',
+    '6d2f7376-8eab-48fc-b557-32377d77190d',
+    '7e1fb224-b204-4dfd-881b-dbf347c8fcc7',
     'Shenwei Zhu',
     'Pimlico Place - Flat A18, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7bb31dfe-1ed9-4345-827d-bbe2e5ff22ec',
-    'ff8310d1-9502-48a7-bcfd-cca9dd493357',
+    '662106e1-08d6-47d8-9d61-14c9a789a887',
+    'b4653529-24aa-4e0c-8c1b-4d77011b3e37',
     'Mr Bernd Freier',
     'c/o S Oliver Gmbh & Co KG, Ostring, 97228 Rottendorf, GERMANY',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '6e2349bc-d517-4443-b2c9-0553e49459a6',
-    'ab1eedb4-b7ee-4d4d-884c-02f786c3c20b',
+    '3f3ca9f4-38e0-47d8-aaea-99da49148b30',
+    'ebc6a31f-fbd8-41e3-9a7c-d9709de646da',
     'Mr T Izmaylov',
     'Pimlico Place - Flat A20, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a2a9e73d-b71e-4e78-a645-c4a8d3529aee',
-    'fe9ea9c4-0883-4440-97ba-1f5d80b5602b',
+    'e63c8d72-ec04-4fe5-a1a9-7b988740c491',
+    '28bd21d7-6fa0-4666-905f-2585bc53fa96',
     'Dr Simon Ostlere',
     'Pimlico Place - Flat A21, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '47fd316e-d992-442c-8e1f-0413401ec279',
-    '8eabea75-23db-4067-a780-a8b5dccfbe38',
+    '20bfceee-3f67-4da9-83f7-d9511c63ab14',
+    'b01ae928-2c6d-4876-8bb7-62df81297fdb',
     'Ms Catherine Ercilla',
     'Prestwood, 8 Rowley Green Road, Barnet, EN5 3HJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c4d0f24c-bedf-4acf-b2b3-a30f31e694ce',
-    '9600f8b6-8e0a-4355-b844-8f6ee181092d',
+    'f9e79876-c72e-4346-a5e1-16ca3593c84a',
+    '911e77e0-092f-4362-a092-bac710ee9d93',
     'H E Tortoishell',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '810f50f9-3445-4026-8a5b-85633979b6bf',
-    'abefb552-46d9-4e79-b763-2dcf79166d48',
+    '20d614d0-637f-4d36-9c43-09dd9b9cb63f',
+    'de3956e6-99f9-4a89-bc2f-86c0a6f2f3f5',
     'Mr Dario Striano',
     '66 Ashley Gardens, Ambrosden Avenue, London, SW1P 1QG',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'dc7a38c8-2e76-46cb-9c59-57785f05bb74',
-    '25ec06ba-228e-4af0-b4b1-7246d7bc8ca4',
+    'd863e0ee-3da0-4af0-94bf-363edf435f74',
+    '603ef270-fbe7-4f72-9285-4d0629333172',
     'The Estate of the Late Rogdre Juer',
     'C/O Kerensa Cooper, Foot Anstey, Senate Court, Southernhay Gardens, Exeter, EX1 1NT',
     NULL,
     '+441392685216'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '474a3e96-3671-4725-a3ec-257bc6cf6ddd',
-    '89676932-95f5-4022-b916-a789f44365b8',
+    'c4ea032c-bfe9-421a-80ae-e8b15b0d40f0',
+    '8266b411-61b0-4e89-ad52-12f1627113b9',
     'A Protasova, T Protasova, V Damaskinskiy',
     '49 Wood Vale, Dulwich, London, SE23 3DT',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '02a52587-a46e-48de-88b5-dda15906f129',
-    '2feb248a-0759-470a-b939-eb65ba9b57db',
+    '3ddd39ca-6ee7-4d3b-be24-83baebab1e57',
+    '1e7b1b3f-c149-40e5-9e3d-0b85b90eca6e',
     'Mr R Markham',
     '23 Stoke Park Road, Stoke Bishop, Bristol, BS9 1JF',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2ae9789d-d2b1-4c00-aaa5-8a6bfeac759f',
-    'f60f4a61-fa1b-424a-bd28-a3aa8ec2e2dc',
+    'b0473de5-bd79-4bc3-b552-455991de63ff',
+    'effd1332-7630-4f9d-a09a-b1d091c62d0a',
     'Mr N Stone, Mr K Stone & Mr Stone',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '1f7c4954-9875-416d-adbe-7d43fdaa4b24',
-    '1b789eb4-0394-4587-a55c-58d4c305d3b9',
+    '4d8763f8-7e83-4b8d-a777-e5c548444e31',
+    '31fe8cc6-fb42-4fef-89c4-cf7ae4cc7a4d',
     'T E Hohler',
     'c/o Tate Residential, 16 Battersea Park Road, London, SW8 4LS',
     NULL,
     '020 7622 6914'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '6da2cc96-eee9-4bc2-9bb6-c6c3c3f084d6',
-    'be726516-19f3-4eb2-a574-0d254583c993',
+    '200dc9ea-b41c-480a-b87d-ec0a8743fa78',
+    '7c9487be-58d7-43fd-85fe-21df809e4503',
     'T E Hohler',
     'c/o Tate Residential, 16 Battersea Park Road, London, SW8 4LS',
     NULL,
     '020 7622 6914'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2e5966db-4eb8-49b9-a56c-ab95ee94861b',
-    'd7b0b1b1-4efd-466e-b7e5-747f98872e18',
+    '863ead85-9129-4e58-9e7a-73bdecc5582f',
+    '4d31e91e-456d-42f1-8d3d-a38ea605b799',
     'Aquitania Investment Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'f811a90c-f992-4a84-96c8-811eca3ad251',
-    'cc393f81-62d8-4b78-a2c1-8c49564abc1a',
+    'b129d381-c016-47fc-b542-0b06ca3f41bd',
+    '2da287b8-9635-40e0-8e3c-6a32fe0eab6e',
     'Dr B K Vekaria',
     '32 Totteridge Common, London, N20 8NE',
     NULL,
     '02076300782'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '86201265-8e67-4d0e-af92-7e1b751e75a1',
-    '30237d2b-dd30-41f1-bea5-db43a2d19d39',
+    '8713513e-b492-4c8e-9cac-56dc54499893',
+    '68ca2207-9531-4d9e-addb-24d081b7d2b9',
     'Mr F A Iannello',
     'Pimlico Place - Flat D1, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '02078349148 (rarely a'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'dfe979b7-ad9f-41c2-bb36-2b2d3422176b',
-    '366ec8ff-cb7b-4a3f-b5d7-c0e986e8ab60',
+    '8b475b5f-676c-4272-bdd3-0823f544d22f',
+    'ec646585-336a-43a4-9020-f767664b99cd',
     'Kwok Hing Lam & Choi Joecy Lee',
     'Pimlico Place - Flat D2, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '85226280077'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '96fe7fc6-213c-4a2f-b91f-6e29dc584131',
-    '3494b435-5cde-41a2-98b5-9fa035a684ec',
+    '069acf88-ccf0-49e0-8332-88f89d91b282',
+    '7688a5ac-b9be-4f06-ae5b-8d62d46131aa',
     'Shashank Chahar & Monica Lalwani',
     'Pimlico Place - Flat D3, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a6cbb17e-5167-43b1-82bb-c251530c1323',
-    'ae110b76-300d-403c-9458-825caf3f9c03',
+    '508b9efd-944e-4569-8223-862745e260c5',
+    'faed24ad-7e9b-4802-8e61-cb74928f40ad',
     'Mr B J A Hutt',
     '33 Radnor Mews, London, W2 2SA',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2e02989b-6fab-4e95-be35-ba58e6cc3b72',
-    '7d518b9e-bd23-42b4-8f19-ca7485b3d500',
+    'be766de9-8c51-4f56-b2e5-9588a4f70b50',
+    '3c4eae3a-b67c-4486-8c37-914575dbeb2f',
     'Silversands Resources LLC',
     'c/o Vuna Capital Trustees (Mauritius), Level 10, NeXTeracom, Tower 1, Cybercity, Ebene, MAURITIUS, 72201',
     NULL,
     '02304278343'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '5cd0c216-a235-48a9-ad88-94cc51162e0f',
-    'ffa6a4a0-3e13-4f2c-849c-7cc396644771',
+    '66723219-bfbc-4ce3-8ac9-46455cc162f7',
+    '2c4dc7ff-3f7b-44b4-8e3f-e446a7a756c7',
     'Thracia Investment Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2e7b7ab3-de0d-4cd1-b770-73f182a44741',
-    '84c31d1d-5c53-4071-a2d6-7189ec270d73',
+    'e6a9fde6-8905-4fb2-8213-60f8e69aafe8',
+    'ffd0c546-7dd4-4d4d-b794-abb7537895be',
     'T C Hill & L Hill',
     'NO CORRESPONDECE TO BE SENT VIA POST, D3, La Clare Mansion, 92, Pokfulam Road, Hong Kong',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a360c838-c1bc-4f55-bdb7-d65dcf4c0ee4',
-    '3c2aef46-aadc-487a-aeab-634fe2684d4d',
+    'e3d9fd2e-96da-4737-9847-0a48f9d1f92f',
+    'e20e2460-08c8-4027-b4b1-b05adf60e3d4',
     'V, J, A, & Apipu Phataraprasit',
     'Pimlico Place - Flat D8, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '42c27c6d-d32c-418a-936e-f566950ff5d8',
-    '165837c6-5736-4781-9d99-cd2a32460989',
+    'ceaae7af-3274-45b8-98e2-92862b0add10',
+    'a41d1d4f-1baa-4656-9ec4-1553de9a7112',
     'C S Shaftesley',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b5ec4893-b8c8-4c29-9a47-6663b96304e4',
-    'e72b1fad-e0a9-4219-a283-2314535b7054',
+    '6946e0cd-373c-42c4-9e02-d3c57435a068',
+    'a4c6cb79-1838-4343-86ac-9d9b2be363e6',
     'M Kohli',
     'Pimlico Place - Flat D10, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c9f2f4f8-cb79-4f60-b9a7-dfec38d4ca18',
-    '65bb3193-05bc-40fe-8d8c-b034f51ea4bd',
+    'b1b3d2b3-bfb7-4394-9c45-b6e2b5ca29f6',
+    '45fa9523-e355-4162-b1ee-6e50013c077c',
     'Mr Deepak Sabnani',
     'Pimlico Place - Flat D11, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '07768 997 276-Soni'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '25bd6d77-8785-4691-bc6d-27598132e913',
-    'b2d5a899-afff-4003-b6e2-3dc2fb7cf6e4',
+    '542c5104-cf0a-4114-aa74-9332e7032fc2',
+    '04470d49-420b-44b6-a228-c6572118e726',
     'Qu Wang',
     'Pimlico Place - Flat E1, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'bddeecba-4afb-4603-b5c1-63d8917835a3',
-    'ff2d2057-f2b7-415d-ac98-184cc7e16bb3',
+    '6b98f1d1-6162-4be6-9e99-3e84fc445bb4',
+    'b036457f-4631-4b95-a3fb-4bdf73f912d3',
     'Mr Mikhel Chandra Pipariya & Ms Sonam Lalwani Lalwani',
     'Pimlico Place - Flat E2, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a80d0061-2caa-4721-80a4-5cfc27661fe7',
-    '5826ac71-cdf3-4a29-b885-ed344ca95db2',
+    '821ee30e-6de2-40fe-9ff0-d9782e1d0fb3',
+    '0f767c54-707f-4ba7-b508-c3ccdc286c73',
     'Peter Sten Bertelsen',
     'Dencombe House, High Beeches Lane, Handcross, West Sussex, RH17 6HQ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '763e6e94-c8e6-4a94-9d08-7dcd98b3b64e',
-    '79ff58a0-7b85-4432-ace2-f0a3b7bea10d',
+    '3fb673af-2baf-4b8f-91d1-c068e8ecca29',
+    '30a23e4b-d230-4b79-a73d-de112a07b97c',
     'Peter Sten Bertelsen',
     'Dencombe House, High Beeches Lane, Handcross, West Sussex, RH17 6HQ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '323e5816-4783-49dd-939e-d4f3f286b59e',
-    '85c81f19-93b0-4690-a61c-70cef7dd57fb',
+    'a237ce9c-aae2-41cb-a883-7ea4051c9345',
+    '01ea6816-6638-4cbe-88d0-666aa70d1c21',
     'Andrew Brown',
     'c/o Ms Asami Miyoshi, c/o London Tokyo Property Services, Central London Office, 115 Baker Street, London, W1U 6RT',
     NULL,
     '07464 093011'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c5997687-8383-4db3-977f-d89ea799d846',
-    '60f20608-7a1c-4ef3-8336-0920628bb054',
+    'a89a8ae0-714a-4bfc-b33d-296b5fd9f719',
+    '623602e9-37ba-4ddb-93fb-8992ce9781d7',
     'Mr S Nassiri-Shahroudi',
     'Pimlico Place - Flat E6, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b190e55d-7297-4653-83f9-787c3aad16b9',
-    '23dede6c-d625-473c-b271-73b1f89e3612',
+    'd3eaf715-d116-4fef-ba91-6b14f916ee5a',
+    '58808cd4-8468-4d05-a8cf-1513fbd4d51a',
     'Chawki Karam',
     'Pimlico Place - Flat E7, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7fdea631-201c-42ce-a6b8-ba53f2dd158a',
-    '93d71930-6e44-4faa-960b-40c432279d38',
+    '744646a6-7137-4129-a2e0-20c5ca733c71',
+    '055d81f2-5147-44d0-92ee-34ec05ff675d',
     'Dalmatia Investment Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b7d08702-bbe9-4c58-8f54-722b325412dc',
-    '706b12fc-a30d-4e26-b9b2-47a8ae771568',
+    'fab76972-c806-4616-b70c-18d7c84157a0',
+    'ec09a59e-b94a-4c8f-8ab2-a54020c01f7a',
     'Miss Elizaveta Kolesnikova',
     'Pimlico Place - Flat E9, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7f823a7b-5ac3-456d-b3a6-398edc3e8665',
-    '65b8d79e-099b-495c-981a-563c01b1ab87',
+    'a57b63d7-f624-4be1-be85-db40ee1555cd',
+    '450dace9-a4b1-4c90-b67c-935ea531912b',
     'Julia Sz-Hing Hunt Chan',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '25e866f1-f3f3-4b97-8980-0b2325f77d62',
-    '7cca5b3f-cd96-4aef-a3cf-459da54fad29',
+    '8833e313-651a-47a0-8306-3386ae8c291d',
+    'eed1b0b3-b713-4a94-bd2b-f46f5284db4a',
     'F Steadman',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'be774e0c-6265-4b39-884c-9266c357b008',
-    '15ab8231-cca5-433d-8702-1710aadc594a',
+    'fafc3aaa-0665-4a3c-ac17-6107c6ce83e9',
+    'd5f08c50-c73a-40dc-a2b3-8fc8e71ed5a5',
     'Shen Xiangjun',
     'Pimlico Place - Flat E12, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '+86 183 7679 8776'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '10ee0ce8-af0a-4dd0-afbb-3c12e36bf52a',
-    '3177fc7f-4baa-4338-a4af-027093fd498a',
+    'd3ec6e15-f9fe-49d0-85a3-d39d81c1eab9',
+    '5fac633d-729b-458a-968d-2cbd7dbfdfef',
     'Mr Andrew D Archibald',
     'C/O JLL, Unit C1, 4 Riverlight Quay, London, SW11 8DG',
     NULL,
     '02078524582 - agent'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '0ad8fd21-0d24-4ad6-bf36-bf2794b5ae08',
-    '7c67148e-7a18-426e-91bb-ecbba0fa2cee',
+    'ccd642c8-9e52-458c-80d6-326ae5bf2d14',
+    'aef466c8-b2a6-41a4-8b76-1ff0ce5b1b6d',
     'A S Bailey',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b41d16b5-fad6-416a-9929-2b4c451345b2',
-    'd9738f79-d2e3-4f0a-9de1-269db9721ea4',
+    'cd3e2c05-0919-4323-b677-ef3a793990a8',
+    'ebeed557-bd5e-40fc-8a2a-64a633c2b468',
     'T Steadman',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'd6a1cfd1-3d62-471a-b154-05af71f808b2',
-    '9ee31444-b364-4470-9369-d7dcadc9069c',
+    '3a1b4ed8-8ab5-481e-ab8d-e3634d2a86c5',
+    '975ea509-7fc1-4a5a-8160-4418ee66bbec',
     'Mr & Mrs P Cleary',
     'Pimlico Place - Flat E16, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '07590 010 555(Sally)'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b5a6b47f-d251-4a1a-99fa-6b1806333a60',
-    '14e1526d-291b-43ae-af7a-fb930287cec6',
+    '7fe72fb3-5d4d-4bed-9338-6edc9457680e',
+    '1435de2b-35a8-453e-b2eb-facdea5be10a',
     'G & L Property Partnership LLP',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'ac381c9c-9b5f-4e11-a934-c48abe2260b6',
-    '82a399f7-dce7-4de6-8cd1-e904d5227b9f',
+    '946d7dd7-a13c-47b1-a175-12a27ddf8c9a',
+    '43dea602-8531-4ea2-953e-f00ef7a590d1',
     'Mr Hugo & Mrs Emma Brown',
     'The Old Rectory, Stoke Lyne, Oxfordshire, OX27 8RU',
     NULL,
     '01869345293'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c817b306-fd13-42af-9918-2cec5b48e68c',
-    '8fd51667-e35f-4102-85ab-b77ee4831f03',
+    '1c35c439-97d2-43e9-8ba3-cce86ea079ed',
+    '77892e99-8788-4a06-8000-9d6b14c7f802',
     'Mr Andrew Peter Dent',
     'Pimlico Place - Flat E19, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '07901513559'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'cc378d93-989d-451f-9e72-2a396152acc3',
-    'df2cf251-f5e3-42bf-8e91-fc301ca0c117',
+    '640a69f7-8af1-4ffa-a263-ca85b97a0824',
+    'e968d099-7d06-4708-ba5e-a05008d54d14',
     'D & M T O''Brien',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '3596b217-7c11-44b4-981a-aab036aa1547',
-    '3cd54728-bc6c-488e-9ecb-f0c6fb04ab18',
+    'b903586c-b81f-419c-96a0-543096067af6',
+    '3022ee23-b78b-428c-b8fd-d267081f679d',
     'Aquitania Investment Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4d8cbc9d-6890-4d4e-9905-000c79f8b6fb',
-    '8fc0783f-6b48-402f-909a-2e8fd29c40ea',
+    '1e3b140c-7638-45c4-943e-fa6213196a2b',
+    'fd3bf276-31f3-44bd-8f0f-c97101f92932',
     'H E Tortoishell',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'cc22e801-3222-4007-869c-e95dc3140dbc',
-    '97459dc3-22aa-4473-86f9-12d1ea020165',
+    'efae7f21-4b05-4229-ae01-d5a421a89323',
+    '506526bc-db6b-48df-8569-8149670364b7',
     'Mr P E Morris',
     'Pimlico Place - Flat E23, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '45e87cd6-67c2-45a0-ba1a-0eb9e6c8624e',
-    'ef309a9f-43dd-4bf4-a165-08143b28014f',
+    '0f515275-4e1d-4b2a-9523-00027b01f2ab',
+    '22c64ad4-8bfb-48fb-ac77-6383950ebbd8',
     'J S & M P Ogilve',
     'c/o Chestertons, 26 Clifton Road, London, W9 1SX',
     NULL,
     '020 7357 6911'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '391bede9-30c9-4fe4-8282-f19b735fe0e3',
-    '326a29c5-0257-40f2-885e-e1156a5adc17',
+    '09e0ba6e-b908-4fdd-9714-b5e7b1cfff4c',
+    '71ef69d5-e4c5-414c-a1ef-0c6e4ff321e8',
     'Kristina Stowasserova',
     'Pimlico Place - Flat E25, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '8ae10059-3ee1-413e-8bcc-16256635c268',
-    '0da7e97c-8a8e-4558-be6b-32a60ccea98f',
+    'c64e8f7b-ae5b-4e96-b8be-14ce326410bf',
+    'ad38ae69-d81c-4953-98ff-b1cbdf57aea4',
     'J Harries & E Choi hung Lee',
     'c/o Andrew Reeves, 81 Rochester Row, London, SW1P 1LJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2ae1aa34-7352-46a7-bf65-270a5f8efb66',
-    '5d9b552a-7d2b-40f3-a251-8fbc800c228c',
+    '1e0ffd9d-9c24-4c09-98b9-7167b558cc16',
+    '39ebcbc0-a2fc-4541-b3b8-c51b42bd844d',
     'Mr N Sapuric',
     'Pimlico Place - Flat E27, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '27f55d6b-a223-457e-a617-e60cd3d10f47',
-    '54e5c75e-5636-419a-8b4b-4b5cae7f079e',
+    '3d4a59d6-76a5-47bc-9c61-1d5afdc45bdf',
+    'b7cd4c72-e584-4fb0-a503-0e3a277a1672',
     'Mrs F Meneghel, Mr M and Mr L Frattini',
     'Pimlico Place - Flat E28, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '02076308227'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '41e53b20-68ed-435b-8cce-0830acd13b26',
-    '3bf2617b-2145-4acc-a658-652717ba059a',
+    '799d8e33-336d-4c8c-96dd-446fc9057b48',
+    '4ac24ebe-3ac6-4e5c-b3c5-a2294d9669f1',
     'David Chi Leung Tong',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '17e8529c-8dcd-411e-b18e-7fbb58ca488f',
-    'de57b7fe-7f66-44e5-9206-1670acd5efa5',
+    '5283769b-3690-4a07-a93e-fecedc3cf755',
+    '478c7061-9094-49af-9130-2698645863d8',
     'Dalmatia Investments Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'bea9e940-a11f-4219-ae27-b47225a52880',
-    'ba3e722d-adc8-483b-aa41-23b8c3e156f3',
+    '95d209f5-9d48-4f86-a61f-7c0a01442e0b',
+    'e21cca98-abb3-4601-a1f5-4f77bc7ab030',
     'Mr S & Mrs G Evans',
     'The Manor House, Adwincle, Nr Oundle, Northamptonshire, NN14 3EA',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4c348ca2-1702-4d33-ae23-215fb9f491c9',
-    '8fc0f3cc-8f24-47a1-bf33-2c2357771e78',
+    '6247fe04-4897-4450-8a50-b8246ab06ed8',
+    '46cd3ea0-af30-4fc8-a73e-24d57143607c',
     'James Luke Holdsworth',
     'Lowick, Lincombe Lane, Oxford, OX1 5DZ',
     NULL,
     '0208 6754349'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'fbe112d9-8549-432d-995d-5b9b3ed730d3',
-    'f71e8c96-d0f5-4a23-baa5-6b1af50f8eb7',
+    'ca85902e-c88c-4d83-8025-d7e42bbee7ca',
+    '4d185389-cd70-4f46-b58b-828f560237e1',
     'Hibiscus Investment Holding Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '59219cf0-6053-4d80-972e-d2bc2b6840d6',
-    'cd9a56c5-b182-468a-846d-f863b3c02790',
+    '23cdeb2f-8aa1-4fc7-be96-a210b59bd475',
+    '6853fa14-9b87-48f5-b507-d5bea0eb0194',
     'Hibiscus Investment Holding Ltd',
     'c/o Phillips & Southern, Onslow Hall 2nd Floor, Little Green, Richmond upon Thames, TW9 1QS',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c052c836-63b1-45c5-be30-191ec3ba8aa0',
-    '334a7977-7cbb-4e9e-ad68-01e8c104597a',
+    '97ab2fcc-ecc9-40ce-a910-fd28fb4b5116',
+    '781515e2-4996-49e8-b28f-d8fbd5c676cf',
     'Mr & Mrs A Aglionby',
     'c/o JMW Property Management, 71-75 Shelton Street, London, WC2H 9JQ',
     NULL,
     '020 8012 7965 (JMW)'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7d505ac2-27ff-4f21-bfae-a53758fa1498',
-    '4b7c04a4-487f-46f5-8015-942f0b221151',
+    '825926e3-ee89-4a9d-b583-175b2ccd81ca',
+    '9d08a983-38b1-4222-a918-f48a82d6816f',
     'Karen Alexandra Hamilton Hobson',
     'Flat F5, Pimlico Place, 28 Guildhouse Street, Pimlico, London, SW1V 1JJ',
     NULL,
     '02077319820'
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '92b8fbc4-da6e-47c6-97db-b3c3b1ae26d0',
-    '1e9d9a04-38df-41fd-ac3a-20b7ad9c9b7d',
+    'c9d0d4d6-988c-4a93-ad72-d284707e2366',
+    '72216c0d-a687-4b35-a477-79ae112bc2e1',
     'Yaroslav Kukharev & Kateryna Potapova',
     'Apartment 70, Consort Rise House, 203 Buckingham Palace Road, London, SW1W 9TB',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'd6462115-5cd3-4fc1-8e58-ab93d5a6459c',
-    '1e3124c0-e7ed-43cd-ae38-eecc3c29bd0a',
+    '93a6ffdb-addd-4f96-adaf-7ea7bcbbc868',
+    'c8f4a7e0-8f4a-4316-84ca-12b3d8788847',
     'A Protasova, T Protasova, V Damaskinskiy',
     '49 Wood Vale, Dulwich, London, SE23 3DT',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '59422734-1847-4cb2-89cd-9c4038bbeecc',
-    '4cd0f7b2-4cee-43eb-8ec4-f584e9dd9f0b',
+    'f5af4af5-9018-4d5c-b9bf-821d72baaf0e',
+    '65012b45-fc4a-4081-a27b-b1c46c66fa8a',
     'Network Homes',
     'Pimlico Place - Hindon Court Shared Costs, Olympic Office Centre, 8 Fulton Road, Wembley, HA9 0NU',
     NULL,
@@ -1913,8 +1913,8 @@ INSERT INTO budgets (
     id, building_id, budget_year, total_budget,
     budget_period_start, budget_period_end, status
 ) VALUES (
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
     2026,
     1105576.0900000003,
     '2025-04-01',
@@ -1924,8 +1924,8 @@ INSERT INTO budgets (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'ebc1b44a-c993-4c8a-823f-13d444a724a8',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '99ea1045-1fe1-4346-8b22-e36a866d5a8c',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'cleaning',
     'Porters salaries and expenses',
     120000.0
@@ -1933,8 +1933,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'eb13c594-9b65-47a0-aa32-0bb55b848d1f',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '8de0525a-48b0-41a7-bf36-8d8fcb7f7c29',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Relief cover - weekend shift',
     38000.0
@@ -1942,8 +1942,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '8771e49b-5155-4a55-800c-dec7dbb0bc37',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '912040a5-27fa-49fb-84ab-38559d960101',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Relief cover - holiday',
     4000.0
@@ -1951,8 +1951,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'cd8e51d4-cd2e-4c0a-819b-ee4abad55554',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'cbe1a122-88ca-43a6-a109-a00a05d31a9f',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'cleaning',
     'Cleaner',
     0.0
@@ -1960,8 +1960,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a923496d-7875-4297-b5c0-09a87947a99d',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '8c9c0efb-dc7b-4815-a77d-c44912765053',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Relief cover - sickness',
     1250.0
@@ -1969,8 +1969,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'b2495cd1-9d6e-4d36-baf0-674eda002f70',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'fa72b58d-0999-46e4-8acb-41a650e071b0',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Sundries and petty cash',
     500.0
@@ -1978,8 +1978,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '4ec7ea2d-8523-4f29-8a8d-f55c3c83343f',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'e45422ec-cd2e-44eb-b2b8-134a81eb628e',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Telephone - main reception and internet',
     1100.0
@@ -1987,8 +1987,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '63d1fc64-569a-4362-95ce-16399d37fd7e',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '34d3e5ba-a066-4b27-aa83-af82553cbf7a',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Uniform',
     1000.0
@@ -1996,8 +1996,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'b6db890d-c603-42dd-9624-b6bb6b3d4498',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '00f62ff5-a669-4cc8-a53a-50c1c142ab5a',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Staff',
     165850.0
@@ -2005,8 +2005,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '8ffe1f2f-dfa9-478b-8c01-46f674e37ef5',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'b1f94d31-ae9c-4038-9b78-08cd25339453',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'cleaning',
     'Cleaning materials and light bulbs',
     1000.0
@@ -2014,8 +2014,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'e6434711-441d-46c4-b0b0-5135807e76cc',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'eefa4d3e-cb02-4c6d-91a2-e53675e9c7aa',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'cleaning',
     'Cleaning',
     32760.0
@@ -2023,8 +2023,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '7bd8a8c4-a605-40ef-b2bf-c5ff430edbd8',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'f80acf98-4fe5-492f-9776-73a64ae7ac1d',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'cleaning',
     'Carpet/floor cleaning',
     1584.0
@@ -2032,8 +2032,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '7be102ca-6b0d-4500-9ddd-57802b41bed8',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '80c32989-e94f-4247-89ac-9f3a5de936fd',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'repairs_maintenance',
     'Car park repairs',
     500.0
@@ -2041,8 +2041,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '13a8afae-5f19-4edb-88bb-b8990a49ac4b',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '1851ced7-2f2f-4d19-b77c-7a54757ed898',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'repairs_maintenance',
     'Gate maintenance',
     2000.0
@@ -2050,8 +2050,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '7d11f763-9ac9-4f3c-8950-ae2541d1a235',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '69dd34d2-23e7-4812-867c-6670358e1b60',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'CCTV',
     1500.0
@@ -2059,8 +2059,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '06370578-2bca-4535-b401-1a6ef1b2731c',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'a3fe8506-b19d-4edd-9882-e4b60be906c0',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Door entry system',
     1800.0
@@ -2068,8 +2068,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '3b4f3082-d8e0-4b45-b52d-b55d41779c02',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '3dea2668-5384-4e01-b7a3-fbcf54e0c4b0',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Fire alarm/extinguishers/emergency lights',
     3000.0
@@ -2077,8 +2077,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'b3372400-9e2c-4273-b16d-3952227271d4',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '27cab3bc-6ed8-4237-a68c-0c4ee84aba3d',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Roller shutter',
     1500.0
@@ -2086,8 +2086,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'e583db02-841f-4c14-83d8-38260c36dae0',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '6abf7891-9511-4c80-96d6-1fb80f19e7f6',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'gardening',
     'Gardening',
     5075.0
@@ -2095,8 +2095,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'baf4de7c-da70-4eeb-a6a3-945f03b1fa32',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '98be823e-9f38-4db0-a802-fa0f6a11637c',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'repairs_maintenance',
     'General repairs',
     24000.0
@@ -2104,8 +2104,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '54a5b28b-b593-41c8-bb6d-0157d3927766',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'cb383047-d0c9-4878-858c-ee2e55b9bacc',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Back up generator',
     1200.0
@@ -2113,8 +2113,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '666cd8b4-a01d-4d38-a4b4-dc085ea1f4df',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '3cec6206-1ca3-4383-971f-4479ba9f05bf',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'repairs_maintenance',
     'Gym maintenance',
     6000.0
@@ -2122,8 +2122,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '61348c55-52fc-4aa6-ad58-a11a0431edd6',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '8a01f1b4-1ec8-4e64-b7bb-d488ace8d8a0',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'compliance',
     'Health and safety',
     1600.0
@@ -2131,8 +2131,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '91e29a30-f542-4711-a69d-d36d2053f3a3',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '4d404dcf-a8a5-4700-847a-d8eb59e67e7c',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'lifts',
     'Lift contract and repairs',
     15000.0
@@ -2140,8 +2140,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '488170a5-8e0c-4a54-b1f8-e63949248f55',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'bce0ec5f-4e18-4462-904f-34d4589c7ce2',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'lifts',
     'Lift telephones',
     3000.0
@@ -2149,8 +2149,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'f56dd84f-4fe3-4e6a-bc67-0b90283325b7',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '13f177d3-c37c-4419-8c8a-7bca6c7a435d',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Lightning protection',
     324.0
@@ -2158,8 +2158,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '71ec6a42-65b8-4efe-a067-5f8de63beb5b',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '09cc9f87-3101-4b05-a9df-ef923f38844c',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Mechanical and engineering plant',
     3000.0
@@ -2167,8 +2167,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'cf47c965-63c6-481d-8f31-338a87e1ad28',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'c20b76e4-31a3-44af-a314-12b96e328d53',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Pest control',
     1760.0
@@ -2176,8 +2176,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'fc283730-b3fe-4507-9d4d-cfc2388c4ef7',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'db62f804-8885-47dd-8e0a-ff31f668ab68',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'repairs_maintenance',
     'Redecorating common parts',
     2000.0
@@ -2185,8 +2185,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'bf0c872c-7ed9-4a25-81c6-ffb319fff150',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '6c887d83-edda-46ab-a23d-a4490da7172e',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Refuse',
     1650.0
@@ -2194,8 +2194,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '6d78f65a-ce0c-41c3-8c34-fa55ca9370d3',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '19ad2a06-24da-4667-b058-1a9e72d7ab58',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'TV and satellite',
     250.0
@@ -2203,8 +2203,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '0594741a-2d98-480a-9bb3-139a16d4292e',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '6c8a8366-432e-47c1-9b64-ae7247d85b11',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'utilities',
     'Water feature maintenance',
     6570.0
@@ -2212,8 +2212,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '88ef2555-a210-46e5-9443-a010e8817c01',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '3d2ae4f6-3017-4b8d-8d7d-b0e6cc094f49',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'utilities',
     'Water hygiene testing',
     3650.0
@@ -2221,8 +2221,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'bd3cb469-0911-423e-ac48-40a0fdb57d23',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '4ee199f6-8b42-4b0f-8a90-4c0a1f0721ef',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'cleaning',
     'Window cleaning',
     1500.0
@@ -2230,8 +2230,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '48842d27-ee55-43ca-a4ec-5592f90cd9f1',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'be0920ed-ec71-44df-8c37-5930c3524cf7',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'repairs_maintenance',
     'Contract, Maintenance and Services',
     122223.0
@@ -2239,8 +2239,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '63b80a28-6ff6-4a97-aa0a-526741397e3d',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '41468449-e32b-4f8a-bf40-5d9adfc33df7',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'utilities',
     'Electricity',
     80463.62
@@ -2248,8 +2248,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '224c0391-c431-40a5-9fc9-188ace6ff5c7',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '4d80c4bc-22cf-469d-a139-a69b4a73696f',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'utilities',
     'Water rates',
     27000.0
@@ -2257,8 +2257,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '10474187-031e-4c2e-93f3-a670627f3700',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'a6f4f950-596f-48fd-9422-66e9d37447ac',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Utilities',
     107463.62
@@ -2266,8 +2266,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'e0403921-74a1-48f6-ac37-e4e15a6553ce',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '0ec84b57-313a-4785-ac1f-14fd1c02c974',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Buildings and terrorism',
     88633.42
@@ -2275,8 +2275,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'e40fbb60-8f07-4370-b5a5-d9a1bedd1589',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '5c168a66-595d-4066-9694-5271e425a379',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Directors and officers and employee protection',
     1100.0
@@ -2284,8 +2284,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a405d5d9-0372-459f-bca1-6423e26eddbb',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '683e81c7-0ebd-43e1-92bd-ecc8978b0b22',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'insurance',
     'Management Liability Insurance',
     1100.0
@@ -2293,8 +2293,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '176fdb04-597e-44f5-8595-70c720720568',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '701f6311-43f6-4f0c-8719-8cfbd62772b6',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Engineering',
     3100.0
@@ -2302,8 +2302,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'e2df9d66-c7d6-495d-8c66-e427b5ba9c37',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '11dbacc2-5349-4e0a-bd00-152c25138d78',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Contents inc. gym and office',
     3300.0
@@ -2311,8 +2311,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a88071e8-73e0-4608-8eea-334c5a52c6bc',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'db65ef0a-1bc4-4181-9f3c-66d059e24c0f',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'insurance',
     'Insurance excesses',
     1400.0
@@ -2320,8 +2320,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'a2488d46-265e-494e-81e0-2d3c5dab53ec',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'aa2a49ea-272c-4aa9-a204-3d8e1930ea95',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'insurance',
     'Insurance',
     98633.42
@@ -2329,8 +2329,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'ea53590d-52e4-44d9-933d-a5c50d0d4753',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'f66aed31-b074-4b37-aee7-7f9798328d39',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'professional_fees',
     'Accountancy',
     2200.0
@@ -2338,8 +2338,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '97514b40-8845-495c-bef9-f5e9d62ac3e9',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'e2ebd966-d65a-4525-9091-e5ee3b44c475',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Legal and professional fees',
     2500.0
@@ -2347,8 +2347,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'f8b6a773-93c1-4912-8b79-1559015614b9',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '5e76c059-ca42-4617-ab63-976525b50d6a',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'management',
     'Management',
     25642.8
@@ -2356,8 +2356,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'dd393426-fc4b-4e72-b152-2749e95c4928',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '662cc068-4a5b-4e85-a0ca-65a0a8c2fa98',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'management',
     'Vat of Management Fees',
     5128.5599999999995
@@ -2365,8 +2365,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'cf962de1-be3c-4f32-8006-8e71094ceb2f',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'aede6e37-edda-472d-b524-7193d7b66ada',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Bank Charges',
     280.0
@@ -2374,8 +2374,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '84d3f511-79cb-4fd8-b82e-666bd0e3e89e',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '93f230b6-f859-4d2e-868f-406e690b6025',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'professional_fees',
     'Company secretarial fees',
     480.0
@@ -2383,8 +2383,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    'cb17d051-7165-4f10-accf-17ed415007e4',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'e6d65c81-74ac-4956-b82c-c61911c0a2e2',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'compliance',
     'Building Safety Act',
     11940.0
@@ -2392,8 +2392,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '229835ce-c939-4694-ad73-246ea00eba74',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    '4f525074-493d-40f8-9e66-21ce8f0e678f',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'other',
     'Professional Fees',
     48171.36
@@ -2401,8 +2401,8 @@ INSERT INTO budget_line_items (
 INSERT INTO budget_line_items (
     id, budget_id, category, description, budgeted_amount
 ) VALUES (
-    '86103285-effc-45a7-a976-9791f3cc914d',
-    'dca7c631-55c7-461f-9f22-9d14a27b29ca',
+    'f1d5d0fb-e85e-4d47-b8ae-f44e6e48a5e4',
+    '6885449e-1a3b-4c71-924b-7b378b8c16ba',
     'reserve_fund',
     'Reserve fund',
     20893.29
@@ -2410,496 +2410,489 @@ INSERT INTO budget_line_items (
 
 -- Compliance Assets (4)
 INSERT INTO compliance_assets (
-    id, building_id, asset_name, asset_type,
-    last_inspection_date, next_due_date,
-    compliance_status, assessor_company
-) VALUES (
-    '54e8160d-93f9-4b6f-8571-111d313d6587',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
-    'Fire Door Inspection',
-    'fire_door_inspection',
+    id, building_id, asset_type_id,
+    inspection_date, next_due_date,
+    status, inspection_company
+) 
+SELECT
+    '632bd94f-39c6-40a9-b43c-cd69be850404',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     NULL,
     NULL,
     'Unknown',
     NULL
-);
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
-    id, building_id, asset_name, asset_type,
-    last_inspection_date, next_due_date,
-    compliance_status, assessor_company
-) VALUES (
-    '75a8ae45-14ea-47f1-ba23-c4346a58ccf5',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
-    'Fire Risk Assessment',
-    'fire_risk_assessment',
+    id, building_id, asset_type_id,
+    inspection_date, next_due_date,
+    status, inspection_company
+) 
+SELECT
+    '5ea1b181-e9f5-4497-9b67-2c07b42ddd7d',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     '2025-01-07',
     '2026-01-07',
     'Pass',
     NULL
-);
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
-    id, building_id, asset_name, asset_type,
-    last_inspection_date, next_due_date,
-    compliance_status, assessor_company
-) VALUES (
-    'ae4de8ec-c177-4062-846c-77350d076db5',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
-    'Legionella Risk Assessment',
-    'legionella',
+    id, building_id, asset_type_id,
+    inspection_date, next_due_date,
+    status, inspection_company
+) 
+SELECT
+    'b0cfd01e-5f56-44a7-b509-672ba64839a3',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     '2025-08-18',
     '2027-08-18',
     'Unknown',
     NULL
-);
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
-    id, building_id, asset_name, asset_type,
-    last_inspection_date, next_due_date,
-    compliance_status, assessor_company
-) VALUES (
-    '1cddfa10-c7f6-487d-933e-b1ff7d7b7cce',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
-    'EICR',
-    'eicr',
+    id, building_id, asset_type_id,
+    inspection_date, next_due_date,
+    status, inspection_company
+) 
+SELECT
+    '35564cc6-1c4a-4a4c-907f-5e3bfdbe5801',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     '2022-11-30',
     '2027-11-30',
     'Unknown',
     NULL
-);
+FROM compliance_asset_types WHERE asset_type_code = 'EICR';
 
 -- Maintenance Contracts (28)
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '1f3e7bd3-bcfb-491e-ab47-885002bfbee9',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '5496b9f0-09ac-4810-8497-502aaf1dca02',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's or consultants are used to carry out work which we 
 are required to sign off prior to the completion of the Services',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '86c71d3d-093d-49f3-8510-a5c3ae7d9f53',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'c5a6d315-1787-4ec4-a8db-522c6c47c727',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'must consult Polyroof Technical Services',
-    'lifts',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'LIFT_MAINTENANCE';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '5945df69-1d00-453f-822c-8150c0820943',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '46bb4a32-b1bc-4e21-be60-b827f456bd26',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'should take the necessary steps to identify the location of each of these 
 services',
-    'gardening',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'GARDENING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '96afa7bd-fa0b-4971-9995-be55b2943b25',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '22b7936f-c085-49fb-a04d-af18e07a2b69',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'asked voestalpine Metsec plc',
-    'lifts',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'LIFT_MAINTENANCE';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'bb6701ab-6f11-4c80-8dc8-07718fe70937',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'e06dfd94-c2f2-48d3-9917-26e7b99a8e24',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'Iden tification  Thermoguard Limited',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'e5bcf1b7-74c9-4c3a-be9b-10b12150d376',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '0649ba52-edde-4654-ae04-e85afa3efc4a',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'has installed and applied 
 PermaRock materials in accordance with the specification prepared or agreed in writing by PermaRock     
 Products Ltd',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '401f9c29-1d92-4eb9-a092-a1daf2401dc8',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '9eadeaf4-d6c0-40f8-a080-f84b30fe5438',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's and each 
 contractor engaged to provide services',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'f597bfa4-eb11-4cdc-a182-1dece967b45e',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'c3c7e111-4a4e-4ce3-9566-ae0badbcd740',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's and each contractor engaged to provide services',
-    'security',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '000632d6-c816-44ef-81fc-e6ae2019e0e9',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'aa113c8a-a18c-4529-a848-b6f052362224',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's and each contractor engaged to provide services',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'b5565757-966b-4f1b-90db-66e8d97690e3',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '7e39f318-1fb1-4218-a6ff-1fe900052065',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's and each 
 contractor engaged to provide services',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'fc1d311c-fd0a-42e2-b1f6-9206eb943156',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'd1b9ad69-a922-48be-be3f-76240906d064',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's and each contractor engaged to provide services',
-    'security',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '365e2256-193c-4790-a6e0-1e24ca972dee',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '445db329-0a17-43c3-98a9-5889d80ce792',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's and each contractor engaged to provide services',
-    'security',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'f04bb158-4f96-43a3-ad54-52a71af0d9cb',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '12d0eabb-d014-4113-86a3-d9f53475247b',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'to whom 
 Urban Rope Access Ltd  is to provide  services',
-    'security',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '9eb1519b-1060-4446-b3e3-e0725d8641d6',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '7887a233-18d1-4ec9-b6f6-d3e7ba9fcc94',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'will provide the services',
-    'pest_control',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'PEST_CONTROL';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'c84f7c14-cef7-4896-bdbe-e2f550fa00f0',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '50c3a896-0119-44f0-8521-944dba8bf63b',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'will provide the services',
-    'pest_control',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'PEST_CONTROL';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '71d1ae98-5f9f-4f29-bdef-30432a280a7b',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'c0673ba0-cddd-4567-85c0-2940f0a98e86',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'for all purposes relating to the performance of the contract of
 
 employment including but not limited',
-    'security',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '8f1d3da9-0c2a-4bf8-8a91-c1fec4bc4a22',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '8600926b-c6c0-4012-83b2-c286b13cf43c',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'shall provide in respect of the S ystem the additional services',
-    'mne',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '061109df-4d5f-45f2-827f-071dceae73cf',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '78633036-0499-4cd8-b495-9a5e417c37d8',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'shall provide in res pect of the System the additional services',
-    'mne',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'a5d95ccf-3ff5-44c0-8fa0-72ff9890ea74',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '5c757c58-f1b9-4055-8ee9-abb2acb5e7a9',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'shall provide in res pect of the System the additional services',
-    'mne',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'b22352ac-5cf6-4548-9234-58c9f3382379',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'd4fdb6ac-2704-4e81-85c0-9f9098ebe2ed',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'shall provide in respect of the S ystem the additional services',
-    'mne',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '9273b682-b7b0-44a5-bee5-d314ec711d54',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '40d5f6c7-6aa1-4af2-bba9-f15416f67177',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'is agreeable to providing such services',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '8cee28db-5b6e-4170-824a-9136d2a26aaa',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'db718cc9-4a64-408c-a042-9185fbbd9b9f',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'Ltd
 Grainger Pimlico Management 
 Limited',
-    'fire',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '897d3682-9402-4b11-9705-87c85c547811',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'c85c6223-6a6e-43a9-8aa4-dbaf4fd616c8',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'Ltd
 Grainger Pimlico Management Limited',
-    'general',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'e00c6a22-fe67-4a27-9b7c-0530e9462ecf',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '1ddfbe1e-accc-433f-a467-c9dd0fb3bf39',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     's must NOT be used without the prior consent of MIH Property Management  Ltd',
-    'fire',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'a9f8c32b-9fcf-49d3-b4e5-95cd5448aa22',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'e72f4bf7-d147-41c8-808b-b7cc55f7b198',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'Ltd
 Grainger Pimlico Management 
 Limited',
-    'fire',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '766c4947-a2d3-4589-8f7c-c4b32a1d766a',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '3e2fd77f-73bd-4921-b4d7-1e1294217d2c',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'Ltd
 Grainger Pimlico Management 
 Limited',
-    'general',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '033d379f-ce26-4192-be39-597f15214512',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '4c3b99a5-a3a5-4fa4-bea8-3e1c50176b31',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'Target Lifts Ltd',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'c83a95b4-81e6-41dc-8e66-66c46c643275',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '607a7a77-b1d3-404f-8005-11f368be11e7',
+    '6d96c322-3f31-4e6c-a8a7-bd6d814e5bfb',
+    id,
     'NAME  Grainger Pimlico Management Company Ltd',
-    'security',
     NULL,
     NULL,
     720.0
-);
-
--- Service Charge Accounts (1)
-INSERT INTO service_charge_accounts (
-    id, building_id, financial_year, year_end_date,
-    approval_date, is_approved, total_expenditure
-) VALUES (
-    '683558ae-ef55-42e8-821b-ea05c1b7bbf2',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
-    '2024',
-    NULL,
-    NULL,
-    FALSE,
-    NULL
-);
-
--- Leases (1)
-INSERT INTO leases (
-    id, building_id, title_number, term_years, ground_rent
-) VALUES (
-    '954c31f6-567c-46dd-968f-88f8e1f907b8',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
-    NULL,
-    NULL,
-    NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
 
 -- Contractors (5)
 INSERT INTO contractors (
-    id, building_id, company_name, services_json,
-    annual_value, is_active
+    id, company_name, services_offered,
+    is_active
 ) VALUES (
-    '613f5390-3e0a-43de-82c8-ebca02720cf7',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'ee9a959c-3316-4d40-a62e-dec299aeb1c0',
     'Maintenance and Services',
-    '["repairs_maintenance"]',
-    488892.0,
+    {"repairs_maintenance"},
     TRUE
-);
+) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
-    id, building_id, company_name, services_json,
-    annual_value, is_active
+    id, company_name, services_offered,
+    is_active
 ) VALUES (
-    'cb4c8408-f6ca-4c2e-a77e-7e678d0106ef',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'b7628f1c-52c0-4b1b-b4a0-17d761963192',
     'NAME  Grainger Pimlico Management Company Ltd',
-    '["security"]',
-    720.0,
+    {"security"},
     TRUE
-);
+) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
-    id, building_id, company_name, services_json,
-    annual_value, is_active
+    id, company_name, services_offered,
+    is_active
 ) VALUES (
-    'fd9ab35c-b1b4-4949-8a2c-883cb9f6e760',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '4c62551f-bdbe-4a2a-9cf4-8b2e1079cf02',
     'Ltd
 Grainger Pimlico Management 
 Limited',
-    '["fire", "general"]',
-    0,
+    {"fire","general"},
     TRUE
-);
+) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
-    id, building_id, company_name, services_json,
-    annual_value, is_active
+    id, company_name, services_offered,
+    is_active
 ) VALUES (
-    'b07c3956-aedb-48d9-9eee-197c9e21a96d',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    'a3631081-8480-49c1-9ad6-2f721df2884f',
     'Iden tification  Thermoguard Limited',
-    '["cleaning"]',
-    0,
+    {"cleaning"},
     TRUE
-);
+) ON CONFLICT DO NOTHING;
 INSERT INTO contractors (
-    id, building_id, company_name, services_json,
-    annual_value, is_active
+    id, company_name, services_offered,
+    is_active
 ) VALUES (
-    '1b10e929-8bcb-45fa-aa07-e9b5e1b9946e',
-    'a4a40228-663a-4e4d-96bd-784ea85a70f5',
+    '81da152b-2764-4baf-9f0f-2ce8b40b972b',
     'Target Lifts Ltd',
-    '["cleaning"]',
-    0,
+    {"cleaning"},
     TRUE
-);
+) ON CONFLICT DO NOTHING;

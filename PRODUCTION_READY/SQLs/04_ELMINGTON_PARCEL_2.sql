@@ -1,5 +1,5 @@
 -- BlocIQ V2 Complete Building Migration
--- Generated: 2025-10-17T14:10:26.415562
+-- Generated: 2025-10-17T16:19:44.248706
 -- Building: 254.01 ELMINGTON PARCEL 2
 
 -- Building
@@ -10,7 +10,7 @@ INSERT INTO buildings (
     bsa_registration_required, bsa_status,
     construction_type, construction_era
 ) VALUES (
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '254.01 ELMINGTON PARCEL 2',
     NULL,
     NULL,
@@ -28,8 +28,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'db16a4ac-f0ce-491d-ad46-1a89dafe43a9',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'a722f810-1d5d-48f4-9a64-4adafbd42e00',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     'Reference',
     NULL,
     NULL,
@@ -39,8 +39,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '0c271bcf-1360-4876-8031-dd50390a4463',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8caefcb0-e842-4e8b-8dc6-5da24750e44e',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     'These are missing from FirstPort',
     NULL,
     NULL,
@@ -50,8 +50,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'e1dac738-c017-45dc-bf60-f2c640587703',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '5e0b7238-9bd6-4fce-be48-b265c1e18cb6',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     'Produced 12:55 13 Jun 2025',
     1,
     NULL,
@@ -61,8 +61,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5924e579-67db-49b3-993d-960e86ae1aac',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'ed635cfc-9b49-4c18-a4e8-ec174c02423c',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     'Produced 12:10 15 May 2025',
     1,
     NULL,
@@ -72,8 +72,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '54310214-fd24-41ec-81bd-ea4119aa154a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '549514dd-63e2-4072-a983-98340963e3e1',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640A',
     2764,
     NULL,
@@ -83,8 +83,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '501bf761-9eba-49be-9519-ee60443ab149',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '04055872-15d3-437f-a079-72b75a5ee9b6',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640B',
     2764,
     NULL,
@@ -94,8 +94,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '438b9641-b515-43bd-b0a8-443600d6cee6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '18da83cb-43cf-4571-8a1e-d434c2d60fea',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640C',
     2764,
     NULL,
@@ -105,8 +105,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4214f11c-9aa6-4cd4-bd92-67f40b3ba829',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '55c2a3ec-a3b1-4b02-a9ee-b521dafa520d',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640D',
     2764,
     NULL,
@@ -116,8 +116,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '2fa328af-fcc0-4171-951e-3c7c3391e56f',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '2b0df216-a335-45a7-ac06-cb943d6a0767',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640E',
     2764,
     NULL,
@@ -127,8 +127,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '33ba7c8b-c65f-408c-8e06-2fa23432a60a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '6f36f72a-888d-43a3-b646-095ecbc4bd7b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640F',
     2764,
     NULL,
@@ -138,8 +138,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '45e36337-f36a-48aa-85e9-4bb8d38172b2',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'fd2a8c3a-680b-47b1-94ac-82b4d748ba26',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640G',
     2764,
     NULL,
@@ -149,8 +149,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'bb39f356-169b-4555-b9df-5e30bd7edde6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'e79b110f-6e51-4b2f-8636-46923ad86873',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000301',
     2764000030,
     NULL,
@@ -160,8 +160,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '2b27f0f9-f0b3-4575-8171-937ac67730c8',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '98bfb4ab-eef6-4e7b-a4df-ca5f48eeda25',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000302',
     2764000030,
     NULL,
@@ -171,8 +171,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '37291fbe-df5a-4303-8985-63264cc7c69c',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '5bb319de-aa77-49d9-ab1f-aedd2022ecfe',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000303',
     2764000030,
     NULL,
@@ -182,8 +182,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '42f775ce-1b3a-4768-be25-13fbd46bd776',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'e90cfb1b-860f-4479-b800-70b2a0074646',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000304',
     2764000030,
     NULL,
@@ -193,8 +193,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'a5acba18-034b-4bb3-a31b-1df92d9bd3d5',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '63a03f12-9400-426f-a948-e6bb8b3ea564',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000306',
     2764000030,
     NULL,
@@ -204,8 +204,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5f7efa6f-42d9-4455-a8e3-979fa68d5580',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '1f5dd515-d194-4cb5-b011-cd0fb005b429',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000308',
     2764000030,
     NULL,
@@ -215,8 +215,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'bc6fb82c-eb3e-4298-9b45-3bd30eb5851a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '268bf71e-3fd1-4514-968a-3fc23bbc2057',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000310',
     2764000031,
     NULL,
@@ -226,8 +226,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'e9ad3aa2-358c-424e-9511-172a7cd1c4d8',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '15cb5a7b-83af-4fa6-8e0e-0892375140b2',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000312',
     2764000031,
     NULL,
@@ -237,8 +237,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '84760ac4-37d1-49a4-83a0-1fc83c0f546b',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '91bb55b9-31c0-4e77-bb56-8ccf9762c1de',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000314',
     2764000031,
     NULL,
@@ -248,8 +248,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '9a3ce5d1-c280-4593-a1c0-3b1bc60ac253',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '59398941-73c1-4cff-906a-9505b7634b36',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000316',
     2764000031,
     NULL,
@@ -259,8 +259,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'df8191d6-3416-473a-9e38-6674953d04c6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8bfdab79-1cbe-4139-b0e1-15b17c2fc6c1',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640000318',
     2764000031,
     NULL,
@@ -270,8 +270,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '953c7e76-765e-497d-a5f6-1bd718281ca9',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'bb29fa0d-cbb6-4491-94b2-934ef44a1e0b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640001102',
     2764000110,
     NULL,
@@ -281,8 +281,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5c7df824-ac01-4bf8-933c-4f8854f7e7d7',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'dec038bd-2937-4fd9-aea2-cc45e5e8dc2b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640001104',
     2764000110,
     NULL,
@@ -292,8 +292,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '454ed4ae-c911-4226-8438-5bcc43ba510e',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '854772d1-2c38-4166-8399-a63e83baa4d3',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640001106',
     2764000110,
     NULL,
@@ -303,8 +303,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '49d9fd28-0b57-423e-b2b4-d1a76fb0bbe3',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '532abcf1-bd41-45ed-bf8f-fa9c814d199a',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010001',
     2764001000,
     NULL,
@@ -314,8 +314,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4fbb6d7b-2245-4f95-a0c4-7487f152a375',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '96b9044f-abb7-40cc-98a8-8434cf7ca201',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010002',
     2764001000,
     NULL,
@@ -325,8 +325,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '95617a20-f9ab-4d4e-bd02-99274fd51922',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '6dc98f2e-5355-4d08-9dc3-0abeabaa50a0',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010003',
     2764001000,
     NULL,
@@ -336,8 +336,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7c2b19d7-b5f0-4b3d-9878-922dce107ef3',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '218edcef-71c9-4b40-adfb-85fdadaa07c0',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010004',
     2764001000,
     NULL,
@@ -347,8 +347,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '629159c8-b28d-4b79-950d-b739f3720656',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '28bb2cac-e3e5-4264-81d5-7f31cbfe7976',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010005',
     2764001000,
     NULL,
@@ -358,8 +358,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '2b72e129-9aee-4c43-ac41-a0a6031df3a0',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'be89a8b2-84f6-4de5-9f70-17b63fc91b4b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010006',
     2764001000,
     NULL,
@@ -369,8 +369,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f97619c7-2703-445a-bc41-ba8e8db3b16d',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8e17b891-8c2b-41f0-8ab3-c35a9ab3a322',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010007',
     2764001000,
     NULL,
@@ -380,8 +380,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'c6377ffe-26da-437e-9935-ce329ab5cd13',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '0b90c265-debf-4c4f-9fe2-eb5bb639292b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010008',
     2764001000,
     NULL,
@@ -391,8 +391,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '03b941e1-f526-4fe7-ad3a-56ac7e1d8e02',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'c1bc525a-74aa-4c90-b1da-47f86af65404',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010009',
     2764001000,
     NULL,
@@ -402,8 +402,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '92ac7cc6-270f-4ed1-9888-274262c649c2',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '6d796acb-6901-4909-89f6-65fabe726d48',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010010',
     2764001001,
     NULL,
@@ -413,8 +413,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'a83891f4-1916-4e79-a022-a808185fc35e',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '1830bb11-4391-42df-aaf4-ec2796c68eac',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640010011',
     2764001001,
     NULL,
@@ -424,8 +424,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '2468b62d-ec42-43b4-9080-2e1bf46c26b6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '1a40f284-d15d-4f9b-9c66-ec179e976ec3',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020101',
     2764002010,
     NULL,
@@ -435,8 +435,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5630e66b-5bee-4220-90a8-8fc8e7b9eb61',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'aa9cce1e-8f99-4869-9bc7-74c7092557e9',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020102',
     2764002010,
     NULL,
@@ -446,8 +446,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '8af7068a-bed4-4595-b1f4-d1e5d6e53300',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'e334c0ce-e2e5-40c7-8d95-e2c128633e00',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020103',
     2764002010,
     NULL,
@@ -457,8 +457,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4484dde8-3e07-4186-8f66-d62f9b7676eb',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '0f2d950c-7efd-48da-ab75-31cc51cf4503',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020104',
     2764002010,
     NULL,
@@ -468,8 +468,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '31a8a78d-c8ff-4f24-b272-2035152fb195',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'c801b657-5bdd-441f-907e-1418a7ea6087',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020105',
     2764002010,
     NULL,
@@ -479,8 +479,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '89ee63b9-4adf-43f1-8cb9-b0d742a688e5',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'f9a1c232-c7bf-4bb3-8942-14097619499a',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020106',
     2764002010,
     NULL,
@@ -490,8 +490,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ac6b38c6-20d2-4da9-9589-7cf16d480a5e',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'bdcee340-af55-460f-a097-ee6cd1906a90',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020107',
     2764002010,
     NULL,
@@ -501,8 +501,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4d89c85b-92f5-4823-b031-5c70a4528f33',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '1a5fb2be-230a-4e11-be5a-b537bf0ad85f',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020108',
     2764002010,
     NULL,
@@ -512,8 +512,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'a0d34724-dd00-4ce1-a56d-edbcfc840850',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'd5625678-9a4d-45bf-84fb-0577c7f76dca',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020109',
     2764002010,
     NULL,
@@ -523,8 +523,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'adc7c5bb-f890-4bb1-9c69-69cd28938a0a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'fc842bb5-51e8-4c9a-a8f7-dbfcf63b2426',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640020110',
     2764002011,
     NULL,
@@ -534,8 +534,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '11d0ae19-a093-4593-b307-d992ded392a6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '20af07fc-26bf-4c64-98bf-0dca15e9780b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030201',
     2764003020,
     NULL,
@@ -545,8 +545,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '8263a4a3-037d-491b-9c6e-b0b02c424541',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'b63c52cb-f7c2-45c5-b05b-ea1f7840456d',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030202',
     2764003020,
     NULL,
@@ -556,8 +556,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '07700578-35c4-4f21-9adb-b31bd779125c',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8fb24ad2-eea7-4ab9-8e7a-6c6668d7fa32',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030203',
     2764003020,
     NULL,
@@ -567,8 +567,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1bb30a8b-679f-4c68-8b37-4aedb6b99b25',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8317e0b2-7a90-4d41-943b-1aca5f7c8813',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030204',
     2764003020,
     NULL,
@@ -578,8 +578,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'b6fb741a-3752-4d7c-bbdc-ac57bf248962',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '2f4585fc-3025-4960-b16f-4ea37f8a299a',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030205',
     2764003020,
     NULL,
@@ -589,8 +589,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'b1911ba6-cec3-4cfb-a8c5-754ea6d6c012',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '197f0293-717e-4439-b986-483e784a743e',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030206',
     2764003020,
     NULL,
@@ -600,8 +600,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '69a33511-9d21-4025-aaaa-c95a6f27ba1a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '741b396c-41a9-4f07-a8e9-fb972a0c0dc5',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030207',
     2764003020,
     NULL,
@@ -611,8 +611,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '45b79a51-132c-4ac1-add7-e26d7ffbe0e3',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '89d13b9e-c03e-46cd-b8e2-26e6578e3123',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030208',
     2764003020,
     NULL,
@@ -622,8 +622,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ec65dcb1-5d4c-4013-ad4a-744b2d0f2573',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '9d8c340f-7fc6-4a8d-ad3e-6092cf0ec734',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030209',
     2764003020,
     NULL,
@@ -633,8 +633,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'e0090bea-d1b2-4c94-b929-207339f0c30a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '866be99e-8e19-4739-8f1f-80a754c1a895',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030210',
     2764003021,
     NULL,
@@ -644,8 +644,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '39c30557-f69d-4e73-996c-49b0d07d74e1',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'd4d1c211-5163-41ad-b7d6-b66570f1f00e',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030211',
     2764003021,
     NULL,
@@ -655,8 +655,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '66aec674-445d-4291-84b9-800314c2d55a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '6ef87b63-24a6-42da-8671-f15105c6da29',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640030212',
     2764003021,
     NULL,
@@ -666,8 +666,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '23ee0490-52b1-444d-b128-a84ba676ed2b',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'd553273f-e313-461f-9e93-53412bedc161',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640031008',
     2764003100,
     NULL,
@@ -677,8 +677,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3eab1994-d3af-4750-a275-3b7c19ee149d',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'cab1bcf1-cb27-47a2-b263-190eff6c839f',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640031012',
     2764003101,
     NULL,
@@ -688,8 +688,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '50082988-1677-412e-876d-87c0852d727b',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '2d292833-963f-449c-9931-2618a47e6cb9',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040401',
     2764004040,
     NULL,
@@ -699,8 +699,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'c12ad235-2da1-479e-8070-f9bf6f40d8a1',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'f8dd8e58-bc8c-4b68-86bc-5b09eb860fd8',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040402',
     2764004040,
     NULL,
@@ -710,8 +710,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'beeff3fd-3f83-4dc8-8fe2-6ccea0f71fe9',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'bed3d2e5-6a5a-49eb-ab13-bdb787ae109b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040403',
     2764004040,
     NULL,
@@ -721,8 +721,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4bdfbad5-cafc-411c-bea1-ee85bd939b7d',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '72669212-5c0b-473f-aee3-0d3be052195f',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040404',
     2764004040,
     NULL,
@@ -732,8 +732,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4235264c-77e4-46c7-a711-21e82e05106a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'c375c7e6-aaae-4d01-a9bb-0e722f0a001b',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040405',
     2764004040,
     NULL,
@@ -743,8 +743,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '23e97311-152e-4615-b71c-a32c6659394d',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '4aa7ab11-b258-4ccb-be26-1b8748944b0c',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040406',
     2764004040,
     NULL,
@@ -754,8 +754,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f9b3d939-f770-4241-bf74-03478f36fcfd',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '647cbb89-bcb5-4abe-a5b9-46cac636896f',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040407',
     2764004040,
     NULL,
@@ -765,8 +765,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '015998a5-f5d6-45b9-86ac-478c42029d04',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8ef21436-2ed9-4db6-9206-557dd449adcf',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040408',
     2764004040,
     NULL,
@@ -776,8 +776,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '5e731609-84fe-4912-80ba-f7e03b0a7f28',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '66c2250d-6a28-4068-989f-f866d832be7d',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040409',
     2764004040,
     NULL,
@@ -787,8 +787,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'b75f1384-6edc-4df8-adf1-1f71b095ffb5',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'eef0ab73-0c64-4f1a-9fc2-0e99040031e2',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040410',
     2764004041,
     NULL,
@@ -798,8 +798,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '99e501bf-31ec-474f-944c-0b685e6dcbb6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '1a2eb531-f53c-429c-9384-dcaf355e6355',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640040411',
     2764004041,
     NULL,
@@ -809,8 +809,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '47c62530-89b9-4b12-81d9-5a07c232336d',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '47e1e2e5-c7b7-4cd5-ad8a-acaeed7c0220',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640041404',
     2764004140,
     NULL,
@@ -820,8 +820,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '12789f90-25b8-405b-bb7c-a6d11616709d',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '39089666-38b6-4bfa-826f-60569b546d7a',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640041408',
     2764004140,
     NULL,
@@ -831,8 +831,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'edc2d687-cd44-41f3-b9dc-0e75d0e0925f',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8b36a6df-e6f4-41d0-a93a-51883d0a0fd9',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050501',
     2764005050,
     NULL,
@@ -842,8 +842,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '62f3ee5a-d870-4d6f-9d41-4005bb77997a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'f5b194b3-7ace-455e-8de6-2872ac23fde7',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050502',
     2764005050,
     NULL,
@@ -853,8 +853,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ff34f6bf-32a1-43c7-bc5c-7f24ccd81497',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '3606b634-8957-4a40-8c56-8aa4e3a9cf60',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050503',
     2764005050,
     NULL,
@@ -864,8 +864,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '6cd29421-ddb5-42ef-a987-b2d7c2eae523',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '71b91cd6-8638-42ff-b383-89931e2c593a',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050504',
     2764005050,
     NULL,
@@ -875,8 +875,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '43566e0c-1e1a-4cf4-92ef-fec190d90923',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'bede1c71-1524-419e-8d63-257c96044b15',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050505',
     2764005050,
     NULL,
@@ -886,8 +886,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'a22b080f-43f0-4a17-b97d-6cc25ee2c409',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'dc476cb6-f2e7-4cc2-b956-eb904b5701ed',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050506',
     2764005050,
     NULL,
@@ -897,8 +897,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '80c4d92b-0a51-430e-aa74-5980eeb16a18',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '4eab1fcc-a7fb-437f-8f74-e523af776b48',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050507',
     2764005050,
     NULL,
@@ -908,8 +908,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '420cadf3-47ba-4e20-a6e2-28540e81d798',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'e71dda5e-9398-4893-a0d3-581f77be2206',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050508',
     2764005050,
     NULL,
@@ -919,8 +919,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'b9c1f100-9ab8-4c49-ae08-dedf97803c4e',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'f01533c3-3336-46bc-8580-203c34b2b4ae',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050509',
     2764005050,
     NULL,
@@ -930,8 +930,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '4f0b0cb1-39f2-4a29-b88a-647346c4b452',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'fe1c9b77-b0f2-452b-9ccd-21349ef7836d',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050510',
     2764005051,
     NULL,
@@ -941,8 +941,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f2a90b0b-77f4-4e4b-a48e-455984e42170',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'a3048218-da6b-4ae9-9ce8-3008bfb84a28',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640050511',
     2764005051,
     NULL,
@@ -952,8 +952,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '6db7733c-7911-4fce-8595-017bbeef16e2',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'df0899bb-1256-4a20-8526-19d69c6676ea',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060601',
     2764006060,
     NULL,
@@ -963,8 +963,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1a794a75-500d-45e8-a299-1bc3d19647e6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'dcacf08a-b9bd-4ed3-b061-bab71fbe0847',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060602',
     2764006060,
     NULL,
@@ -974,8 +974,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'f7a04304-57d4-47b5-9725-1fdfe33d9afb',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '5341ec31-30dc-4eb0-8a31-ad8d3e75fff9',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060603',
     2764006060,
     NULL,
@@ -985,8 +985,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '1481440b-e080-419d-95d8-745f4f8a85d9',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '6f57c160-f4c8-4834-8e30-97ee1ef68251',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060604',
     2764006060,
     NULL,
@@ -996,8 +996,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '946cf58d-94f8-4a7c-96c8-8591ef2b71de',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'c13db7f6-7543-4a68-bd1e-903dba401752',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060605',
     2764006060,
     NULL,
@@ -1007,8 +1007,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'd1790e92-bbd3-49ed-b945-2e2beafe5982',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'd53f2a71-f531-4718-b938-ead2a44f81dd',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060606',
     2764006060,
     NULL,
@@ -1018,8 +1018,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '78f602ca-0415-4ef4-bc57-3215c85435f5',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '6dbffd57-5846-4a22-b06c-d7cc0de24670',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640060607',
     2764006060,
     NULL,
@@ -1029,8 +1029,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ab24f9aa-0660-4352-ad2e-97ae7accb942',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '1e2d17db-48ca-4d60-8eae-b95f160503e3',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070701',
     2764007070,
     NULL,
@@ -1040,8 +1040,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '7353c8e3-62ba-4f75-af57-c3aac8a06106',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '64f2179a-4555-4e2c-9c9c-1c9abd0e5f83',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070702',
     2764007070,
     NULL,
@@ -1051,8 +1051,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '83e78f5d-d3ee-426c-9062-a389ac06719b',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'ff81dac9-1a69-4e3a-83f2-e59e458dbc28',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070703',
     2764007070,
     NULL,
@@ -1062,8 +1062,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '639b3b45-d207-4080-b47a-b98df85bdf0a',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'bf8b7b22-55aa-4c30-9972-06de7a6ee6b8',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070704',
     2764007070,
     NULL,
@@ -1073,8 +1073,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '097e6be7-d834-405e-b5c1-6cd63e3db9ea',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    'fb541160-90d8-43fa-aa4e-24bcfef9539d',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070705',
     2764007070,
     NULL,
@@ -1084,8 +1084,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '3967fc21-8df8-41c5-8867-cf9a80020a9b',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '7a49f7a8-6f81-40f8-a054-e4a28a62c9b2',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070706',
     2764007070,
     NULL,
@@ -1095,8 +1095,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'c12ffebf-0387-4b93-9913-47ef9bd7c721',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '60bcdb31-d822-499a-b909-48e52c04df4f',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070707',
     2764007070,
     NULL,
@@ -1106,8 +1106,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'ad2f6fdf-ae5a-41d5-85de-966fbf8398fd',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '551cc64a-ee9c-4de6-b538-dad1541523f7',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070708',
     2764007070,
     NULL,
@@ -1117,8 +1117,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '70b8143e-f9e0-4bc1-9f45-4fd48b36baaa',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '950b5527-1122-49db-a769-192952aab47d',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070709',
     2764007070,
     NULL,
@@ -1128,8 +1128,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '500fc539-a7ba-42c0-a343-ba0d0c4fc697',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '85a18f43-a9a2-4c77-a4a6-2b2d1f3ee537',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070710',
     2764007071,
     NULL,
@@ -1139,8 +1139,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '949a852b-8d58-463a-a51d-28247c3b35d6',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '8eb4e545-98ef-4d32-8400-2944214271b8',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070711',
     2764007071,
     NULL,
@@ -1150,8 +1150,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    '2989e10d-6155-47e5-be05-a5af1fd857eb',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '243453c5-d51e-4059-b8ff-1f5be7485cca',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070712',
     2764007071,
     NULL,
@@ -1161,8 +1161,8 @@ INSERT INTO units (
     id, building_id, unit_number, floor_number,
     apportionment_percentage, unit_type
 ) VALUES (
-    'e76d9850-91dc-4067-9a86-8483dffb340b',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    '4a33de12-babf-4bcd-8534-913e9d3cf713',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
     '27640070713',
     2764007071,
     NULL,
@@ -1171,1023 +1171,1023 @@ INSERT INTO units (
 
 -- Leaseholders (93)
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2d1c2822-7946-4961-b808-74831bacffc1',
-    'bb39f356-169b-4555-b9df-5e30bd7edde6',
+    'bf187eef-a552-4ba5-ab99-13bfccb1ed2a',
+    'e79b110f-6e51-4b2f-8636-46923ad86873',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '75cfc707-ceff-4dcb-a788-a3c0d623e526',
-    '2b27f0f9-f0b3-4575-8171-937ac67730c8',
+    '8f55268d-daed-44c9-b5c9-6c9dbf91d1ea',
+    '98bfb4ab-eef6-4e7b-a4df-ca5f48eeda25',
     'Oliver Johnstone & Rachel Harris',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'ce3689e4-4a04-457f-90da-6ddf1d78a72e',
-    '37291fbe-df5a-4303-8985-63264cc7c69c',
+    '85df0c5e-2931-45af-83dd-972c94ed89ea',
+    '5bb319de-aa77-49d9-ab1f-aedd2022ecfe',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4c883046-7b4f-4e0c-b237-7801b12e207a',
-    '42f775ce-1b3a-4768-be25-13fbd46bd776',
+    'be203747-8d90-4420-b944-ce0475d24340',
+    'e90cfb1b-860f-4479-b800-70b2a0074646',
     'Anna F & Laura D & Alice N Russell',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '800a314d-eaca-41bc-96e1-a7305789707e',
-    'a5acba18-034b-4bb3-a31b-1df92d9bd3d5',
+    'e448249a-14c7-4da1-b41d-979e2d15631b',
+    '63a03f12-9400-426f-a948-e6bb8b3ea564',
     'Lucinda Marshall',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c88e6d8c-850f-4e82-9a28-854dbc498d0c',
-    '5f7efa6f-42d9-4455-a8e3-979fa68d5580',
+    '0dcee11b-d06a-41c6-b793-237d0cfbe1a6',
+    '1f5dd515-d194-4cb5-b011-cd0fb005b429',
     'Mr L J Lee & Miss J H Bentley',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'f857cbb1-dec8-4b31-8e04-1ac36ee06a0a',
-    'bc6fb82c-eb3e-4298-9b45-3bd30eb5851a',
+    '5fa9fa5e-09df-4d6b-80e6-594a6a026ce0',
+    '268bf71e-3fd1-4514-968a-3fc23bbc2057',
     'Gareth Briggs & Claire Maddocks',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7efca9e2-1b7b-414b-b8f8-10ab2594aa9a',
-    'e9ad3aa2-358c-424e-9511-172a7cd1c4d8',
+    'd60900cd-ea1c-4512-ab2d-225d0d24cd50',
+    '15cb5a7b-83af-4fa6-8e0e-0892375140b2',
     'Mohamed Shaikh',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '24f05c39-2923-4d76-89ee-afd49863b06d',
-    '84760ac4-37d1-49a4-83a0-1fc83c0f546b',
+    'af873f20-c3bf-47fd-932f-5cc3ce9bb856',
+    '91bb55b9-31c0-4e77-bb56-8ccf9762c1de',
     'Katherine Stirrup',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '97f2a7c3-85b7-4417-be7d-493a7b5fb348',
-    '9a3ce5d1-c280-4593-a1c0-3b1bc60ac253',
+    '4a148f49-b8e4-492a-be08-6b4e6a366ccb',
+    '59398941-73c1-4cff-906a-9505b7634b36',
     'Jacob Miles Davis',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '8127898d-ddb7-4252-95da-5c0f519ecca0',
-    'df8191d6-3416-473a-9e38-6674953d04c6',
+    'f1ad11dc-d2b0-4041-b779-8fa0551d200d',
+    '8bfdab79-1cbe-4139-b0e1-15b17c2fc6c1',
     'David Tamal Zentler-Munro',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '8ddf7eab-5044-4b7d-ac5b-bbcedd10e19e',
-    '953c7e76-765e-497d-a5f6-1bd718281ca9',
+    'a6f2ee6d-777e-473a-bf63-c09afd569385',
+    'bb29fa0d-cbb6-4491-94b2-934ef44a1e0b',
     'Toby William Weston',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '01b4bb32-0060-4056-bd0f-83ac02732e09',
-    '5c7df824-ac01-4bf8-933c-4f8854f7e7d7',
+    'ff31a6a5-92ec-4789-9b1f-2e89a5bdf25b',
+    'dec038bd-2937-4fd9-aea2-cc45e5e8dc2b',
     'David John Glover',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '14ae82f7-a248-4b8b-a53b-801cbdbf5056',
-    '454ed4ae-c911-4226-8438-5bcc43ba510e',
+    '68038a66-2db3-40c6-8c0b-1737cdac93e0',
+    '854772d1-2c38-4166-8399-a63e83baa4d3',
     'Bernard Asiedu & Akua Domfeh',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7715b987-1283-4c3e-ad9a-42406fd5e54f',
-    '49d9fd28-0b57-423e-b2b4-d1a76fb0bbe3',
+    'be60c8c6-5f0a-4c55-9d7a-dc0771d778a7',
+    '532abcf1-bd41-45ed-bf8f-fa9c814d199a',
     'Mr J P Miller & Ms L F Miller',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'e869177b-a708-444f-82ca-94f2c28ae555',
-    '4fbb6d7b-2245-4f95-a0c4-7487f152a375',
+    '0a2aacd4-f482-426c-91c1-ea4d8af3559c',
+    '96b9044f-abb7-40cc-98a8-8434cf7ca201',
     'Sarah Brereton & Michael Ward',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b9e11679-83be-4dde-8d74-a4b174f9648d',
-    '95617a20-f9ab-4d4e-bd02-99274fd51922',
+    'c3e9d48e-c078-439a-b5da-156ab204b60c',
+    '6dc98f2e-5355-4d08-9dc3-0abeabaa50a0',
     'Robyn Hodson',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4608557e-b8f2-4158-81ca-da803983c2c4',
-    '7c2b19d7-b5f0-4b3d-9878-922dce107ef3',
+    '2a5e4f51-33fb-453e-b9db-70f6dd18c294',
+    '218edcef-71c9-4b40-adfb-85fdadaa07c0',
     'Sophie Goddard',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '029d45a7-c920-4931-9a2d-a496a80c05dd',
-    '629159c8-b28d-4b79-950d-b739f3720656',
+    '5d9a092a-fcb0-4445-b653-9057d2f1e5ac',
+    '28bb2cac-e3e5-4264-81d5-7f31cbfe7976',
     'Kathleen Elizabeth Ward',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b458d522-2c97-43b8-aef9-0a8c9568ba5e',
-    '2b72e129-9aee-4c43-ac41-a0a6031df3a0',
+    '712cd2b4-3221-49d6-8e5d-57ffe0314935',
+    'be89a8b2-84f6-4de5-9f70-17b63fc91b4b',
     'Jaspreet Singh Gill',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '24e7a404-28fe-4629-a9a7-8805a55f26e7',
-    'f97619c7-2703-445a-bc41-ba8e8db3b16d',
+    'fd9651a1-28a5-4946-9c82-4fbbeea4f004',
+    '8e17b891-8c2b-41f0-8ab3-c35a9ab3a322',
     'Luca Montalto Giampaoli and Federica Michelin',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '1dec4ea9-0e1c-4bb6-9f75-d47b1cceacde',
-    'c6377ffe-26da-437e-9935-ce329ab5cd13',
+    'b54b41ba-eee4-484d-a729-aac7354e4d08',
+    '0b90c265-debf-4c4f-9fe2-eb5bb639292b',
     'Malcolm Shaw',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '3bee47fa-fa81-4321-8bdf-fa5e8b711d14',
-    '03b941e1-f526-4fe7-ad3a-56ac7e1d8e02',
+    '79d125b2-3e22-42ed-8861-d37aa6d64c2d',
+    'c1bc525a-74aa-4c90-b1da-47f86af65404',
     'Edward & Alice O''Connell',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '70777196-d04d-4891-9df4-2d68c8eb8cb3',
-    '92ac7cc6-270f-4ed1-9888-274262c649c2',
+    '1132ccd9-b1c0-40ea-a057-974097d56e3b',
+    '6d796acb-6901-4909-89f6-65fabe726d48',
     'Bram Wal & Chin Tay',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '9c163620-f481-405d-9aa5-454790ca4727',
-    'a83891f4-1916-4e79-a022-a808185fc35e',
+    '6c216e11-132b-4552-95df-10371b38c6a4',
+    '1830bb11-4391-42df-aaf4-ec2796c68eac',
     'Jack Howse',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '26b2cd9a-d866-493c-a77b-48441803db62',
-    '2468b62d-ec42-43b4-9080-2e1bf46c26b6',
+    'c95845ab-80c8-4e05-865a-c90d35a87bb4',
+    '1a40f284-d15d-4f9b-9c66-ec179e976ec3',
     'Swati Ahuja',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7432c333-13fa-48f0-aa57-8c86bec6f175',
-    '5630e66b-5bee-4220-90a8-8fc8e7b9eb61',
+    '185e0818-8327-4b64-96ec-32a190e7f41e',
+    'aa9cce1e-8f99-4869-9bc7-74c7092557e9',
     'Zerrne Henderson',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a595b33f-f191-4115-b933-fd044d451583',
-    '8af7068a-bed4-4595-b1f4-d1e5d6e53300',
+    '35763c58-28e1-49b3-8cf7-c05fd1a1540f',
+    'e334c0ce-e2e5-40c7-8d95-e2c128633e00',
     'Symone Krimowa & James Zuccollo',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '0f863600-47ff-491e-8a67-0f1b9a9e1f61',
-    '4484dde8-3e07-4186-8f66-d62f9b7676eb',
+    '59ea0a98-3ff2-4b33-9096-7198715f5ede',
+    '0f2d950c-7efd-48da-ab75-31cc51cf4503',
     'Stephen Pearson',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a7422d03-76b2-459e-8118-30a9f125c5f9',
-    '31a8a78d-c8ff-4f24-b272-2035152fb195',
+    'fc3da1f6-47cf-4729-a691-3912ed1ed0c7',
+    'c801b657-5bdd-441f-907e-1418a7ea6087',
     'Thomas & Henrietta Scrope',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '08d467a2-4e7e-4fba-b1c3-d67c1c5188e5',
-    '89ee63b9-4adf-43f1-8cb9-b0d742a688e5',
+    '5b498b60-9ac2-4d9d-a7f1-c98830b1bb01',
+    'f9a1c232-c7bf-4bb3-8942-14097619499a',
     'William James Underwood',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '02b26937-9edd-4be2-ad68-9167efdb8a7f',
-    'ac6b38c6-20d2-4da9-9589-7cf16d480a5e',
+    '22d8dd91-3df7-44d3-b4ab-2f7ead448462',
+    'bdcee340-af55-460f-a097-ee6cd1906a90',
     'Helena Varley',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '77b77cb0-4f9c-4bef-950f-83e0f4619b2b',
-    '4d89c85b-92f5-4823-b031-5c70a4528f33',
+    '30b3962b-dffd-4c7d-95d4-16e1927c48a5',
+    '1a5fb2be-230a-4e11-be5a-b537bf0ad85f',
     'Claudia Lauren Ballard',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4a8bbaf3-d527-4e74-8ef5-3e71ce3a0456',
-    'a0d34724-dd00-4ce1-a56d-edbcfc840850',
+    '756e090a-399d-46ed-a912-be70af3bbd46',
+    'd5625678-9a4d-45bf-84fb-0577c7f76dca',
     'Francis Powell Smith and Amanda Nicola Chetwynd- Cowieson',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '0b2d0d9a-f749-4848-929c-cda5393186a7',
-    'adc7c5bb-f890-4bb1-9c69-69cd28938a0a',
+    '4b8457b1-a57b-4a64-a26d-7991f5dc39ce',
+    'fc842bb5-51e8-4c9a-a8f7-dbfcf63b2426',
     'Nicolas Harvey',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'cd5818d5-91b9-4b16-b2a8-4e0ce7bc6195',
-    '11d0ae19-a093-4593-b307-d992ded392a6',
+    '23c0da02-f7c5-428a-adfe-2ec55409c0fd',
+    '20af07fc-26bf-4c64-98bf-0dca15e9780b',
     'Anas Nader & Yasmin Maksousa',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4068464d-45e8-4b50-aefe-b571961be0e2',
-    '8263a4a3-037d-491b-9c6e-b0b02c424541',
+    '393d0781-156a-4a84-8574-ae370ffffe99',
+    'b63c52cb-f7c2-45c5-b05b-ea1f7840456d',
     'Ellen Brown',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '59d6836b-6032-4645-a232-d021b2ecc9ab',
-    '07700578-35c4-4f21-9adb-b31bd779125c',
+    'fbdd5116-1ae9-4d84-a51c-9058e4c3f5a9',
+    '8fb24ad2-eea7-4ab9-8e7a-6c6668d7fa32',
     'Michael Walsh',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7d8d3fbd-a7ee-40f5-831c-11af725cee91',
-    '1bb30a8b-679f-4c68-8b37-4aedb6b99b25',
+    'b69e7b37-fab8-472e-af0a-f3516c95db48',
+    '8317e0b2-7a90-4d41-943b-1aca5f7c8813',
     'Holly Power',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '0522f6be-dde6-4b55-9248-f5942262b324',
-    'b6fb741a-3752-4d7c-bbdc-ac57bf248962',
+    '3d9803f0-4ed9-4b4d-b828-50fe7fb3822d',
+    '2f4585fc-3025-4960-b16f-4ea37f8a299a',
     'Emma Powell & Daniel KC Wong',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7cfb81e8-2e2f-4ea5-85be-3be87affd37d',
-    'b1911ba6-cec3-4cfb-a8c5-754ea6d6c012',
+    '63e2871d-6d3c-4071-955d-7ca05e16c9a9',
+    '197f0293-717e-4439-b986-483e784a743e',
     'V Z Zlatanov & L A J Simon-Dufis',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '27e632ff-677d-4d31-841c-6b162f9ee84c',
-    '69a33511-9d21-4025-aaaa-c95a6f27ba1a',
+    '5aed79c7-64c0-4182-9085-cdfe23672dfe',
+    '741b396c-41a9-4f07-a8e9-fb972a0c0dc5',
     'Amy Cheung',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '9cdbc33e-edd9-4750-b09b-2dab21ac2a84',
-    '45b79a51-132c-4ac1-add7-e26d7ffbe0e3',
+    'ab22281c-b1c1-493f-a4f6-1cbc3a99761d',
+    '89d13b9e-c03e-46cd-b8e2-26e6578e3123',
     'Miss C I Patel & Mr C L Gilbert',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '741141bc-bd51-41a0-8203-078774236adc',
-    'ec65dcb1-5d4c-4013-ad4a-744b2d0f2573',
+    '02fe75fa-ca55-43f3-b993-3eba9917c7c7',
+    '9d8c340f-7fc6-4a8d-ad3e-6092cf0ec734',
     'Roxane Barsky',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '85d1e5ce-583b-46e8-a255-e17ee7b5db72',
-    'e0090bea-d1b2-4c94-b929-207339f0c30a',
+    '4068b1dc-65f9-48ea-8f77-f230be5249ef',
+    '866be99e-8e19-4739-8f1f-80a754c1a895',
     'Joseph Christopher Butler',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '5fe00c92-5f5c-4574-b318-e0d6bbdfffe3',
-    '39c30557-f69d-4e73-996c-49b0d07d74e1',
+    'a19ff63e-227f-4860-8ad9-fe10d1341efe',
+    'd4d1c211-5163-41ad-b7d6-b66570f1f00e',
     'Diederik Winershoven & Gabriela Patrikova',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '9fd13ba8-4893-4de9-851e-b6c0a2922c14',
-    '66aec674-445d-4291-84b9-800314c2d55a',
+    '3001a0c4-e43d-4485-9ce0-bde636fa8476',
+    '6ef87b63-24a6-42da-8671-f15105c6da29',
     'Laura Smith',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'f81c9aa8-6e9b-4c28-9786-aab3a25ddd99',
-    '23ee0490-52b1-444d-b128-a84ba676ed2b',
+    '17c90db0-937d-446c-9a12-39531859249c',
+    'd553273f-e313-461f-9e93-53412bedc161',
     'Andrew Miller',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'e68b8932-268f-46b4-8496-5031f3cd5d31',
-    '3eab1994-d3af-4750-a275-3b7c19ee149d',
+    '88077dc8-1711-4f95-8b83-f2a8a2d6258c',
+    'cab1bcf1-cb27-47a2-b263-190eff6c839f',
     'Nivardo De Amorim Gallo',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'bf9eb1a5-f0a5-4c0e-aaac-eb6c5c385209',
-    '50082988-1677-412e-876d-87c0852d727b',
+    'a5d1cc47-10d7-4d5e-a669-2758195ae9f1',
+    '2d292833-963f-449c-9931-2618a47e6cb9',
     'Jordan Corner & Edward Ince',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'ca978610-0af3-46a1-9a82-96f0d6dd9f0f',
-    'c12ad235-2da1-479e-8070-f9bf6f40d8a1',
+    'ed533ad8-ebb1-41f0-b484-aa8adb120360',
+    'f8dd8e58-bc8c-4b68-86bc-5b09eb860fd8',
     'Nicola Mooney',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'd10143b9-2a81-443f-aa7e-bc58461421dd',
-    'beeff3fd-3f83-4dc8-8fe2-6ccea0f71fe9',
+    '3c118d45-7673-4cda-84e3-09de394a4df4',
+    'bed3d2e5-6a5a-49eb-ab13-bdb787ae109b',
     'Manuela Hernandez',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'eb90ea56-939f-4f9b-950a-6cf263ca0ab9',
-    '4bdfbad5-cafc-411c-bea1-ee85bd939b7d',
+    'ba4f13d7-6993-4a6c-a8a4-8c5b74332f19',
+    '72669212-5c0b-473f-aee3-0d3be052195f',
     'Edwin Henry Malins',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '5d9d426d-f093-4d74-9991-de8f5738f332',
-    '4235264c-77e4-46c7-a711-21e82e05106a',
+    '39495c4a-5947-40ab-8550-afc251b97a39',
+    'c375c7e6-aaae-4d01-a9bb-0e722f0a001b',
     'Andreas Papamichail & Alasdair Anderson Craig Falcon',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '894f482d-64dc-45a0-8e71-58341c882d44',
-    '23e97311-152e-4615-b71c-a32c6659394d',
+    'fa2e65c7-2746-40d0-9be9-f36f8585f7a4',
+    '4aa7ab11-b258-4ccb-be26-1b8748944b0c',
     'Bruno Andrade de Lyra',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'fcf2365b-0e60-4a8a-94fd-fd40bbca27b5',
-    'f9b3d939-f770-4241-bf74-03478f36fcfd',
+    '2f0b7a40-8ef4-4732-8096-2565c329a42e',
+    '647cbb89-bcb5-4abe-a5b9-46cac636896f',
     'Christopher L Davey and Wallis C McKendry',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'a1b6bdca-2fab-4683-9c9b-bfb977c3ad77',
-    '015998a5-f5d6-45b9-86ac-478c42029d04',
+    '1c6a9209-962b-4eef-93fe-f50071a9fa2e',
+    '8ef21436-2ed9-4db6-9206-557dd449adcf',
     'Samuel Gulliver Naish',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'e237f892-caa4-4156-93f7-735cd90af7f2',
-    '5e731609-84fe-4912-80ba-f7e03b0a7f28',
+    '265f26b6-a950-4f21-86db-169aac362c2c',
+    '66c2250d-6a28-4068-989f-f866d832be7d',
     'Rose Moncrieff & Charles Cooke',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '56f436f1-5b78-48ff-9bba-64804d618609',
-    'b75f1384-6edc-4df8-adf1-1f71b095ffb5',
+    'bcf181f7-9e54-4289-8037-9ff86476e224',
+    'eef0ab73-0c64-4f1a-9fc2-0e99040031e2',
     'T A M Revell & I E Steinmark',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b6f33f79-a43b-42d1-9535-39d9eb9aeac3',
-    '99e501bf-31ec-474f-944c-0b685e6dcbb6',
+    '272c2fab-e29e-4b85-a0e7-c672a7d50858',
+    '1a2eb531-f53c-429c-9384-dcaf355e6355',
     'Mr. George Frederick Bray & Ms. Alice Marie-Grace Panton',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '41e5cf67-51d2-49e9-b982-4c0e185ed616',
-    '47c62530-89b9-4b12-81d9-5a07c232336d',
+    '2f67bd0f-2bfc-4952-b1be-484181de43ba',
+    '47e1e2e5-c7b7-4cd5-ad8a-acaeed7c0220',
     'Julia Dianne Harrowsmith',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '7ea4e707-4ead-45fe-8c92-23ed635ddfe0',
-    '12789f90-25b8-405b-bb7c-a6d11616709d',
+    '31826127-1dca-4693-b5bd-a52661fc26ef',
+    '39089666-38b6-4bfa-826f-60569b546d7a',
     'Natalia Tothova',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '2e7f0a17-c236-41d1-8c52-bc461c5171f8',
-    'edc2d687-cd44-41f3-b9dc-0e75d0e0925f',
+    '7c196a90-367d-428a-ae49-eb4b30173ca4',
+    '8b36a6df-e6f4-41d0-a93a-51883d0a0fd9',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '4640145f-9d3f-4682-94fd-f2e1ea15e7ca',
-    '62f3ee5a-d870-4d6f-9d41-4005bb77997a',
+    '36fc0282-7102-41c3-a77b-c1b63feb4470',
+    'f5b194b3-7ace-455e-8de6-2872ac23fde7',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '575ab865-0fb7-41b0-b159-89a867f4237e',
-    'ff34f6bf-32a1-43c7-bc5c-7f24ccd81497',
+    '117d77a7-3cf0-4fbb-8429-b9ebff2e826f',
+    '3606b634-8957-4a40-8c56-8aa4e3a9cf60',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'd2920a26-7eb3-40bd-9bbe-c9bff1bd1f82',
-    '6cd29421-ddb5-42ef-a987-b2d7c2eae523',
+    'b7295933-a3ea-4f97-9a3f-aaa76de05649',
+    '71b91cd6-8638-42ff-b383-89931e2c593a',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '22bc0dfc-8a09-4573-9dcb-44a07f1a871c',
-    '43566e0c-1e1a-4cf4-92ef-fec190d90923',
+    '3285b255-27aa-4874-85f9-8812ebf4b97b',
+    'bede1c71-1524-419e-8d63-257c96044b15',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'ac1c329d-e631-40b3-b90b-fa38361dffca',
-    'a22b080f-43f0-4a17-b97d-6cc25ee2c409',
+    'd664f86c-4483-4d61-bba6-a570ce423d4f',
+    'dc476cb6-f2e7-4cc2-b956-eb904b5701ed',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '6afe49f9-ac41-4a58-9602-49e015808c54',
-    '80c4d92b-0a51-430e-aa74-5980eeb16a18',
+    'a82b8005-a512-48af-b146-8809ec504339',
+    '4eab1fcc-a7fb-437f-8f74-e523af776b48',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'f28bbe3e-606e-4e3e-aaf7-76af28849fa3',
-    '420cadf3-47ba-4e20-a6e2-28540e81d798',
+    '2df36ded-a04e-4cb1-9051-87c1e4efc936',
+    'e71dda5e-9398-4893-a0d3-581f77be2206',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '5b143914-b594-4c28-958c-0046a5976161',
-    'b9c1f100-9ab8-4c49-ae08-dedf97803c4e',
+    'ecade547-c25b-45a8-b01c-5a74aedf99b3',
+    'f01533c3-3336-46bc-8580-203c34b2b4ae',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '5e96d010-9d36-41f5-9272-eddebba953bd',
-    '4f0b0cb1-39f2-4a29-b88a-647346c4b452',
+    'b99f170c-ff67-46b9-b975-7bd01b9a7101',
+    'fe1c9b77-b0f2-452b-9ccd-21349ef7836d',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '83f01e87-c05c-430e-86a8-df9c9ee4c880',
-    'f2a90b0b-77f4-4e4b-a48e-455984e42170',
+    '62ab3840-f92b-4875-9e7f-85db51d63d78',
+    'a3048218-da6b-4ae9-9ce8-3008bfb84a28',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '9a1942e8-b321-4d4d-a5ad-0757a3f435a5',
-    '6db7733c-7911-4fce-8595-017bbeef16e2',
+    '7a70ca35-5bd9-4e22-ac9e-173f6fe25606',
+    'df0899bb-1256-4a20-8526-19d69c6676ea',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'bb09768e-499d-4872-8a05-70c82ab5579a',
-    '1a794a75-500d-45e8-a299-1bc3d19647e6',
+    '94b68c18-e85a-4aac-9d5f-9083aae5e87d',
+    'dcacf08a-b9bd-4ed3-b061-bab71fbe0847',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'c3b41bc1-ae1f-451c-950e-b5235e16fc38',
-    'f7a04304-57d4-47b5-9725-1fdfe33d9afb',
+    '306d3c70-1a74-47f6-8239-04a3e6cc0362',
+    '5341ec31-30dc-4eb0-8a31-ad8d3e75fff9',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b4c47ec2-9213-4876-9b6c-d364702bbede',
-    '1481440b-e080-419d-95d8-745f4f8a85d9',
+    '1e09897a-2d5e-4b53-9277-e9cca3238387',
+    '6f57c160-f4c8-4834-8e30-97ee1ef68251',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b2cfa3b3-aec0-4f91-8b40-0d42b0925bca',
-    '946cf58d-94f8-4a7c-96c8-8591ef2b71de',
+    'eedd609b-1858-4a95-84f5-c7efa19953b5',
+    'c13db7f6-7543-4a68-bd1e-903dba401752',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '8db7c44c-c038-4038-9294-796bae6969d2',
-    'd1790e92-bbd3-49ed-b945-2e2beafe5982',
+    '7114acf1-9de7-4787-950f-1a2115c4066f',
+    'd53f2a71-f531-4718-b938-ead2a44f81dd',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '26ce7c42-1a49-4571-9b19-1e1e08ece0d1',
-    '78f602ca-0415-4ef4-bc57-3215c85435f5',
+    '4638532c-06f9-4702-af7d-2736e884630c',
+    '6dbffd57-5846-4a22-b06c-d7cc0de24670',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'df071d57-07ff-466d-ad86-8ac19e8f7084',
-    'ab24f9aa-0660-4352-ad2e-97ae7accb942',
+    '0f7fd78d-dd32-4551-8d43-6261476782c6',
+    '1e2d17db-48ca-4d60-8eae-b95f160503e3',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '562f544c-f40d-4fa8-84ae-717b19228a07',
-    '7353c8e3-62ba-4f75-af57-c3aac8a06106',
+    'ad28a154-02f1-458a-8247-1c2f0305fe55',
+    '64f2179a-4555-4e2c-9c9c-1c9abd0e5f83',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '55e6cda4-c835-4e9b-b316-89c1d17fb094',
-    '83e78f5d-d3ee-426c-9062-a389ac06719b',
+    '70188f0e-a994-469a-a27d-03fdbc3a20d1',
+    'ff81dac9-1a69-4e3a-83f2-e59e458dbc28',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '5c829562-f435-463e-a8d6-1bb6ac8ee707',
-    '639b3b45-d207-4080-b47a-b98df85bdf0a',
+    '100e30db-6276-4e34-8bd7-afd094f5dd2c',
+    'bf8b7b22-55aa-4c30-9972-06de7a6ee6b8',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '123125f4-d81e-4ee7-8b15-eac321d72718',
-    '097e6be7-d834-405e-b5c1-6cd63e3db9ea',
+    '0f7e8412-108f-4baf-bdc1-331e2540619c',
+    'fb541160-90d8-43fa-aa4e-24bcfef9539d',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '9daee992-767d-4374-87ce-0533a10fc8af',
-    '3967fc21-8df8-41c5-8867-cf9a80020a9b',
+    'fc575af0-4caf-495a-b210-1fb05b0687b8',
+    '7a49f7a8-6f81-40f8-a054-e4a28a62c9b2',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'eb3e4217-c6a6-4e2b-8d4c-93b8540db651',
-    'c12ffebf-0387-4b93-9913-47ef9bd7c721',
+    '65d45588-b375-4896-9099-e94a6ed71a89',
+    '60bcdb31-d822-499a-b909-48e52c04df4f',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '0b39af9c-a4c5-47a8-b7c7-8f2d17259817',
-    'ad2f6fdf-ae5a-41d5-85de-966fbf8398fd',
+    'd38683ca-8643-4d8b-aeb9-86165ef72f2f',
+    '551cc64a-ee9c-4de6-b538-dad1541523f7',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '571dad21-3251-411c-846a-090d01c19988',
-    '70b8143e-f9e0-4bc1-9f45-4fd48b36baaa',
+    'b9166c68-fc58-4125-a09d-79022dffb2ae',
+    '950b5527-1122-49db-a769-192952aab47d',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    '3d03e50b-4836-49d3-8206-853d58cc8f0c',
-    '500fc539-a7ba-42c0-a343-ba0d0c4fc697',
+    '96fcf151-30c5-4064-b983-3f07b182a539',
+    '85a18f43-a9a2-4c77-a4a6-2b2d1f3ee537',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'b4759cc4-a584-4b84-bda9-4037c5aa7f6c',
-    '949a852b-8d58-463a-a51d-28247c3b35d6',
+    '6c65db27-c7f7-4a52-b27a-823200c3bec6',
+    '8eb4e545-98ef-4d32-8400-2944214271b8',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'fd876e0d-8928-4351-89f0-df2c02ef2031',
-    '2989e10d-6155-47e5-be05-a5af1fd857eb',
+    '40a62018-deb3-4109-ad0e-096b28ce7ad2',
+    '243453c5-d51e-4059-b8ff-1f5be7485cca',
     'Peabody Trust',
     'United Kingdom',
     NULL,
     NULL
 ) ON CONFLICT DO NOTHING;
 INSERT INTO leaseholders (
-    id, unit_id, full_name,
-    correspondence_address, email, phone
+    id, unit_id, leaseholder_name,
+    correspondence_address, email, telephone
 ) VALUES (
-    'dcff49ba-8da9-4236-afd6-7aad8cd0a2d5',
-    'e76d9850-91dc-4067-9a86-8483dffb340b',
+    '4cbb51a7-511d-4744-8c0b-f19c4f3d41dc',
+    '4a33de12-babf-4bcd-8534-913e9d3cf713',
     'Peabody Trust',
     'United Kingdom',
     NULL,
@@ -2196,71 +2196,59 @@ INSERT INTO leaseholders (
 
 -- Compliance Assets (2)
 INSERT INTO compliance_assets (
-    id, building_id, asset_name, asset_type,
-    last_inspection_date, next_due_date,
-    compliance_status, assessor_company
-) VALUES (
-    'cdff1ee3-8d36-4d82-afed-09da28e1a448',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
-    'Fire Risk Assessment',
-    'fire_risk_assessment',
+    id, building_id, asset_type_id,
+    inspection_date, next_due_date,
+    status, inspection_company
+) 
+SELECT
+    '75105488-12bb-4e65-b57b-99a7d160923f',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
+    id,
     '2023-02-24',
     '2024-02-24',
     'Pass',
     NULL
-);
+FROM compliance_asset_types WHERE asset_type_code = 'FRA';
 INSERT INTO compliance_assets (
-    id, building_id, asset_name, asset_type,
-    last_inspection_date, next_due_date,
-    compliance_status, assessor_company
-) VALUES (
-    '8d7107b8-1004-4abf-8a2f-7a6d4ccb6c17',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
-    'EICR',
-    'eicr',
+    id, building_id, asset_type_id,
+    inspection_date, next_due_date,
+    status, inspection_company
+) 
+SELECT
+    '7d5d4df1-9e60-4d24-b2de-a60227079bed',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
+    id,
     '2024-11-10',
     '2029-11-10',
     'Pass',
     NULL
-);
+FROM compliance_asset_types WHERE asset_type_code = 'EICR';
 
 -- Maintenance Contracts (2)
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    '24771cf8-cb5d-4504-8881-187229bac1a5',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    'ad97d778-a870-4cbe-8d11-9d41762bcd3e',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
+    id,
     's and each 
 contractor engaged to provide services',
-    'cleaning',
     NULL,
     NULL,
     NULL
-);
+FROM contract_types WHERE contract_type_code = 'CLEANING';
 INSERT INTO maintenance_contracts (
-    id, building_id, contractor_name, service_type,
-    start_date, end_date, annual_cost
-) VALUES (
-    'c2844016-3522-4ba7-b889-97e14d074d41',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
+    id, building_id, contract_type_id, contractor_name,
+    contract_start_date, contract_end_date, contract_value_annual
+) 
+SELECT
+    '0d4a683e-c1be-40d7-bdeb-efe8f585d1c8',
+    '5209d414-f09e-4292-8a47-b8d39225a37c',
+    id,
     's and each contractor engaged to provide services',
-    'security',
     NULL,
     NULL,
     NULL
-);
-
--- Service Charge Accounts (1)
-INSERT INTO service_charge_accounts (
-    id, building_id, financial_year, year_end_date,
-    approval_date, is_approved, total_expenditure
-) VALUES (
-    '4cd6154b-7280-4615-8896-713c97285f32',
-    'ecf0b4c5-c7b2-4a0e-aa06-d8a740643a80',
-    '2023',
-    NULL,
-    NULL,
-    FALSE,
-    NULL
-);
+FROM contract_types WHERE contract_type_code = 'CCTV';
