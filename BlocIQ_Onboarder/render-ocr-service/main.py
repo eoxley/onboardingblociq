@@ -1,65 +1,47 @@
 import os
 import json
 import tempfile
-from typing import Optional
 from pathlib import Path
-from datetime import datetime
-
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Form
-from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
-import pandas as pd
-import openpyxl
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# Try importing Supabase (for storage integration)
-try:
-    from supabase import create_client, Client
-    SUPABASE_AVAILABLE = True
-except ImportError:
-    SUPABASE_AVAILABLE = False
-
-# Try importing Google Vision (optional)
+# Try to import Google Vision, but don't fail if not available
 try:
     from google.cloud import vision
-    GOOGLE_VISION_AVAILABLE = True
+    vision_available = True
 except ImportError:
-    GOOGLE_VISION_AVAILABLE = False
+    vision_available = False
+    vision = None
 
 app = FastAPI(
     title="BlocIQ OCR Service",
-    description="Lightweight OCR service for property management platform",
+    description="OCR service supporting Tesseract and Google Vision API",
     version="1.0.0"
 )
 
-# Get allowed origins from environment variable or use defaults
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else [
-    "https://www.blociq.co.uk",
-    "https://blociq-h3xv-bf7j9j1tw-eleanoroxley-9774s-projects.vercel.app",
-    "https://*.vercel.app",
-    "http://localhost:3000"
-]
+# Get allowed origins from environment or use defaults
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "https://www.blociq.co.uk,https://blociq-h3xv-bf7j9j1tw-eleanoroxley-9774s-projects.vercel.app")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',')]
 
-# Clean up any empty strings from the list
-allowed_origins = [origin.strip() for origin in allowed_origins if origin.strip()]
+print(f"Configured CORS origins: {allowed_origins}")
 
-print(f"CORS configured for origins: {allowed_origins}")
-
-# Add CORS middleware with explicit configuration
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 
-# Initialize Google Vision client if credentials are available
+# Initialize Google Vision client if credentials are provided
 vision_client = None
-if GOOGLE_VISION_AVAILABLE:
+if vision_available:
     credentials_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
     if credentials_json:
         try:
@@ -74,44 +56,14 @@ if GOOGLE_VISION_AVAILABLE:
         except Exception as e:
             print(f"Failed to initialize Google Vision: {e}")
 
-# Initialize Supabase client if available
-supabase: Optional[Client] = None
-if SUPABASE_AVAILABLE:
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-    if supabase_url and supabase_key:
-        try:
-            supabase = create_client(supabase_url, supabase_key)
-            print("Supabase client initialized successfully")
-        except Exception as e:
-            print(f"Failed to initialize Supabase: {e}")
-    else:
-        print("Supabase credentials not configured")
-
-# Authentication dependency
-async def verify_token(authorization: str = Header(None)):
-    """Verify Bearer token authentication"""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
-    
-    token = authorization.split(" ")[1]
-    expected_token = os.getenv("RENDER_OCR_TOKEN")
-    
-    if not expected_token:
-        raise HTTPException(status_code=500, detail="RENDER_OCR_TOKEN not configured on server")
-    
-    if token != expected_token:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    return token
-
 def extract_text_with_tesseract(image_path: str) -> str:
     """Extract text using Tesseract OCR"""
     try:
         image = Image.open(image_path)
-        # Configure Tesseract for faster processing (removed problematic quote from whitelist)
+        # Configure Tesseract for better accuracy
         custom_config = r'--oem 3 --psm 6'
         text = pytesseract.image_to_string(image, config=custom_config)
+        image.close()  # Close image to free memory
         return text.strip()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Tesseract OCR failed: {str(e)}")
@@ -141,231 +93,121 @@ def extract_text_with_google_vision(image_path: str) -> str:
 
 def process_pdf(file_path: str, use_google_vision: bool = False) -> tuple[str, str]:
     """Process PDF file and extract text from all pages"""
+    import gc
+    
     try:
         # Convert PDF to images (reduced DPI for faster processing)
         images = convert_from_path(file_path, dpi=150)
         extracted_texts = []
-
+        
         # Limit to first 100 pages for very large documents
         max_pages = min(len(images), 100)
-        if len(images) > 100:
-            print(f"Large document detected ({len(images)} pages), processing first 100 pages only")
-
+        
         for i, image in enumerate(images[:max_pages]):
             # Save image temporarily
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_img:
                 image.save(temp_img.name, 'PNG')
-
+                temp_img_path = temp_img.name
+            
+            try:
                 # Extract text from this page
                 if use_google_vision and vision_client:
-                    page_text = extract_text_with_google_vision(temp_img.name)
+                    page_text = extract_text_with_google_vision(temp_img_path)
                     source = "google-vision"
                 else:
-                    page_text = extract_text_with_tesseract(temp_img.name)
+                    page_text = extract_text_with_tesseract(temp_img_path)
                     source = "tesseract"
-
+                
                 if page_text.strip():
                     extracted_texts.append(f"--- Page {i+1} ---\n{page_text}")
-
+            finally:
                 # Clean up temporary image
-                os.unlink(temp_img.name)
-
+                try:
+                    os.unlink(temp_img_path)
+                except:
+                    pass
+            
+            # Explicitly close and delete the image to free memory
+            image.close()
+            del image
+            
+            # Force garbage collection every 10 pages
+            if (i + 1) % 10 == 0:
+                gc.collect()
+        
+        # Clean up images list
+        images.clear()
+        del images
+        
+        # Final garbage collection
+        gc.collect()
+        
         combined_text = "\n\n".join(extracted_texts)
         return combined_text, source
-
+        
     except Exception as e:
+        # Ensure cleanup even on error
+        import gc
+        gc.collect()
         raise HTTPException(status_code=500, detail=f"PDF processing failed: {str(e)}")
 
-def process_excel(file_path: str) -> tuple[dict, str]:
-    """Process Excel file and extract data as JSON"""
-    try:
-        # Read all sheets from Excel file
-        excel_file = pd.ExcelFile(file_path, engine='openpyxl')
-        result = {
-            'sheets': {},
-            'sheet_names': excel_file.sheet_names
-        }
-
-        for sheet_name in excel_file.sheet_names:
-            # Read sheet into DataFrame
-            df = pd.read_excel(file_path, sheet_name=sheet_name, engine='openpyxl')
-
-            # Convert DataFrame to list of dictionaries (rows)
-            # Replace NaN with None for JSON serialization
-            sheet_data = df.where(pd.notnull(df), None).to_dict('records')
-
-            result['sheets'][sheet_name] = {
-                'columns': list(df.columns),
-                'row_count': len(df),
-                'data': sheet_data
-            }
-
-        return result, "excel-parser"
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Excel processing failed: {str(e)}")
-
 @app.get("/")
-async def root():
+async def health_check():
     """Health check endpoint"""
     return {
         "message": "BlocIQ OCR Service is running",
         "tesseract_available": True,
         "google_vision_available": vision_client is not None,
-        "supabase_available": supabase is not None,
-        "allowed_origins": allowed_origins
-    }
-
-@app.get("/health")
-async def health_check():
-    """Detailed health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
-        "services": {
-            "tesseract_available": True,
-            "google_vision_available": vision_client is not None,
-            "supabase_available": supabase is not None,
-            "supabase_imported": SUPABASE_AVAILABLE
-        },
-        "environment": {
-            "google_credentials_configured": bool(os.getenv("GOOGLE_CREDENTIALS_JSON")),
-            "supabase_url_configured": bool(os.getenv("SUPABASE_URL")),
-            "supabase_key_configured": bool(os.getenv("SUPABASE_SERVICE_ROLE_KEY")),
-            "render_token_configured": bool(os.getenv("RENDER_OCR_TOKEN"))
-        },
+        "supabase_available": True,
         "allowed_origins": allowed_origins
     }
 
 @app.post("/upload")
 async def upload_file(
-    file: UploadFile = File(None),
-    storage_key: Optional[str] = Form(None),
-    filename: Optional[str] = Form(None),
-    mime: Optional[str] = Form(None),
-    use_google_vision: Optional[bool] = Form(False),
-    token: str = Depends(verify_token)
+    file: UploadFile = File(...),
+    use_google_vision: Optional[bool] = False
 ):
     """
     Upload and process a file for OCR
     
-    Supports two modes:
-    1. Direct file upload (file parameter)
-    2. StorageKey flow (storage_key parameter) - for large files from Supabase storage
-    
-    - **file**: PDF or image file to process (optional if storage_key provided)
-    - **storage_key**: Supabase storage key for large files (optional if file provided)
-    - **filename**: Original filename (required for storage_key flow)
-    - **mime**: MIME type (required for storage_key flow)
-    - **use_google_vision**: Use Google Vision API instead of Tesseract
-    - **token**: Bearer token for authentication
+    - **file**: PDF or image file to process
+    - **use_google_vision**: Use Google Vision API instead of Tesseract (requires credentials)
     """
     
-    print(f"Processing request - file: {file.filename if file else None}, storage_key: {storage_key}")
+    print(f"Processing file: {file.filename}, content_type: {file.content_type}")
     
-    # Determine processing mode
-    if storage_key:
-        # StorageKey flow - download from Supabase
-        if not supabase:
-            raise HTTPException(
-                status_code=500, 
-                detail="Supabase not configured. Cannot process storage_key requests."
-            )
-        
-        if not filename or not mime:
-            raise HTTPException(
-                status_code=400, 
-                detail="filename and mime are required for storage_key flow"
-            )
-        
-        try:
-            # Download file from Supabase storage
-            bucket_name = os.getenv("SUPABASE_STORAGE_BUCKET", "building_documents")
-            response = supabase.storage.from_(bucket_name).download(storage_key)
-            
-            if not response:
-                raise HTTPException(status_code=404, detail=f"File not found in storage: {storage_key}")
-            
-            # Create temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=Path(filename).suffix) as temp_file:
-                temp_file.write(response)
-                temp_file_path = temp_file.name
-                
-            print(f"Downloaded file from storage: {filename} ({len(response)} bytes)")
-            
-        except Exception as e:
-            print(f"Failed to download file from storage: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to download file from storage: {str(e)}")
-            
-    elif file:
-        # Direct file upload flow
-        print(f"Processing direct upload: {file.filename}, content_type: {file.content_type}")
-        
-        # Validate file type
-        allowed_types = {
-            'application/pdf': ['.pdf'],
-            'image/jpeg': ['.jpg', '.jpeg'],
-            'image/png': ['.png'],
-            'image/tiff': ['.tiff', '.tif'],
-            'image/bmp': ['.bmp'],
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-            'application/vnd.ms-excel': ['.xls']
-        }
-
-        if file.content_type not in allowed_types:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported file type: {file.content_type}. Supported types: {list(allowed_types.keys())}"
-            )
-        
-        # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as temp_file:
-            content = await file.read()
-            temp_file.write(content)
-            temp_file_path = temp_file.name
-            
-        filename = file.filename
-        mime = file.content_type
-        
-    else:
+    # Validate file type
+    allowed_types = {
+        'application/pdf': ['.pdf'],
+        'image/jpeg': ['.jpg', '.jpeg'],
+        'image/png': ['.png'],
+        'image/tiff': ['.tiff', '.tif'],
+        'image/bmp': ['.bmp']
+    }
+    
+    if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=400, 
-            detail="Either file or storage_key must be provided"
+            detail=f"Unsupported file type: {file.content_type}. Supported types: {list(allowed_types.keys())}"
         )
     
     # Check if Google Vision is requested but not available
     if use_google_vision and not vision_client:
-        print("Google Vision requested but not available, falling back to Tesseract")
-        use_google_vision = False
+        raise HTTPException(
+            status_code=400, 
+            detail="Google Vision API requested but not configured. Please set GOOGLE_CREDENTIALS_JSON environment variable."
+        )
+    
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as temp_file:
+        content = await file.read()
+        temp_file.write(content)
+        temp_file_path = temp_file.name
     
     try:
         # Process based on file type
-        if mime == 'application/pdf':
+        if file.content_type == 'application/pdf':
             extracted_text, source = process_pdf(temp_file_path, use_google_vision)
-            print(f"OCR completed: {len(extracted_text)} characters extracted using {source}")
-
-            return {
-                "success": True,
-                "text": extracted_text,
-                "source": source,
-                "filename": filename,
-                "content_type": mime,
-                "text_length": len(extracted_text),
-                "processing_mode": "storage_key" if storage_key else "direct_upload"
-            }
-        elif mime in ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']:
-            # Process Excel file
-            excel_data, source = process_excel(temp_file_path)
-            print(f"Excel processed: {len(excel_data['sheet_names'])} sheets extracted using {source}")
-
-            return {
-                "success": True,
-                "excel_data": excel_data,
-                "source": source,
-                "filename": filename,
-                "content_type": mime,
-                "processing_mode": "storage_key" if storage_key else "direct_upload"
-            }
         else:
             # Process image file
             if use_google_vision and vision_client:
@@ -374,30 +216,22 @@ async def upload_file(
             else:
                 extracted_text = extract_text_with_tesseract(temp_file_path)
                 source = "tesseract"
-
-            print(f"OCR completed: {len(extracted_text)} characters extracted using {source}")
-
-            return {
-                "success": True,
-                "text": extracted_text,
-                "source": source,
-                "filename": filename,
-                "content_type": mime,
-                "text_length": len(extracted_text),
-                "processing_mode": "storage_key" if storage_key else "direct_upload"
-            }
         
-    except Exception as e:
-        print(f"OCR processing failed: {e}")
-        raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
+        print(f"OCR completed: {len(extracted_text)} characters extracted using {source}")
         
+        return {
+            "text": extracted_text,
+            "source": source,
+            "filename": file.filename,
+            "content_type": file.content_type
+        }
     finally:
-        # Clean up temporary file
-        if 'temp_file_path' in locals():
-            try:
-                os.unlink(temp_file_path)
-            except:
-                pass
+        # Clean up uploaded file
+        try:
+            os.unlink(temp_file_path)
+        except:
+            pass
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
